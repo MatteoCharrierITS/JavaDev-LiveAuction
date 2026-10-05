@@ -2,7 +2,7 @@
   "info": {
     "name": "LiveAuction • Aste",
     "_postman_id": "833135da-ce7e-4249-8eb7-4ed4cea808d1",
-    "description": "Previsto dal contratto docs/04-api-rest.md; l'endpoint non è ancora implementato. La connessione STOMP /ws richiede un client WebSocket e non è rappresentata in Collection v2.1.",
+    "description": "Il ticket REST è implementato; lobby, programmazione e storici sono ancora previsti dal contratto docs/04-api-rest.md. La connessione STOMP /ws richiede un client WebSocket e non è rappresentata in Collection v2.1.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -36,7 +36,7 @@
         "method": "POST",
         "header": [],
         "url": "{{baseUrl}}/aste/{{astaId}}/ticket",
-        "description": "Previsto dal contratto docs/04-api-rest.md; l'endpoint non è ancora implementato. Richiedere da tre minuti prima dell'inizio.",
+        "description": "Implementato: richiedere con Bearer USER da tre minuti prima dell'inizio. Restituisce ticket monouso ed expiresAt (TTL 30 secondi). L'asta deve esistere e non essere annullata.",
         "auth": {
           "type": "bearer",
           "bearer": [
