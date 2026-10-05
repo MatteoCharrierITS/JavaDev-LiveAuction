@@ -14,8 +14,6 @@
 
 | Metodo | Endpoint | Accesso | Scopo |
 | --- | --- | --- | --- |
-| `GET` | `/health` | pubblico | liveness del servizio, senza controllo DB |
-| `GET` | `/ready` | pubblico | readiness applicativa e disponibilità DB |
 | `POST` | `/auth/register` | pubblico | registra utente e wallet |
 | `POST` | `/auth/login` | pubblico | apre una sessione e restituisce i token |
 | `POST` | `/auth/refresh` | pubblico | rinnova i token usando il refresh token |
@@ -36,29 +34,6 @@
 | `GET` | `/admin/aste/storico` | ADMIN | storico globale e vincitori |
 | `PUT` | `/admin/prodotti/{id}` | ADMIN | modifica prodotto, stock e flag |
 
-## Monitoring e Swagger
-
-Implementati nel Producer, nel package `monitoring`:
-
-- `GET /api/v1/health`: controlla il gruppo Actuator `liveness`, senza dipendenze esterne.
-- `GET /api/v1/ready`: controlla il gruppo `readiness`, che include `readinessState`
-  e `db`. Il controllo DB usa il health indicator JDBC di Actuator per verificare
-  una connessione e una query di validazione. Flyway e Hibernate validano lo schema
-  durante l'avvio; la readiness applicativa diventa positiva a completamento dell'avvio.
-
-Entrambi sono pubblici e restituiscono `200 application/json` con `{"status":"UP"}`
-quando il controllo passa. In caso contrario restituiscono `503 application/problem+json`,
-con `code` rispettivamente `SERVIZIO_NON_ATTIVO` o `SERVIZIO_NON_PRONTO` e
-`statusService` contenente lo stato aggregato (ad esempio `DOWN` o `OUT_OF_SERVICE`).
-Non espongono dettagli di connessione o eccezioni. Un guasto DB rende Ready negativo
-senza rendere negativo Health. Le probe Actuator esistenti restano disponibili.
-
-Swagger UI: `http://localhost:8081/swagger-ui.html`.
-OpenAPI JSON: `http://localhost:8081/v3/api-docs`.
-La documentazione è pubblica e include solo gli endpoint REST implementati sotto
-`/api/v1`. Usare **Authorize** con l'access token ottenuto dal login per provare
-le operazioni protette; i controlli di ruolo del Producer restano applicati.
-
 ## Autenticazione
 
 ### Regole di accesso nel Producer
@@ -70,7 +45,7 @@ rispettivamente le autorità Spring `ROLE_USER` e `ROLE_ADMIN`. Perciò
 `hasRole('ADMIN')` verifica `ROLE_ADMIN`, senza affidarsi a un ruolo nel JWT.
 
 Le regole HTTP di `SecurityConfig` rendono pubblici solo registrazione, login,
- refresh, health, ready, Swagger e i `GET` sotto `/prodotti/**` e `/aste/**`. `/admin/**`
+refresh, health e i `GET` sotto `/prodotti/**` e `/aste/**`. `/admin/**`
 richiede `ADMIN`, `/me/**` richiede `USER`; `DELETE /me` richiede un utente
 autenticato. Gli altri percorsi richiedono almeno l'autenticazione. Una nuova
 operazione riservata sotto un percorso pubblico, anche se è un `GET`, deve avere
@@ -246,6 +221,24 @@ Handshake: `ws://localhost:8081/ws?ticket={ticketMonouso}`.
 
 Il ticket può essere richiesto solo da tre minuti prima dell'inizio. Prima di
 quel momento il server risponde `409 STANZA_NON_APERTA`.
+`POST /api/v1/aste/{id}/ticket` richiede `ROLE_USER` e restituisce `200` con:
+
+```json
+{
+  "ticket": "valore-casuale-monouso",
+  "expiresAt": "2026-10-03T16:27:30Z"
+}
+```
+
+Il ticket è legato all'utente, alla sessione di login e all'asta; scade dopo
+30 secondi e viene consumato al primo handshake. È conservato in memoria nel
+Producer, quindi i ticket ancora inutilizzati non sopravvivono a un riavvio.
+L'handshake senza ticket valido restituisce `401`. Un'asta inesistente
+restituisce `404 RISORSA_NON_TROVATA`; un'asta annullata non emette ticket.
+Il browser può sottoscrivere soltanto il topic dell'asta associata al ticket e
+la propria coda `/user/queue/aste`. Non può pubblicare direttamente su
+`/topic` o `/queue`. La validità della sessione di login viene ricontrollata
+per ogni comando STOMP.
 
 | Direzione | Destinazione | Messaggio |
 | --- | --- | --- |
@@ -293,9 +286,31 @@ Rifiuto privato per fondi insufficienti:
 }
 ```
 
-Eventi pubblici principali: `ROOM_OPENED`, `AUCTION_STARTED`,
-`AUCTION_SNAPSHOT`, `USER_JOINED`, `BID_ACCEPTED`, `TIMER_EXTENDED`,
-`AUCTION_CLOSED`, `AUCTION_CANCELLED`.
+### Decisione sulla `sequence` e sulla presenza
+
+`aste.sequence` è un contatore persistito per singola asta. Il Producer lo
+incrementa nella stessa transazione che modifica lo stato dell'asta e pubblica
+l'evento soltanto dopo il commit. Hanno una `sequence` crescente gli eventi di
+stato `ROOM_OPENED`, `AUCTION_STARTED`, `BID_ACCEPTED`, `AUCTION_CLOSED` e
+`AUCTION_CANCELLED`. Il client confronta questi numeri con la propria ultima
+`sequence`: applica il successivo, ignora i duplicati o gli eventi più vecchi e,
+se rileva un salto, recupera `GET /api/v1/aste/{id}` prima di riprendere gli
+aggiornamenti. Lo snapshot REST riporta la `sequence` corrente senza
+incrementarla.
+
+Un'offerta accettata incrementa `sequence` **una sola volta**. L'evento
+`BID_ACCEPTED` include già `fineAt` aggiornato ed `extensionSeconds`; non si
+pubblica un secondo evento `TIMER_EXTENDED` per lo stesso rilancio.
+
+La presenza è temporanea e non modifica `aste.sequence`. Gli eventi di
+presenza, per esempio `USER_JOINED` e `USER_LEFT`, non contengono `sequence` e
+non partecipano al controllo dei gap. Al `join` e dopo ogni riconnessione il
+client riceve la presenza corrente tramite WebSocket; per prezzo, leader,
+stato e timer recupera lo snapshot REST. Dopo un riavvio la presenza riparte
+vuota e si ricostruisce con le nuove connessioni.
+
+Questa distinzione precisa le formulazioni generali sugli eventi con
+`sequence` in `docs/01-requisiti.md` e `docs/07-liveauction.md`.
 
 ## Errori principali
 
