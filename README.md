@@ -3,9 +3,9 @@
 ## Divisione dei compiti
 
 Il progetto è suddiviso per dominio, così ogni persona può lavorare in un
-package dedicato limitando i conflitti Git. Chi non ha ancora un incarico deve
-scegliere una delle aree disponibili indicate sotto. Risultano ancora senza
-incarico MONDIR, TOMMI, ANDREA e una seconda voce per MATTEO.
+package dedicato limitando i conflitti Git. Le assegnazioni attuali sono
+indicate sotto; l'area Consumer e interfaccia resta da assegnare con una
+decisione del team.
 
 ### Autenticazione e utenti - MATTEO
 
@@ -60,8 +60,12 @@ Il sistema è composto da due applicazioni indipendenti:
 - **consumer** (`:8082`): interfaccia Thymeleaf che usa esclusivamente i
   contratti esposti dal Producer.
 
-> **Stato:** infrastruttura Spring Boot/Docker pronta; il dominio LiveAuction è
-> progettato nella documentazione ma non ancora implementato.
+> **Stato:** `main` include l'infrastruttura Spring Boot/Docker, lo schema Flyway,
+> l'autenticazione e le API di monitoraggio con Swagger. Catalogo, programmazione
+> delle aste, offerte e portafoglio sono sviluppati nei rispettivi branch e
+> devono ancora essere integrati; il WebSocket dispone di una configurazione
+> STOMP iniziale. La Consumer è ancora uno scheletro senza pagine applicative:
+> il flusso completo LiveAuction non è ancora disponibile su `main`.
 
 ## La feature distintiva: LiveAuction
 
@@ -226,8 +230,18 @@ questa chiave il Producer non si avvia.
 
 ## Build
 
+Dalla radice del repository, per verificare Producer e Consumer.
+
+Windows:
+
 ```powershell
 .\producer\mvnw.cmd -f pom.xml test
+```
+
+macOS/Linux:
+
+```sh
+./producer/mvnw -f pom.xml test
 ```
 
 ## Avvio Docker
