@@ -10,7 +10,7 @@ Importare `local.postman_environment.json` e selezionare l'ambiente
 | `prodotti.json` | Catalogo, acquisti, gestione ADMIN | API previste |
 | `inventario.json` | Inventario personale | API prevista |
 | `portafoglio.json` | Saldo e impostazioni | API previste |
-| `aste.json` | Lobby, ticket, programmazione e storici | API previste |
+| `aste.json` | Lobby, ticket, programmazione e storici | Ticket implementato; altre API previste |
 
 L'ambiente usa `http://localhost:8081/api/v1` come `baseUrl`. Modificarlo se
 il Producer è esposto su un'altra porta. Le migrazioni non creano account demo:
@@ -30,7 +30,8 @@ La richiesta 10 elimina e anonimizza l'account: eseguirla manualmente dopo
 un nuovo login, senza includerla nella normale sequenza di test.
 
 Le altre collection seguono [il contratto REST](../04-api-rest.md). Finché i
-relativi controller non saranno sviluppati, una risposta `404` è attesa. I body
+relativi controller non saranno sviluppati, una risposta `404` è attesa; il
+ticket WebSocket è già implementato e richiede un'asta esistente. I body
 segnati come **provvisori** vanno aggiornati quando il modulo definirà i propri
 DTO. Impostare `prodottoId` e `astaId` nell'ambiente usando ID esistenti; la
 richiesta di programmazione salva `astaId` dalla risposta `Location`, se

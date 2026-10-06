@@ -245,7 +245,42 @@ per ogni comando STOMP.
 | client → server | `/app/aste/{id}/join` | ingresso stanza |
 | client → server | `/app/aste/{id}/offerte` | rilancio, solo in `APERTA` |
 | server → stanza | `/topic/aste/{id}` | eventi pubblici ordinati |
-| server → utente | `/user/queue/aste` | conferme/rifiuti privati |
+| server → utente | `/user/queue/aste` | conferme/rifiuti privati e presenza iniziale |
+
+Il client si sottoscrive al topic e alla coda privata prima di inviare
+`/app/aste/{id}/join`. Il comando `join` non richiede un body. La stanza conta
+utenti distinti: più schede dello stesso utente non aumentano il numero dei
+presenti. Dopo ogni `join` il Producer risponde **solo alla sessione che ha
+inviato il comando** con la presenza corrente:
+
+```json
+{
+  "type": "PRESENCE_SNAPSHOT",
+  "auctionId": 42,
+  "participantCount": 2,
+  "participants": ["g***i", "l***a"],
+  "serverTime": "2026-10-03T16:28:05Z"
+}
+```
+
+Quando entra la prima scheda di un utente, il topic riceve `USER_JOINED`;
+quando esce la sua ultima scheda riceve `USER_LEFT`. Le disconnessioni ripetute
+non producono eventi duplicati. Entrambi gli eventi riportano il nome
+mascherato, il numero dei presenti e l'elenco completo aggiornato, così il
+client può sostituire la vista della presenza:
+
+```json
+{
+  "type": "USER_JOINED",
+  "auctionId": 42,
+  "displayName": "g***i",
+  "participantCount": 2,
+  "participants": ["g***i", "l***a"],
+  "serverTime": "2026-10-03T16:28:05Z"
+}
+```
+
+I messaggi di presenza non contengono `sequence`.
 
 Comando offerta:
 
