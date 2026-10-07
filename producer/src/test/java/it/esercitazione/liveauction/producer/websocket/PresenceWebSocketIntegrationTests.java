@@ -67,7 +67,7 @@ class PresenceWebSocketIntegrationTests {
         long productId = jdbc.queryForObject("""
                 INSERT INTO prodotti (categoria_id, sku, nome, astabile, quantita_disponibile)
                 VALUES (?, ?, ?, TRUE, 1) RETURNING id
-                """, Long.class, categoryId, "SKU-" + username, "WebSocket Test");
+                """, Long.class, categoryId, "SKU-" + username.replace('_', '-'), "WebSocket Test");
         Instant now = Instant.now();
         long auctionId = jdbc.queryForObject("""
                 INSERT INTO aste (prodotto_id, admin_id, inizio_at, fine_at, prezzo_iniziale)
