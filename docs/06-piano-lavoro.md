@@ -1,5 +1,38 @@
 # Roadmap e criteri di accettazione
 
+## Stato del branch Prodotti — 7 ottobre 2026
+
+- Implementati catalogo pubblico, ricerca, filtri, paginazione, categorie e
+  creazione/modifica ADMIN di prodotti e categorie, con DTO e Problem Details.
+- Il catalogo pubblico richiede prodotto e categoria attivi; l'ADMIN può
+  consultare anche gli elementi disattivati. La riattivazione non altera stock.
+- Modifica prodotto completa con controllo `versione`; quantità bloccata
+  riservata alle operazioni del dominio aste.
+- Contratto REST e collection Postman aggiornati agli endpoint implementati.
+- Acquisto fisso ancora previsto, non implementato: integrazione transazionale
+  di prodotto, portafoglio, ledger e inventario da coordinare tra i moduli.
+  La responsabilità di questa integrazione resta da concordare dal team.
+- WebSocket e monitoring presenti su `main`, non nel branch Prodotti: al merge
+  conservare in SecurityConfig i permessi già presenti su `main` e aggiungere
+  quello pubblico per `GET /api/v1/categorie`.
+
+Verifica con un database di prova:
+
+```bash
+RUN_DB_TESTS=true DB_URL=jdbc:postgresql://localhost:5433/liveauction_test sh producer/mvnw -f producer/pom.xml clean test
+```
+
+Sul risultato integrato con `main`, abilitare anche `RUN_WS_TESTS=true`.
+
+Verifica del 7 ottobre 2026 su PostgreSQL 16: 9 test superati nel branch
+Prodotti (6 scenari catalogo); 24 test superati nella copia temporanea del merge
+con `main`, includendo le modifiche al codice e ai test del catalogo, senza
+errori né test saltati. Coperti disattivazione/riattivazione categoria,
+letture ADMIN, validazione, conteggio aste non concluse, versione obsoleta e
+due transazioni concorrenti sullo stock (un solo commit). Verificati inoltre
+JSON, sostituzione delle variabili nei body e script della collection Postman;
+la collection non è stata eseguita tramite il runner Postman.
+
 ## Fase 1 — Identità, catalogo e portafoglio
 
 - Security, registrazione, login e ruoli USER/ADMIN.

@@ -19,6 +19,12 @@
 
 ## Catalogo
 
+Il marketplace mostra solo prodotti attivi di categorie attive. Il pannello
+ADMIN consulta anche gli elementi disattivati. Il form di modifica prodotto
+invia tutti i campi modificabili e la `versione` dell'ultima lettura; in caso di
+`409 VERSIONE_NON_AGGIORNATA` ricarica il prodotto prima di riproporre la modifica.
+La quantità bloccata è visualizzata ma non modificabile nel form.
+
 Ogni card indica testualmente:
 
 - `DISPONIBILE ALL'ASTA` oppure `NON ASTABILE`;

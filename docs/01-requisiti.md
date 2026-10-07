@@ -12,6 +12,14 @@ flusso nel quale un utente mette in vendita un proprio prodotto.
 
 ## Prodotti e stock
 
+Il catalogo pubblico mostra soltanto prodotti attivi appartenenti a categorie
+attive. Disattivare una categoria nasconde anche il dettaglio pubblico dei suoi
+prodotti (404), senza modificarne stock, flag `attivo` o aste già programmate.
+L'ADMIN continua a consultare e modificare questi prodotti. Riattivare la
+categoria rende nuovamente visibili i prodotti che sono ancora attivi.
+La disattivazione è una regola di visibilità del catalogo, non un annullamento
+delle aste e non una modifica dei requisiti di programmazione.
+
 Ogni prodotto contiene i campi:
 
 - `astabile`: autorizza o vieta l'uso del prodotto nelle aste;

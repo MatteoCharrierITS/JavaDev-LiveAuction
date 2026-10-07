@@ -2,79 +2,33 @@
   "info": {
     "name": "LiveAuction • Prodotti",
     "_postman_id": "30d10e9b-c2fe-47c0-a65e-3fe7ebe3c137",
-    "description": "Previsto dal contratto docs/04-api-rest.md; l'endpoint non è ancora implementato.",
+    "description": "Catalogo e gestione ADMIN implementati. Eseguire 01–10 dopo il login ADMIN. Acquisti fissi futuri.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "Catalogo paginato",
+      "name": "01 Categorie pubbliche",
       "request": {
         "method": "GET",
+        "url": "{{baseUrl}}/categorie",
         "header": [],
-        "url": "{{baseUrl}}/prodotti?page=0&size=12",
-        "description": "Previsto dal contratto docs/04-api-rest.md; l'endpoint non è ancora implementato. Filtri previsti: query, categoria, astabile.",
         "auth": {
           "type": "noauth"
-        }
+        },
+        "description": "Solo categorie attive."
       }
     },
     {
-      "name": "Dettaglio prodotto",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": "{{baseUrl}}/prodotti/{{prodottoId}}",
-        "description": "Previsto dal contratto docs/04-api-rest.md; l'endpoint non è ancora implementato.",
-        "auth": {
-          "type": "noauth"
-        }
-      }
-    },
-    {
-      "name": "Acquisto a prezzo fisso",
+      "name": "02 Crea categoria ADMIN",
       "request": {
         "method": "POST",
+        "url": "{{baseUrl}}/admin/categorie",
         "header": [
           {
             "key": "Content-Type",
             "value": "application/json"
           }
         ],
-        "url": "{{baseUrl}}/prodotti/{{prodottoId}}/acquisti",
-        "description": "Previsto dal contratto docs/04-api-rest.md; l'endpoint non è ancora implementato. Il body di esempio è provvisorio: aggiornare con il DTO definitivo.",
-        "auth": {
-          "type": "bearer",
-          "bearer": [
-            {
-              "key": "token",
-              "value": "{{userToken}}",
-              "type": "string"
-            }
-          ]
-        },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"quantita\": 1\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        }
-      }
-    },
-    {
-      "name": "Modifica prodotto ADMIN",
-      "request": {
-        "method": "PUT",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": "{{baseUrl}}/admin/prodotti/{{prodottoId}}",
-        "description": "Previsto dal contratto docs/04-api-rest.md; l'endpoint non è ancora implementato. Il body di esempio è provvisorio: aggiornare con il DTO definitivo.",
         "auth": {
           "type": "bearer",
           "bearer": [
@@ -85,9 +39,303 @@
             }
           ]
         },
+        "description": "Genera nome/slug univoci e salva categoriaId.",
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"astabile\": true,\n  \"quantitaDisponibile\": 3\n}",
+          "raw": "{\n  \"nome\": \"Test {{catalogoSuffix}}\",\n  \"slug\": \"test-{{catalogoSuffix}}\",\n  \"attiva\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.environment.set('catalogoSuffix', pm.variables.replaceIn('{{$guid}}'));"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 201) pm.environment.set('categoriaId', pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 Categorie ADMIN",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/admin/categorie",
+        "header": [],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{adminToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "description": "Include categorie inattive."
+      }
+    },
+    {
+      "name": "04 Modifica categoria ADMIN",
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/admin/categorie/{{categoriaId}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{adminToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "description": "attiva=false nasconde i prodotti al pubblico; true li ripristina.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Test {{catalogoSuffix}}\",\n  \"slug\": \"test-{{catalogoSuffix}}\",\n  \"attiva\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "05 Crea prodotto ADMIN",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/admin/prodotti",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{adminToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "description": "Salva ID, versione e body completo di modifica.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"categoriaId\": {{categoriaId}},\n  \"sku\": \"{{catalogoSku}}\",\n  \"nome\": \"Laptop di prova\",\n  \"descrizione\": \"Prodotto creato con Postman\",\n  \"prezzoFisso\": 1299.90,\n  \"astabile\": true,\n  \"quantitaDisponibile\": 3\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.environment.set('catalogoSku', 'TST-' + pm.variables.replaceIn('{{$guid}}').slice(0, 8));"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if ([200, 201].includes(pm.response.code)) {",
+              "  const p = pm.response.json();",
+              "  pm.environment.set('prodottoId', p.id);",
+              "  pm.environment.set('prodottoVersione', p.versione);",
+              "  const body = {categoriaId: p.categoria.id, sku: p.sku, nome: p.nome, descrizione: p.descrizione, prezzoFisso: p.prezzoFisso, astabile: p.astabile, quantitaDisponibile: p.quantitaDisponibile, attivo: p.attivo, versione: p.versione};",
+              "  pm.environment.set('prodottoModifica', JSON.stringify(body, null, 2));",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 Catalogo pubblico filtrato",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/prodotti?query={{catalogoSku}}&astabile=true&page=0&size=12",
+        "header": [],
+        "auth": {
+          "type": "noauth"
+        },
+        "description": "Solo prodotti attivi di categorie attive."
+      }
+    },
+    {
+      "name": "07 Dettaglio pubblico",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/prodotti/{{prodottoId}}",
+        "header": [],
+        "auth": {
+          "type": "noauth"
+        },
+        "description": "404 se prodotto o categoria sono inattivi."
+      }
+    },
+    {
+      "name": "08 Catalogo ADMIN",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/admin/prodotti?categoria=test-{{catalogoSuffix}}&page=0&size=12",
+        "header": [],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{adminToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "description": "Include prodotti inattivi; aggiungere attivo=false per filtrarli."
+      }
+    },
+    {
+      "name": "09 Rileggi prodotto ADMIN",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/admin/prodotti/{{prodottoId}}",
+        "header": [],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{adminToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "description": "Aggiorna versione e prodottoModifica prima del PUT."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if ([200, 201].includes(pm.response.code)) {",
+              "  const p = pm.response.json();",
+              "  pm.environment.set('prodottoId', p.id);",
+              "  pm.environment.set('prodottoVersione', p.versione);",
+              "  const body = {categoriaId: p.categoria.id, sku: p.sku, nome: p.nome, descrizione: p.descrizione, prezzoFisso: p.prezzoFisso, astabile: p.astabile, quantitaDisponibile: p.quantitaDisponibile, attivo: p.attivo, versione: p.versione};",
+              "  pm.environment.set('prodottoModifica', JSON.stringify(body, null, 2));",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 Modifica prodotto ADMIN",
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/admin/prodotti/{{prodottoId}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{adminToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "description": "Modificare prodottoModifica nell'ambiente per cambiare valori. Il body proviene da 05 o 09 e viene aggiornato dalla risposta. Versione obsoleta: 409.",
+        "body": {
+          "mode": "raw",
+          "raw": "{{prodottoModifica}}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if ([200, 201].includes(pm.response.code)) {",
+              "  const p = pm.response.json();",
+              "  pm.environment.set('prodottoId', p.id);",
+              "  pm.environment.set('prodottoVersione', p.versione);",
+              "  const body = {categoriaId: p.categoria.id, sku: p.sku, nome: p.nome, descrizione: p.descrizione, prezzoFisso: p.prezzoFisso, astabile: p.astabile, quantitaDisponibile: p.quantitaDisponibile, attivo: p.attivo, versione: p.versione};",
+              "  pm.environment.set('prodottoModifica', JSON.stringify(body, null, 2));",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "FUTURO Acquisto fisso (manuale)",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/prodotti/{{prodottoId}}/acquisti",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{userToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "description": "NON IMPLEMENTATO. Integrazione con portafoglio, ledger e inventario; escluso dalla sequenza catalogo.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"quantita\": 1\n}",
           "options": {
             "raw": {
               "language": "json"

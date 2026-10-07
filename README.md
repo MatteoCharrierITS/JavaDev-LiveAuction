@@ -60,8 +60,12 @@ Il sistema è composto da due applicazioni indipendenti:
 - **consumer** (`:8082`): interfaccia Thymeleaf che usa esclusivamente i
   contratti esposti dal Producer.
 
-> **Stato:** infrastruttura Spring Boot/Docker pronta; il dominio LiveAuction è
-> progettato nella documentazione ma non ancora implementato.
+> **Stato del branch Prodotti (7 ottobre 2026):** autenticazione e catalogo REST
+> implementati, con gestione ADMIN di categorie, prodotti e stock, filtri e
+> paginazione. Il catalogo pubblico nasconde prodotti e categorie disattivati.
+> Acquisti fissi, portafoglio, inventario e motore aste restano da completare.
+> WebSocket e monitoring sono già su `main`, ma non ancora integrati in questo
+> branch. Stato dettagliato e criteri di verifica in `docs/06-piano-lavoro.md`.
 
 ## La feature distintiva: LiveAuction
 

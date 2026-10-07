@@ -36,24 +36,25 @@ public class ProdottoService {
     private final ProdottoRepository prodottoRepository;
     private final CategoriaRepository categoriaRepository;
 
-    /** Catalogo pubblico: soltanto prodotti attivi. */
+    /** Catalogo pubblico: soltanto prodotti attivi appartenenti a categorie attive. */
     @Transactional(readOnly = true)
     public PaginaResponse<ProdottoResponse> cercaCatalogo(String query, String categoria, Boolean astabile,
                                                           int page, int size) {
-        return cerca(query, categoria, astabile, true, page, size);
+        return cerca(query, categoria, astabile, true, true, page, size);
     }
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasRole('ADMIN')")
     public PaginaResponse<ProdottoResponse> cercaAdmin(String query, String categoria, Boolean astabile,
                                                        Boolean attivo, int page, int size) {
-        return cerca(query, categoria, astabile, attivo, page, size);
+        return cerca(query, categoria, astabile, attivo, false, page, size);
     }
 
     @Transactional(readOnly = true)
     public ProdottoResponse dettaglioCatalogo(long id) {
         Prodotto prodotto = prodottoRepository.findWithCategoriaById(id)
                 .filter(Prodotto::isAttivo)
+                .filter(candidato -> candidato.getCategoria().isAttiva())
                 .orElseThrow(ProdottoService::prodottoNonTrovato);
         return conConteggioAste(prodotto);
     }
@@ -111,9 +112,9 @@ public class ProdottoService {
     }
 
     private PaginaResponse<ProdottoResponse> cerca(String query, String categoria, Boolean astabile,
-                                                   Boolean attivo, int page, int size) {
+                                                   Boolean attivo, boolean soloCategorieAttive, int page, int size) {
         Page<Prodotto> risultati = prodottoRepository.findAll(
-                filtro(query, categoria, astabile, attivo),
+                filtro(query, categoria, astabile, attivo, soloCategorieAttive),
                 PageRequest.of(page, size, Sort.by("nome", "id")));
         Map<Long, Long> aste = contaAste(risultati.getContent());
         List<ProdottoResponse> contenuto = risultati.getContent().stream()
@@ -122,9 +123,13 @@ public class ProdottoService {
         return new PaginaResponse<>(contenuto, page, size, risultati.getTotalElements(), risultati.getTotalPages());
     }
 
-    private static Specification<Prodotto> filtro(String query, String categoria, Boolean astabile, Boolean attivo) {
+    private static Specification<Prodotto> filtro(String query, String categoria, Boolean astabile,
+                                                  Boolean attivo, boolean soloCategorieAttive) {
         return (root, criteria, cb) -> {
             List<Predicate> predicati = new ArrayList<>();
+            if (soloCategorieAttive) {
+                predicati.add(cb.isTrue(root.get("categoria").get("attiva")));
+            }
             if (query != null && !query.isBlank()) {
                 String pattern = "%" + escapeLike(query.trim().toLowerCase(Locale.ROOT)) + "%";
                 predicati.add(cb.or(

@@ -26,6 +26,8 @@ Questa è la specifica corrente di **LiveAuction**.
 | Denaro | crediti finti in portafoglio |
 | Fondi | riserva atomica della migliore offerta |
 | Prodotto | campo `astabile` esplicito e stock disponibile/bloccato |
+| Catalogo pubblico | prodotto e categoria entrambi attivi; ADMIN consulta anche i disattivati |
+| Modifica prodotto | PUT completo con `versione`; stock bloccato gestito dalle aste |
 | Vincita | unità assegnata al vincitore e registrata negli storici |
 | Live | WebSocket/STOMP più snapshot REST |
 | Persistenza | PostgreSQL + Flyway |
