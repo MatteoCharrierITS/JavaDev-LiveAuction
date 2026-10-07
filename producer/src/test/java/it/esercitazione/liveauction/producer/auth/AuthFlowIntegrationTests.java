@@ -28,7 +28,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(properties = "spring.docker.compose.enabled=false")
+@SpringBootTest(properties = {"spring.docker.compose.enabled=false", "app.aste.scheduler.enabled=false"})
 @AutoConfigureMockMvc
 @EnabledIfEnvironmentVariable(named = "RUN_DB_TESTS", matches = "true")
 class AuthFlowIntegrationTests {
@@ -141,10 +141,10 @@ class AuthFlowIntegrationTests {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
         String adminToken = json.readTree(adminLoginBody).get("accessToken").asText();
-        // L'endpoint amministrativo non è ancora implementato: 404 prova che il ruolo è passato.
+        // L'ADMIN raggiunge il controller: senza il body obbligatorio riceve 400, non 403.
         mvc.perform(post("/api/v1/admin/aste")
                         .header("Authorization", "Bearer " + adminToken))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isBadRequest());
     }
 
     @Test

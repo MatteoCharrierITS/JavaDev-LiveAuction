@@ -61,12 +61,14 @@ Il sistema è composto da due applicazioni indipendenti:
   contratti esposti dal Producer.
 
 > **Stato:** `main` include l'infrastruttura Spring Boot/Docker, lo schema Flyway,
-> l'autenticazione, il WebSocket con accesso tramite ticket e presenza, e il
+> l'autenticazione, il WebSocket con accesso tramite ticket e presenza, il
 > catalogo REST (categorie, prodotti, gestione ADMIN di stock, filtri e
-> paginazione). Programmazione delle aste, offerte e portafoglio sono in fase
-> di integrazione dai rispettivi branch. La Consumer è ancora uno scheletro
-> senza pagine applicative: il flusso completo LiveAuction non è ancora
-> disponibile. Stato dettagliato in `docs/06-piano-lavoro.md`.
+> paginazione) e la programmazione ADMIN delle aste con blocco atomico dello
+> stock, apertura automatica, lobby e snapshot pubblici. Offerte, chiusura,
+> annullamento, storici e portafoglio sono in fase di integrazione. La
+> Consumer è ancora uno scheletro senza pagine applicative: il flusso completo
+> LiveAuction non è ancora disponibile. Stato dettagliato in
+> `docs/06-piano-lavoro.md` e [stato del modulo aste](docs/README.md#stato-del-modulo-aste).
 
 ## La feature distintiva: LiveAuction
 
@@ -236,7 +238,7 @@ Dalla radice del repository, per verificare Producer e Consumer.
 Windows:
 
 ```powershell
-.\producer\mvnw.cmd -f pom.xml test
+.\producer\mvnw.cmd -f producer/pom.xml test
 ```
 
 macOS/Linux:

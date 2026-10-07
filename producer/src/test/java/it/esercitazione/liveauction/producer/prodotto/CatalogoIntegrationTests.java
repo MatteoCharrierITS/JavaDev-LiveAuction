@@ -27,7 +27,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(properties = "spring.docker.compose.enabled=false")
+@SpringBootTest(properties = {"spring.docker.compose.enabled=false", "app.aste.scheduler.enabled=false"})
 @AutoConfigureMockMvc
 @EnabledIfEnvironmentVariable(named = "RUN_DB_TESTS", matches = "true")
 class CatalogoIntegrationTests {

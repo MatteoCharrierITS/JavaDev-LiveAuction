@@ -1,5 +1,12 @@
 # LiveAuction — motore live
 
+Questo documento descrive il motore completo previsto. Programmazione,
+attivazione temporale, lobby e snapshot sono implementati; rilanci, settlement
+e trasporto WebSocket restano da sviluppare. Vedere lo
+[stato del modulo aste](README.md#stato-del-modulo-aste).
+I nomi `startsAt` e `endsAt` usati nei diagrammi corrispondono ai campi
+`inizioAt` e `fineAt` delle API implementate.
+
 ## Timeline
 
 Per un'asta con `startsAt = 18:30 Europe/Rome`:
@@ -19,6 +26,32 @@ Per un'asta con `startsAt = 18:30 Europe/Rome`:
 
 Le date mostrate all'utente sono italiane, mentre API e database usano UTC.
 
+### Attivazione automatica implementata
+
+`AstaScheduler` controlla ogni secondo le aste da attivare e recupera quelle
+arretrate all'evento `ApplicationReadyEvent`. Per ogni asta chiama
+`AstaLifecycleService.aggiornaStato`, che apre una transazione, blocca la riga
+con `PESSIMISTIC_WRITE` e legge il tempo UTC dopo l'acquisizione del lock.
+
+- A `inizioAt - 3 minuti` passa a `STANZA_APERTA`.
+- A `inizioAt` passa a `APERTA`, con `fineAt = inizioAt + 7 minuti`.
+- Ogni transizione incrementa `sequence` una sola volta; cicli ripetuti o
+  job concorrenti non duplicano le transizioni.
+- Se al riavvio l'inizio è già passato, recupera entrambe le transizioni nella
+  stessa transazione e conserva la scadenza originale.
+- Le aste già `APERTA`, `CHIUSA` o `ANNULLATA` non vengono modificate da questo
+  job; una scadenza estesa dalle offerte non viene azzerata.
+
+Un errore su una singola asta non ferma le altre; un errore di lettura o di
+transizione viene ritentato al ciclo successivo. L'intervallo si configura con
+`ASTE_SCHEDULER_INTERVAL_MS` (predefinito `1000`), e
+`ASTE_SCHEDULER_ENABLED=false` disattiva il job.
+
+La chiusura e il settlement appartengono al modulo offerte/chiusura. Se il
+riavvio avviene dopo `fineAt`, il recupero porta l'asta fino a `APERTA` con una
+scadenza già trascorsa: il modulo di chiusura dovrà completarla, senza concedere
+una nuova durata di sette minuti.
+
 ## Programmazione sicura
 
 Pseudoflusso del comando ADMIN:
@@ -35,6 +68,20 @@ COMMIT
 ```
 
 Il lock impedisce che due richieste usino contemporaneamente l'ultima copia.
+
+Nel Producer, `asta.repos.ProdottoAstaRepository` legge il prodotto con
+`PESSIMISTIC_WRITE`. `AstaService.bloccaProdottoPerProgrammazione` richiede ADMIN
+e una transazione già attiva (`Propagation.MANDATORY`): il lock deve restare
+attivo fino all'aggiornamento dello stock e al salvataggio dell'asta nella stessa
+transazione. Il metodo verifica astabilità e disponibilità senza modificare
+le quantità.
+
+`AstaService.programmaAsta` apre la transazione, verifica che l'ID ADMIN
+corrisponda al `sub` del token e che l'utente sia attivo con ruolo ADMIN.
+Valida prezzo e orario, blocca il prodotto, sposta una unità da disponibile a
+bloccata e salva l'asta `PROGRAMMATA` con scadenza iniziale a sette minuti.
+Il prodotto è un'entity gestita da JPA: il flush dell'asta salva anche lo stock.
+Un errore provoca il rollback di entrambe le modifiche.
 
 ## Timer autorevole
 
@@ -88,6 +135,15 @@ Senza offerte, la quantità passa da bloccata a disponibile. Lock e controllo
 dello stato rendono la chiusura idempotente.
 
 ## Protocollo eventi
+
+Le transizioni temporali producono `asta.events.AstaTransizioneEvent` con
+`type` (`ROOM_OPENED` o `AUCTION_STARTED`), `auctionId`, `sequence`,
+`serverTime`, `stato`, `aperturaStanzaAt`, `inizioAt` e `fineAt`. Sono eventi
+Spring interni pubblicati da `ApplicationEventPublisher` dopo il commit; un
+rollback non produce eventi. Il modulo WebSocket potrà ascoltarli con
+`@EventListener` e inviarli a `/topic/aste/{id}`. Il trasporto STOMP non è ancora
+collegato nel branch aste. Si tratta di notifiche in memoria: il client dovrà
+recuperare lo snapshot in caso di disconnessione o gap di `sequence`.
 
 Ogni evento pubblico contiene almeno:
 

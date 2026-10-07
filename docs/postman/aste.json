@@ -2,7 +2,7 @@
   "info": {
     "name": "LiveAuction • Aste",
     "_postman_id": "833135da-ce7e-4249-8eb7-4ed4cea808d1",
-    "description": "Il ticket REST è implementato; lobby, programmazione e storici sono ancora previsti dal contratto docs/04-api-rest.md. La connessione STOMP /ws richiede un client WebSocket e non è rappresentata in Collection v2.1.",
+    "description": "Programmazione ADMIN, lobby pubblica, snapshot e ticket WebSocket implementati secondo docs/04-api-rest.md; annullamento e storici sono ancora previsti. La connessione STOMP /ws richiede un client WebSocket e non è rappresentata in Collection v2.1.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -11,12 +11,29 @@
       "request": {
         "method": "GET",
         "header": [],
-        "url": "{{baseUrl}}/aste",
-        "description": "Previsto dal contratto docs/04-api-rest.md; l'endpoint non è ancora implementato. Filtri futuri: stato, categoria, testo.",
+        "url": "{{baseUrl}}/aste?page=0&size=12",
+        "description": "Implementato e pubblico. Filtri opzionali: stato, categoria (slug) e query (testo nel nome, SKU o descrizione). Ordinamento inizioAt e id crescenti; size da 1 a 100. Restituisce pagina e serverTime UTC senza modificare le aste.",
         "auth": {
           "type": "noauth"
         }
-      }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK pubblico', () => pm.response.to.have.status(200));",
+              "if (pm.response.code === 200) {",
+              "  const body = pm.response.json();",
+              "  pm.test('Pagina della lobby', () => { pm.expect(body.content).to.be.an('array'); pm.expect(body.page).to.equal(0); pm.expect(body.size).to.equal(12); pm.expect(body.content.length).to.be.at.most(12); pm.expect(body.totalElements).to.be.at.least(body.content.length); pm.expect(body.totalPages).to.equal(Math.ceil(body.totalElements / body.size)); });",
+              "  pm.test('Tempo server UTC e risposta aggiornata', () => { pm.expect(body.serverTime).to.match(/Z$/); pm.expect(pm.response.headers.get('Cache-Control')).to.include('no-store'); });",
+              "  pm.test('Sintesi pubbliche e finestra delle offerte', () => { body.content.forEach(asta => { pm.expect(Object.keys(asta.prodotto)).to.have.members(['id', 'nome']); pm.expect(asta).not.to.have.property('admin'); pm.expect(asta.numeroOfferte).to.be.at.least(0); pm.expect(asta.sequence).to.be.at.least(0); const now = Date.parse(body.serverTime); pm.expect(asta.offerteConsentite).to.equal(asta.stato === 'APERTA' && now >= Date.parse(asta.inizioAt) && now < Date.parse(asta.fineAt)); }); });",
+              "}"
+            ]
+          }
+        }
+      ]
     },
     {
       "name": "Snapshot asta",
@@ -24,11 +41,28 @@
         "method": "GET",
         "header": [],
         "url": "{{baseUrl}}/aste/{{astaId}}",
-        "description": "Previsto dal contratto docs/04-api-rest.md; l'endpoint non è ancora implementato.",
+        "description": "Implementato e pubblico. Usare un astaId esistente, salvato da Programma asta ADMIN. Restituisce stato, prezzi, offerte, timer UTC e sequence; username di leader e vincitore mascherati. Un ID inesistente restituisce 404 RISORSA_NON_TROVATA.",
         "auth": {
           "type": "noauth"
         }
-      }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK pubblico', () => pm.response.to.have.status(200));",
+              "if (pm.response.code === 200) {",
+              "  const body = pm.response.json();",
+              "  pm.test('Snapshot dell’asta richiesta', () => { pm.expect(body.id).to.equal(Number(pm.environment.get('astaId'))); pm.expect(body.sequence).to.be.at.least(0); pm.expect(body.numeroOfferte).to.be.at.least(0); pm.expect(Object.keys(body.prodotto)).to.have.members(['id', 'nome']); });",
+              "  pm.test('Orari UTC e finestra delle offerte', () => { ['aperturaStanzaAt', 'inizioAt', 'fineAt', 'serverTime'].forEach(key => pm.expect(body[key]).to.match(/Z$/)); pm.expect(Date.parse(body.inizioAt) - Date.parse(body.aperturaStanzaAt)).to.equal(180000); const now = Date.parse(body.serverTime); pm.expect(body.offerteConsentite).to.equal(body.stato === 'APERTA' && now >= Date.parse(body.inizioAt) && now < Date.parse(body.fineAt)); pm.expect(pm.response.headers.get('Cache-Control')).to.include('no-store'); });",
+              "  pm.test('Partecipanti mascherati e nessun dato riservato', () => { ['admin', 'password', 'passwordHash', 'email'].forEach(key => pm.expect(body).not.to.have.property(key)); [body.migliorOfferente, body.vincitore].filter(Boolean).forEach(utente => { pm.expect(Object.keys(utente)).to.have.members(['id', 'displayName']); pm.expect(utente.displayName).to.include('***'); }); });",
+              "}"
+            ]
+          }
+        }
+      ]
     },
     {
       "name": "Ticket WebSocket USER",
@@ -60,7 +94,7 @@
           }
         ],
         "url": "{{baseUrl}}/admin/aste",
-        "description": "Previsto dal contratto docs/04-api-rest.md; l'endpoint non è ancora implementato. La data locale viene generata un giorno avanti per non diventare obsoleta.",
+        "description": "Implementato: richiede adminToken e un prodotto astabile con stock disponibile. Genera domani alle 12:00 in Europe/Rome, prenota una unità e restituisce 201 con DTO e Location. Gli errori di dominio usano application/problem+json.",
         "auth": {
           "type": "bearer",
           "bearer": [
@@ -73,7 +107,7 @@
         },
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"prodottoId\": \"{{prodottoId}}\",\n  \"inizioLocale\": \"{{inizioLocale}}\",\n  \"timeZone\": \"Europe/Rome\",\n  \"prezzoIniziale\": 30\n}",
+          "raw": "{\n  \"prodottoId\": {{prodottoId}},\n  \"inizioLocale\": \"{{inizioLocale}}\",\n  \"timeZone\": \"Europe/Rome\",\n  \"prezzoIniziale\": 30\n}",
           "options": {
             "raw": {
               "language": "json"
@@ -87,7 +121,10 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.variables.set('inizioLocale', new Date(Date.now() + 86400000).toISOString().slice(0, 19));"
+              "const parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Rome', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date());",
+              "const date = Object.fromEntries(parts.filter(p => p.type !== 'literal').map(p => [p.type, p.value]));",
+              "const tomorrow = new Date(Date.UTC(Number(date.year), Number(date.month) - 1, Number(date.day) + 1));",
+              "pm.variables.set('inizioLocale', tomorrow.toISOString().slice(0, 10) + 'T12:00:00');"
             ]
           }
         },
@@ -96,9 +133,14 @@
           "script": {
             "type": "text/javascript",
             "exec": [
+              "pm.test('201 Created', () => pm.response.to.have.status(201));",
               "if (pm.response.code === 201) {",
+              "  const body = pm.response.json();",
               "  const location = pm.response.headers.get('Location') || '';",
               "  const match = location.match(/\\/aste\\/(\\d+)$/);",
+              "  pm.test('Location identifica la nuova asta', () => { pm.expect(match).not.to.equal(null); pm.expect(Number(match[1])).to.equal(body.id); });",
+              "  pm.test('DTO di creazione', () => { pm.expect(body.stato).to.equal('PROGRAMMATA'); pm.expect(body.prodotto.id).to.equal(Number(pm.environment.get('prodottoId'))); pm.expect(body.prezzoIniziale).to.equal(30); pm.expect(body.sequence).to.equal(0); pm.expect(Object.keys(body.prodotto)).to.have.members(['id', 'nome']); pm.expect(body).not.to.have.property('admin'); });",
+              "  pm.test('Orari UTC, stanza -3m e durata 7m', () => { ['aperturaStanzaAt', 'inizioAt', 'fineAt', 'serverTime'].forEach(key => pm.expect(body[key]).to.match(/Z$/)); pm.expect(Date.parse(body.inizioAt) - Date.parse(body.aperturaStanzaAt)).to.equal(180000); pm.expect(Date.parse(body.fineAt) - Date.parse(body.inizioAt)).to.equal(420000); });",
               "  if (match) pm.environment.set('astaId', match[1]);",
               "}"
             ]

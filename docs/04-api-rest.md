@@ -263,7 +263,32 @@ Il server:
 6. crea l'asta con stato `PROGRAMMATA`, apertura stanza a `startsAt - 3m` e
    `endsAt = startsAt + 7m`.
 
+L'ADMIN creatore è identificato dal `sub` del token autenticato, non dal body.
+Il servizio richiede ruolo ADMIN e verifica che l'ID creatore corrisponda al
+`sub` e a un utente attivo con ruolo ADMIN nel database.
+
 Risposta `201` con `Location: /api/v1/aste/42`.
+
+Il body usa il DTO di creazione, con una sintesi del prodotto e orari UTC:
+
+```json
+{
+  "id": 42,
+  "stato": "PROGRAMMATA",
+  "prodotto": { "id": 1, "nome": "Laptop Pro 15" },
+  "prezzoIniziale": 500.00,
+  "incrementoMinimo": 1.00,
+  "aperturaStanzaAt": "2026-10-03T16:27:00Z",
+  "inizioAt": "2026-10-03T16:30:00Z",
+  "fineAt": "2026-10-03T16:37:00Z",
+  "serverTime": "2026-10-02T10:30:00Z",
+  "sequence": 0
+}
+```
+
+L'apertura della stanza è calcolata a meno tre minuti; la transizione automatica
+di stato viene gestita dal motore temporale. La risposta non contiene entity
+JPA, credenziali o dati dell'ADMIN.
 
 Errori rilevanti:
 
@@ -272,7 +297,67 @@ Errori rilevanti:
 - `422 DATA_INIZIO_NON_VALIDA`;
 - `422 PREZZO_INIZIALE_NON_VALIDO`.
 
+Gli stessi codici `422` si applicano a data, fuso e prezzo mancanti o non
+validi nel body. JSON malformato o `prodottoId` mancante/non positivo producono
+`400`; un prodotto inesistente produce `404 RISORSA_NON_TROVATA`.
+Gli errori del body e di dominio sono restituiti come `application/problem+json`.
+
+## Lobby delle aste
+
+`GET /api/v1/aste` è pubblico e implementato. Accetta:
+
+- `stato`: uno dei valori `PROGRAMMATA`, `STANZA_APERTA`, `APERTA`, `CHIUSA`,
+  `ANNULLATA`; se omesso, include tutti gli stati.
+- `categoria`: slug esatto della categoria del prodotto.
+- `query`: testo cercato nel nome, SKU o descrizione del prodotto, senza
+  distinzione tra maiuscole e minuscole. Gli spazi esterni vengono rimossi;
+  `%`, `_` e gli altri caratteri vengono trattati come testo letterale.
+- `page`: indice da zero, predefinito `0`.
+- `size`: da `1` a `100`, predefinito `12`.
+
+I filtri si combinano; categoria e testo vuoti equivalgono a filtri assenti.
+L'ordinamento è `inizioAt` crescente, poi `id` crescente. Le aste restano
+consultabili anche se il prodotto viene disattivato. Una pagina oltre i
+risultati o filtri senza corrispondenze restituiscono `200` e `content: []`.
+
+```http
+GET /api/v1/aste?stato=APERTA&categoria=informatica&query=laptop&page=0&size=12
+```
+
+```json
+{
+  "content": [{
+    "id": 42,
+    "stato": "APERTA",
+    "prodotto": { "id": 1, "nome": "Laptop Pro 15" },
+    "prezzoIniziale": 500.00,
+    "incrementoMinimo": 1.00,
+    "offertaCorrente": 630.00,
+    "numeroOfferte": 2,
+    "aperturaStanzaAt": "2026-10-03T16:27:00Z",
+    "inizioAt": "2026-10-03T16:30:00Z",
+    "fineAt": "2026-10-03T16:37:40Z",
+    "offerteConsentite": true,
+    "sequence": 4
+  }],
+  "page": 0,
+  "size": 12,
+  "totalElements": 1,
+  "totalPages": 1,
+  "serverTime": "2026-10-03T16:31:00Z"
+}
+```
+
+Pagina, dimensione, stato o ID non interpretabili producono `400` in
+`application/problem+json`. Il servizio applica anche il controllo della
+paginazione (`400 PARAMETRI_NON_VALIDI`) quando viene invocato direttamente.
+Il totale e i risultati della pagina vengono letti dalla stessa fotografia
+transazionale del database.
+
 ## Snapshot asta
+
+`GET /api/v1/aste/{id}` è pubblico e implementato. Un'asta inesistente
+restituisce `404 RISORSA_NON_TROVATA` in `application/problem+json`.
 
 ```json
 {
@@ -302,6 +387,25 @@ In `CHIUSA` lo snapshot include anche:
   "chiusaAt": "2026-10-03T16:38:40Z"
 }
 ```
+
+`numeroOfferte` conta le offerte persistite; `migliorOfferente` identifica
+l'autore dell'offerta più alta, con username mascherato come `g***i`.
+Senza offerte, `offertaCorrente` e `migliorOfferente` sono `null` e il conteggio
+è zero. `prezzoFinale` deriva da `offertaCorrente` solo in `CHIUSA` con vincitore;
+senza vincitore, `vincitore` e `prezzoFinale` vengono omessi. I campi di esito
+non sono esposti prima della chiusura; `chiusaAt` è presente se registrato.
+
+Stato, sequence, timer, leader e conteggio provengono da una sola lettura
+SQL, anche in presenza di rilanci concorrenti. Non vengono esposte entity JPA,
+email, credenziali o dati dell'ADMIN. `offerteConsentite` è `true` solo se lo
+stato è `APERTA` e `inizioAt <= serverTime < fineAt`; indica la disponibilità
+temporale, mentre l'operazione di offerta verifica anche ruolo e crediti.
+Il timer conserva eventuali estensioni già persistite.
+
+Entrambe le letture restituiscono `Cache-Control: no-store`, orari UTC e tempo
+server; non attivano aste e non modificano stock. Le transizioni restano
+responsabilità dello scheduler. Ticket, annullamento e storici sono ancora
+previsti dal contratto e non implementati nel modulo aste di questo branch.
 
 ## Storici
 

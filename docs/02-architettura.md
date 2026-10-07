@@ -7,7 +7,7 @@ flowchart LR
     B[Browser] -->|HTML/form| C[Consumer :8082]
     C -->|REST + access token| P[Producer :8081]
     B -.->|WebSocket + ticket breve| P
-    P -->|JPA| D[(PostgreSQL)]
+    P -->|JPA/JDBC| D[(PostgreSQL)]
     P -.->|dopo il commit| M[Servizio email]
 ```
 
@@ -70,14 +70,22 @@ sequenceDiagram
 
 ## Attivazione temporale
 
-Un job pianificato verifica periodicamente gli istanti UTC:
+Il ciclo previsto verifica gli istanti UTC; `AstaScheduler` implementa i primi
+due passaggi, mentre il terzo appartiene al modulo di chiusura ancora da sviluppare:
 
 1. a `startsAt - 3 minuti` porta l'asta in `STANZA_APERTA`;
 2. a `startsAt` la porta in `APERTA` e fissa `endsAt = startsAt + 7 minuti`;
 3. a `endsAt` la chiude, salvo estensioni di venti secondi già registrate.
 
-Snapshot e richieste eseguono anche una verifica pigra dello stato, così il
-sistema recupera correttamente dopo un riavvio.
+Lo scheduler controlla le aste ogni secondo e recupera le transizioni
+arretrate all'avvio, sotto lock e nella transazione dell'asta. Gli snapshot
+REST sono letture: non modificano stato o stock. `offerteConsentite` verifica
+anche la finestra temporale, quindi è falso per un'asta scaduta ancora
+`APERTA`. I futuri comandi di offerta e chiusura dovranno ricontrollare stato
+e scadenza sotto lock, senza affidarsi ai soli aggiornamenti periodici.
+
+Nelle API e negli eventi implementati i campi temporali si chiamano `inizioAt`
+e `fineAt`; `startsAt` ed `endsAt` nei diagrammi indicano gli stessi concetti.
 
 ## Flusso offerta
 
