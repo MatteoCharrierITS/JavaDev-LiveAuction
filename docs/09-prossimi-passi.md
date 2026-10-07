@@ -4,17 +4,24 @@ Documento aggiornato al 7 ottobre 2026, dopo l'integrazione in `main` dei branch
 `Prodotti`, `Aste` e `feature/logica_aste` (commit `5362757`). Serve a chiarire
 cosa è fatto, cosa manca e cosa deve fare ciascuno da adesso.
 
-## 1. Stato attuale di `main`
+Aggiornamento del branch `web_socket`, 8 ottobre 2026: comando di rilancio,
+relay degli eventi e pulizia dei fixture WebSocket implementati. Questa nota
+non implica che le modifiche locali siano già state mergiate in `main`.
+Verifica dell'integrazione: 190 test Producer superati, nessuno saltato,
+con PostgreSQL e WebSocket reali; dettagli nel
+[report WebSocket](report-integrazione-websocket.md).
+
+## 1. Stato integrato e aggiornamento del branch `web_socket`
 
 | Area | Referente | Stato |
 | --- | --- | --- |
 | Autenticazione e utenti | Matteo | Completa: registrazione, login, refresh, logout, eliminazione account, ruoli, JWT |
-| WebSocket e notifiche | Maikol | Parziale: STOMP, ticket e presenza fatti. Mancano eventi delle stanze e email al vincitore |
+| WebSocket e notifiche | Maikol | Nel branch web_socket: STOMP, ticket, presenza, comando rilancio ed eventi stanze fatti. Manca email al vincitore |
 | Prodotti e catalogo | Cristian | Completa: categorie, prodotti, CRUD ADMIN, ricerca, paginazione, stock disponibile/bloccato |
 | Programmazione aste | Marco | Quasi completa: programmazione ADMIN, apertura automatica, lobby, snapshot. Mancano annullamento e storici |
-| Offerte e chiusura | Tommi | Logica nei servizi con test, ma **non esposta**: nessun endpoint REST/STOMP la richiama |
+| Offerte e chiusura | Tommi | Servizi JDBC con riserve/ledger e assegnazione inventario; rilancio esposto via STOMP nel branch web_socket. Chiusura non collegata al job |
 | Portafoglio e movimenti | Mondir | **Non integrato** (vedi sezione 2) |
-| Inventario (`/me/inventario`) | da assegnare | Solo la tabella, nessun codice |
+| Inventario (`/me/inventario`) | da assegnare | API mancante; assegnazione del prodotto già gestita nel settlement JDBC |
 | Acquisti a prezzo fisso | da assegnare | Non iniziato |
 | Consumer (UI Thymeleaf) | da assegnare | Solo scheletro, nessuna pagina |
 
@@ -53,25 +60,27 @@ adattano le entità.
 
 ### Tommi: offerte e chiusura
 
-1. Esporre la logica già scritta (`OffertaService`, `ChiusuraAstaService`,
-   `RitiroOfferteService`) con gli endpoint definiti in `docs/04-api-rest.md` e
-   `docs/08-offerte-chiusura.md`, con ruoli e `@PreAuthorize` come da convenzioni.
+1. Coordinare le interfacce con il WebSocket: `OffertaService` è richiamato dal
+   comando STOMP nel branch web_socket. `ChiusuraAstaService` resta interno;
+   `RitiroOfferteService` è già collegato all'eliminazione account. Non esporre
+   un endpoint pubblico di settlement.
 2. Collegare la chiusura automatica allo scheduler delle aste di Marco.
-3. Integrare il portafoglio di Mondir per riserva e rilascio dei crediti, e il
-   trasferimento di crediti e prodotto al vincitore (richiede l'inventario, vedi
-   sezione 4).
+3. Concordare con Mondir la convivenza o estrazione delle operazioni JDBC già
+   esistenti di riserva, rilascio, ledger e settlement. L'assegnazione inventario
+   è implementata; mancano le API dedicate e il referente per completarle.
 4. Pubblicare gli eventi tramite `EventiOffertePublisher`, d'accordo con Maikol.
 5. Aggiornare Postman e documentazione per gli endpoint nuovi.
 
 ### Maikol: WebSocket e notifiche
 
-1. Collegare `EventiOffertePublisher` ai topic STOMP delle stanze, con Tommi. Il
-   WebSocket trasporta eventi e non valida le offerte.
+1. Completato nel branch web_socket: relay delle transizioni e di
+   `EventiOffertePublisher` ai topic STOMP, comando rilancio delegato al servizio
+   e conferme/rifiuti alla sola sessione mittente. Il WebSocket non decide la
+   validità economica delle offerte.
 2. Implementare l'email al vincitore dopo la chiusura.
-3. Sistemare i test `WebSocketTicketIntegrationTests` e
-   `PresenceWebSocketIntegrationTests`: lasciano nel database un'asta con SKU
-   `SKU-ws_...`. Ho già tolto l'underscore dallo SKU (commit `5362757`), ma
-   conviene che i test puliscano i dati che creano.
+3. Completato: i test ticket/presenza e i nuovi test rilanci rimuovono i propri
+   fixture in `@AfterEach`, anche in caso di fallimento. Scheduler disattivato
+   nei fixture per evitare interferenze con le verifiche dei trasporti.
 4. Eseguire `PresenceWebSocketIntegrationTests` con `RUN_WS_TESTS=true`: senza
    questa variabile viene saltato.
 
@@ -105,18 +114,20 @@ adattano le entità.
 
 Queste aree non hanno un referente. Non vanno attribuite senza una decisione del team.
 
-1. **Inventario**: `GET /me/inventario` e assegnazione del prodotto al vincitore.
-   Serve a Tommi per chiudere un'asta.
+1. **Inventario**: `GET /me/inventario` e relativo modulo. L'assegnazione al
+   vincitore è già implementata dal settlement JDBC di Tommi.
 2. **Acquisti a prezzo fisso**.
 3. **Consumer**: client REST, pagine Thymeleaf, marketplace, lobby, stanza live,
    inventario, portafoglio, pannello ADMIN. È la parte più grande rimasta.
 
 ## 5. Ordine consigliato delle dipendenze
 
-1. Mondir riallinea il portafoglio e lo integra in `main`.
-2. Si assegna l'inventario.
-3. Tommi collega offerte e chiusura a portafoglio e inventario.
-4. Maikol collega eventi ed email.
+1. Mondir riallinea il portafoglio e concorda con Tommi l'uso delle operazioni
+   economiche JDBC già implementate, senza duplicarle.
+2. Marco e Tommi collegano la chiusura automatica al servizio esistente.
+3. Si assegna il modulo/API inventario, senza riscrivere l'assegnazione già
+   implementata nel settlement.
+4. Maikol completa l'email; relay e comando STOMP sono nel branch web_socket.
 5. Si assegna e si avvia il Consumer sui contratti già disponibili. Lobby e
    catalogo si possono fare subito, senza aspettare il resto.
 

@@ -10,7 +10,10 @@ Marco mantiene programmazione, modello/repository condivisi, blocco iniziale
 dello stock e apertura delle aste. WebSocket/notifiche mantiene ticket,
 controller STOMP, trasporto eventi ed email. Questo modulo non aggiunge
 endpoint REST, controller STOMP, scheduler o pagine Consumer. Gli endpoint
-di `aste.json` restano previsti. Il flusso completo richiede i collegamenti del team.
+di `aste.json` restano previsti. Dall'8 ottobre 2026 il modulo WebSocket richiama
+`OffertaService` tramite `/app/aste/{id}/offerte` e trasporta gli eventi Spring
+sui topic delle stanze. Il flusso completo richiede ancora il collegamento
+della chiusura automatica e dell'email.
 
 ## Offerte
 

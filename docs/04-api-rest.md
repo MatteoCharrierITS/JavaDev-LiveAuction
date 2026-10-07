@@ -498,7 +498,9 @@ Evento pubblico accettato:
 corrente; il risultato del servizio indica `snapshotRequired=true`.
 Una sequenza futura produce `SEQUENCE_NON_AGGIORNATA`. Il retry di un UUID già
 accettato non ripete riserve, estensioni o eventi; con dati diversi produce
-`CLIENT_BID_ID_GIA_UTILIZZATO`. Il collegamento STOMP è a cura del relativo modulo.
+`CLIENT_BID_ID_GIA_UTILIZZATO`. Il comando STOMP è implementato nel modulo
+WebSocket e delega a `OffertaService`, che mantiene tutte le regole economiche.
+L'identità deriva esclusivamente dal ticket verificato; non da un ID nel body.
 
 ```json
 {
@@ -526,13 +528,64 @@ Rifiuto privato per fondi insufficienti:
 }
 ```
 
+### Conferme private e adattamento eventi (8 ottobre 2026)
+
+Ogni comando accettato, incluso un retry, restituisce `BID_CONFIRMED` soltanto
+alla sessione STOMP mittente (`/user/queue/aste`, non alle altre schede dello
+stesso utente). Il messaggio contiene `clientBidId`, `duplicata`, `ritirata`,
+`snapshotRequired` e `stato`, uno snapshot pubblico dei campi economici correnti:
+
+```json
+{
+  "type": "BID_CONFIRMED",
+  "clientBidId": "5ab0d96e-c7b0-42d1-a74b-97180d9849b8",
+  "duplicata": false,
+  "ritirata": false,
+  "snapshotRequired": false,
+  "stato": {
+    "type": "AUCTION_SNAPSHOT",
+    "auctionId": 42,
+    "sequence": 9,
+    "serverTime": "2026-10-03T16:34:12Z",
+    "stato": "APERTA",
+    "prodottoId": 12,
+    "offertaCorrente": 630.00,
+    "offerenteDisplay": "g***i",
+    "numeroOfferte": 9,
+    "fineAt": "2026-10-03T16:38:40Z",
+    "extensionSeconds": 0
+  }
+}
+```
+
+I campi non applicabili possono essere `null`. Lo stato privato non incrementa
+`sequence` e non sostituisce lo snapshot REST completo: se `snapshotRequired`
+è true, il client recupera `GET /api/v1/aste/{id}`. Un retry non ripubblica
+`BID_ACCEPTED` e non applica una nuova estensione.
+
+Gli errori di dominio diventano `BID_REJECTED` alla sola sessione mittente.
+Per una sequenza futura `snapshotRequired=true`; payload non validi, UUID
+illeggibili o violazioni Jakarta producono `DATI_NON_VALIDI` (UUID null se non
+recuperabile). Le violazioni di autorizzazione sul canale STOMP possono invece
+chiudere la connessione prima di arrivare al controller.
+
+Il relay ascolta con `@EventListener` gli eventi già post-commit e inoltra
+`ROOM_OPENED`, `AUCTION_STARTED`, `BID_ACCEPTED`, `AUCTION_CLOSED` e
+`AUCTION_SNAPSHOT` al topic dell'asta. Gli eventi economici hanno campi piatti
+come nell'esempio `BID_ACCEPTED`; lo snapshot di ritiro include lo stato e il
+leader aggiornati, la chiusura include `vincitoreDisplay` mascherato (null
+senza vincitore). Non espone `migliorOfferenteId`, `vincitoreId` o l'UUID del
+comando nel topic pubblico. Non genera email né avvia il settlement.
+La consegna resta best effort in memoria: riconnessioni e gap richiedono REST.
+
 ### Decisione sulla `sequence` e sulla presenza
 
 `aste.sequence` è un contatore persistito per singola asta. Il Producer lo
 incrementa nella stessa transazione che modifica lo stato dell'asta e pubblica
 l'evento soltanto dopo il commit. Hanno una `sequence` crescente gli eventi di
 stato `ROOM_OPENED`, `AUCTION_STARTED`, `BID_ACCEPTED`, `AUCTION_CLOSED` e
-`AUCTION_CANCELLED`. Il client confronta questi numeri con la propria ultima
+`AUCTION_CANCELLED` e lo snapshot di ritiro `AUCTION_SNAPSHOT`. Il client
+confronta questi numeri con la propria ultima
 `sequence`: applica il successivo, ignora i duplicati o gli eventi più vecchi e,
 se rileva un salto, recupera `GET /api/v1/aste/{id}` prima di riprendere gli
 aggiornamenti. Lo snapshot REST riporta la `sequence` corrente senza

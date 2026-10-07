@@ -1,8 +1,9 @@
 # LiveAuction — motore live
 
 Questo documento descrive il motore completo previsto. Programmazione,
-attivazione temporale, lobby e snapshot sono implementati; rilanci, settlement
-e trasporto WebSocket restano da sviluppare. Vedere lo
+attivazione temporale, lobby, snapshot, servizi di rilancio/settlement e trasporto
+WebSocket sono implementati. Restano da collegare la chiusura automatica e
+l'email; annullamento, storici e UI sono ancora da completare. Vedere lo
 [stato del modulo aste](README.md#stato-del-modulo-aste).
 I nomi `startsAt` e `endsAt` usati nei diagrammi corrispondono ai campi
 `inizioAt` e `fineAt` delle API implementate.
@@ -140,9 +141,9 @@ Le transizioni temporali producono `asta.events.AstaTransizioneEvent` con
 `type` (`ROOM_OPENED` o `AUCTION_STARTED`), `auctionId`, `sequence`,
 `serverTime`, `stato`, `aperturaStanzaAt`, `inizioAt` e `fineAt`. Sono eventi
 Spring interni pubblicati da `ApplicationEventPublisher` dopo il commit; un
-rollback non produce eventi. Il modulo WebSocket potrà ascoltarli con
-`@EventListener` e inviarli a `/topic/aste/{id}`. Il trasporto STOMP non è ancora
-collegato nel branch aste. Si tratta di notifiche in memoria: il client dovrà
+rollback non produce eventi. Il modulo WebSocket li ascolta con
+`@EventListener` e li invia a `/topic/aste/{id}` tramite `AstaEventRelay`.
+Si tratta di notifiche in memoria: il client dovrà
 recuperare lo snapshot in caso di disconnessione o gap di `sequence`.
 
 Ogni evento pubblico contiene almeno:
@@ -166,7 +167,8 @@ Se il client possiede `sequence=7` e riceve `9`, passa a
 - Ticket non emesso prima di `startsAt - 3 minuti`.
 - Autorizzazione verificata su ogni comando, non solo al connect.
 - Offerte accettate soltanto nello stato `APERTA`.
-- Rate limit indicativo: 5 comandi offerta al secondo per utente/asta.
+- Rate limit indicativo previsto, non ancora implementato: 5 comandi offerta
+  al secondo per utente/asta.
 - Importo rifiutato se scala o precisione non sono valide.
 - Username mascherato negli eventi pubblici.
 

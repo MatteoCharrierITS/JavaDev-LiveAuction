@@ -179,7 +179,10 @@ class AstaLifecycleIntegrationTests {
         assertAsta(preLive, Stato.APERTA, 2, adesso.plusSeconds(410));
         assertAsta(futura, Stato.PROGRAMMATA, 0, adesso.plusSeconds(1020));
         assertAsta(annullata, Stato.ANNULLATA, 0, adesso.plusSeconds(410));
-        assertThat(collector.eventi).hasSize(4);
+        // Il job vede anche i fixture lasciati da altre suite nel database condiviso.
+        // Verificare solo le aste di questo test, non il numero globale di eventi.
+        assertThat(collector.eventi).filteredOn(e -> e.evento().auctionId() == stanza
+                || e.evento().auctionId() == live || e.evento().auctionId() == preLive).hasSize(4);
     }
 
     @Test

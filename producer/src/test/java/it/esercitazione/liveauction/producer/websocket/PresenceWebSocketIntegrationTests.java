@@ -3,6 +3,8 @@ package it.esercitazione.liveauction.producer.websocket;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -33,7 +35,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-        properties = {"spring.docker.compose.enabled=false", "spring.http.client.factory=simple"})
+        properties = {"spring.docker.compose.enabled=false", "spring.http.client.factory=simple",
+                "app.aste.scheduler.enabled=false"})
 @AutoConfigureMockMvc
 @EnabledIfEnvironmentVariable(named = "RUN_WS_TESTS", matches = "true")
 class PresenceWebSocketIntegrationTests {
@@ -41,10 +44,18 @@ class PresenceWebSocketIntegrationTests {
     @Autowired ObjectMapper json;
     @Autowired JdbcTemplate jdbc;
     @LocalServerPort int port;
+    private WebSocketTestData data;
+
+    @BeforeEach
+    void preparaPulizia() { data = new WebSocketTestData(jdbc); }
+
+    @AfterEach
+    void pulisci() { data.close(); }
 
     @Test
     void joinSendsPrivateSnapshotAndPublicPresenceWithoutSequence() throws Exception {
         String username = "ws_" + UUID.randomUUID().toString().substring(0, 8);
+        data.usernames.add(username);
         mvc.perform(post("/api/v1/auth/register")
                         .contentType("application/json")
                         .content(json.writeValueAsString(Map.of(
@@ -61,15 +72,15 @@ class PresenceWebSocketIntegrationTests {
         String bearer = "Bearer " + login.get("accessToken").asText();
         long userId = login.get("userId").asLong();
 
-        long categoryId = jdbc.queryForObject(
+        long categoryId = data.categoryId = jdbc.queryForObject(
                 "INSERT INTO categorie (nome, slug) VALUES (?, ?) RETURNING id",
                 Long.class, "WebSocket Test " + username, "ws-" + username);
-        long productId = jdbc.queryForObject("""
+        long productId = data.productId = jdbc.queryForObject("""
                 INSERT INTO prodotti (categoria_id, sku, nome, astabile, quantita_disponibile)
                 VALUES (?, ?, ?, TRUE, 1) RETURNING id
                 """, Long.class, categoryId, "SKU-" + username.replace('_', '-'), "WebSocket Test");
         Instant now = Instant.now();
-        long auctionId = jdbc.queryForObject("""
+        long auctionId = data.auctionId = jdbc.queryForObject("""
                 INSERT INTO aste (prodotto_id, admin_id, inizio_at, fine_at, prezzo_iniziale)
                 VALUES (?, ?, ?, ?, 10.00) RETURNING id
                 """, Long.class, productId, userId,

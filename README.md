@@ -60,12 +60,14 @@ Il sistema è composto da due applicazioni indipendenti:
 - **consumer** (`:8082`): interfaccia Thymeleaf che usa esclusivamente i
   contratti esposti dal Producer.
 
-> **Stato:** `main` include l'infrastruttura Spring Boot/Docker, lo schema Flyway,
-> l'autenticazione, il WebSocket con accesso tramite ticket e presenza, il
+> **Stato del branch corrente:** include l'infrastruttura Spring Boot/Docker, lo schema Flyway,
+> l'autenticazione, il WebSocket con ticket, presenza, comando di rilancio e
+> trasporto degli eventi post-commit, il
 > catalogo REST (categorie, prodotti, gestione ADMIN di stock, filtri e
 > paginazione) e la programmazione ADMIN delle aste con blocco atomico dello
-> stock, apertura automatica, lobby e snapshot pubblici. Offerte, chiusura,
-> annullamento, storici e portafoglio sono in fase di integrazione. La
+> stock, apertura automatica, lobby e snapshot pubblici. I servizi di offerte e
+> settlement sono implementati; mancano la chiusura automatica, l'email,
+> annullamento, storici e API dedicate di portafoglio/inventario. La
 > Consumer è ancora uno scheletro senza pagine applicative: il flusso completo
 > LiveAuction non è ancora disponibile. Stato dettagliato in
 > `docs/06-piano-lavoro.md` e [stato del modulo aste](docs/README.md#stato-del-modulo-aste).
