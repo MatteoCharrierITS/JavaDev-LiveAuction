@@ -43,6 +43,12 @@ Sono necessarie due tabelle:
   iniziale, orari, stato e risultato finale;
 - `offerte`: una riga immutabile per ciascun rilancio accettato.
 
+La migrazione V10 aggiunge a `offerte` lo stato operativo `leader` e
+`ritirata_at`: importo, offerente, UUID e data originali restano conservati.
+Un indice parziale ammette al massimo un leader per asta; un'offerta ritirata
+non può essere leader. Il prezzo finale rimane in `aste.offerta_corrente`,
+mentre `vincitore_id` viene valorizzato solo alla chiusura.
+
 La presenza live non richiede una tabella: per la prima versione è uno stato
 effimero gestito dal WebSocket. Gli storici si ricavano da `aste.vincitore_id` e
 dalle relative `offerte`.

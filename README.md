@@ -291,3 +291,4 @@ docker compose --profile prod down
 - [Interfaccia e flussi](docs/05-ui-flussi.md)
 - [Roadmap e test](docs/06-piano-lavoro.md)
 - [Motore LiveAuction](docs/07-liveauction.md)
+- [Offerte e chiusura: integrazione](docs/08-offerte-chiusura.md)

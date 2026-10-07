@@ -1,6 +1,8 @@
 package it.esercitazione.liveauction.producer.auth.services;
 
+import it.esercitazione.liveauction.producer.auth.events.EliminazioneUtenteRichiesta;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,10 +16,13 @@ import java.util.UUID;
 public class EliminazioneUtenteService {
     private final JdbcTemplate jdbc;
     private final PasswordEncoder passwordEncoder;
+    private final ApplicationEventPublisher eventi;
 
     @Transactional
     @PreAuthorize("authentication.token.subject == #p0.toString()")
     public void elimina(long userId) {
+        // I domini interessati completano la pulizia nella stessa transazione.
+        eventi.publishEvent(new EliminazioneUtenteRichiesta(userId));
         String anonymousId = UUID.randomUUID().toString();
         String passwordHash = passwordEncoder.encode(UUID.randomUUID().toString());
         jdbc.update("""

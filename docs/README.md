@@ -11,6 +11,7 @@ Questa è la specifica corrente di **LiveAuction**.
 5. [Interfaccia e flussi utente](05-ui-flussi.md)
 6. [Roadmap e criteri di accettazione](06-piano-lavoro.md)
 7. [Motore LiveAuction](07-liveauction.md)
+8. [Offerte e chiusura: integrazione](08-offerte-chiusura.md)
 
 ## Stato del modulo aste
 

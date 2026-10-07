@@ -106,6 +106,10 @@ momento del rilancio.
 9. Nuova riserva e rilascio della precedente avvengono atomicamente.
 10. L'evento live viene pubblicato soltanto dopo il commit.
 
+Una `knownSequence` arretrata non invalida un'offerta che rispetta lo stato
+corrente; il risultato richiede il riallineamento del client. Una sequenza futura
+viene rifiutata. Un UUID reinviato con asta, utente o importo diversi è un conflitto.
+
 L'incremento minimo usa il valore applicativo predefinito di `1,00 CRD`; potrà
 essere reso configurabile dall'ADMIN senza modificare il modello dati.
 
@@ -124,6 +128,19 @@ Con almeno una offerta:
 
 Senza offerte, l'unità viene sbloccata. La chiusura è idempotente: eseguirla più
 volte non duplica trasferimenti, addebiti o assegnazioni.
+
+Il conto amministrativo destinatario dell'incasso è quello di `aste.admin_id`.
+
+## Eliminazione dell'account durante un'asta
+
+L'eliminazione ritira le offerte dell'utente nelle aste non concluse, conservando
+lo storico. Se è leader, libera la riserva e ripristina la migliore offerta
+precedente di un USER attivo con fondi sufficienti, riservandoli nuovamente.
+In assenza di candidati coperti, leader e prezzo corrente diventano null.
+Le estensioni già concesse rimangono; il ripristino non aggiunge tempo.
+L'operazione è atomica con l'anonimizzazione. Le aste sono elaborate in ordine
+di ID senza riutilizzare crediti già riservati per un precedente ripristino.
+Le aste già concluse mantengono vincitore e offerte storiche.
 
 ## Email al vincitore
 

@@ -63,3 +63,7 @@ rispondere `404` fino all'implementazione.
 
 Il protocollo STOMP su `/ws` richiede un client WebSocket: `aste.json` include
 la richiesta REST del ticket, ma non i comandi e le sottoscrizioni STOMP.
+
+I servizi transazionali di offerte e chiusura sono implementati separatamente
+dai controller ancora previsti. Collegamenti e semantica dei comandi sono
+descritti in [Offerte e chiusura](../08-offerte-chiusura.md).
