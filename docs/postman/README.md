@@ -7,7 +7,7 @@ Importare `local.postman_environment.json` e selezionare l'ambiente
 | --- | --- | --- |
 | `monitoring.json` | Health e Ready | Implementato |
 | `auth.json` | Registrazione, login, refresh, logout ed eliminazione account | Implementato |
-| `prodotti.json` | Catalogo, acquisti, gestione ADMIN | API previste |
+| `prodotti.json` | Categorie, catalogo e gestione ADMIN | Implementato; acquisti fissi futuri |
 | `inventario.json` | Inventario personale | API prevista |
 | `portafoglio.json` | Saldo e impostazioni | API previste |
 | `aste.json` | Lobby, ticket, programmazione e storici | Ticket implementato; altre API previste |
@@ -28,6 +28,18 @@ sessione USER e va eseguita per ultima. I token di accesso `userToken` e
 diverso a ogni esecuzione.
 La richiesta 10 elimina e anonimizza l'account: eseguirla manualmente dopo
 un nuovo login, senza includerla nella normale sequenza di test.
+
+Per `prodotti.json`, effettuare prima il login ADMIN, poi eseguire le richieste
+01–10 in ordine. La creazione categoria salva `categoriaId`; la creazione e
+la lettura ADMIN del prodotto salvano `prodottoId`, `prodottoVersione` e il
+body completo `prodottoModifica`. Modificare quest'ultimo nell'ambiente per
+aggiornare il prodotto, conservando la versione dell'ultima lettura. La risposta
+al PUT aggiorna anche il body per il prossimo invio. In caso di 409 sulla
+versione, rileggere il prodotto (09) e riapplicare la modifica desiderata.
+Per provare la visibilità, disattivare la categoria (04): catalogo e dettaglio
+pubblici nascondono i suoi prodotti, mentre le letture ADMIN li conservano.
+La richiesta FUTURO per acquisto fisso va eseguita solo dopo l'implementazione
+del modulo transazionale; non includerla nella sequenza di verifica catalogo.
 
 Le altre collection seguono [il contratto REST](../04-api-rest.md). Finché i
 relativi controller non saranno sviluppati, una risposta `404` è attesa; il

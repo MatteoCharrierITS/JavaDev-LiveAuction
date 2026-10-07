@@ -61,11 +61,12 @@ Il sistema è composto da due applicazioni indipendenti:
   contratti esposti dal Producer.
 
 > **Stato:** `main` include l'infrastruttura Spring Boot/Docker, lo schema Flyway,
-> l'autenticazione e le API di monitoraggio con Swagger. Catalogo, programmazione
-> delle aste, offerte e portafoglio sono sviluppati nei rispettivi branch e
-> devono ancora essere integrati; il WebSocket dispone di una configurazione
-> STOMP iniziale. La Consumer è ancora uno scheletro senza pagine applicative:
-> il flusso completo LiveAuction non è ancora disponibile su `main`.
+> l'autenticazione, il WebSocket con accesso tramite ticket e presenza, e il
+> catalogo REST (categorie, prodotti, gestione ADMIN di stock, filtri e
+> paginazione). Programmazione delle aste, offerte e portafoglio sono in fase
+> di integrazione dai rispettivi branch. La Consumer è ancora uno scheletro
+> senza pagine applicative: il flusso completo LiveAuction non è ancora
+> disponibile. Stato dettagliato in `docs/06-piano-lavoro.md`.
 
 ## La feature distintiva: LiveAuction
 

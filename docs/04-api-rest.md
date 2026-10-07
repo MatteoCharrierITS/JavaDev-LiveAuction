@@ -19,6 +19,13 @@
 | `POST` | `/auth/refresh` | pubblico | rinnova i token usando il refresh token |
 | `POST` | `/auth/logout` | Bearer | revoca la sessione corrente |
 | `DELETE` | `/me` | Bearer | disattiva e anonimizza il proprio account |
+| `GET` | `/categorie` | pubblico | categorie attive |
+| `GET` | `/admin/categorie` | ADMIN | tutte le categorie |
+| `POST` | `/admin/categorie` | ADMIN | crea categoria |
+| `PUT` | `/admin/categorie/{id}` | ADMIN | modifica categoria |
+| `GET` | `/admin/prodotti` | ADMIN | catalogo completo con filtri |
+| `GET` | `/admin/prodotti/{id}` | ADMIN | dettaglio anche non pubblico |
+| `POST` | `/admin/prodotti` | ADMIN | crea prodotto |
 | `GET` | `/prodotti` | pubblico | catalogo paginato |
 | `GET` | `/prodotti/{id}` | pubblico | dettaglio, stock e `astabile` |
 | `POST` | `/prodotti/{id}/acquisti` | USER | acquisto fisso |
@@ -45,7 +52,7 @@ rispettivamente le autorità Spring `ROLE_USER` e `ROLE_ADMIN`. Perciò
 `hasRole('ADMIN')` verifica `ROLE_ADMIN`, senza affidarsi a un ruolo nel JWT.
 
 Le regole HTTP di `SecurityConfig` rendono pubblici solo registrazione, login,
-refresh, health e i `GET` sotto `/prodotti/**` e `/aste/**`. `/admin/**`
+refresh, health, `GET /categorie` e i `GET` sotto `/prodotti/**` e `/aste/**`. `/admin/**`
 richiede `ADMIN`, `/me/**` richiede `USER`; `DELETE /me` richiede un utente
 autenticato. Gli altri percorsi richiedono almeno l'autenticazione. Una nuova
 operazione riservata sotto un percorso pubblico, anche se è un `GET`, deve avere
@@ -93,6 +100,37 @@ possono essere registrati nuovamente.
 
 ## Catalogo
 
+Gli endpoint catalogo e gestione categorie/prodotti sono implementati nel
+branch Prodotti. `POST /prodotti/{id}/acquisti` resta un contratto futuro:
+richiede l'integrazione atomica con portafoglio, ledger e inventario e non ha
+ancora un controller. Non fa parte della gestione catalogo completata qui.
+
+`GET /categorie` restituisce un array di categorie attive ordinate per nome;
+`GET /admin/categorie` include anche quelle disattivate. Ogni categoria ha
+`id`, `nome`, `slug`, `attiva`.
+
+`POST /admin/categorie` restituisce `201`; `PUT /admin/categorie/{id}` restituisce
+`200`. Entrambi richiedono `nome` non vuoto (max 100) e `slug` (max 100), composto
+da lettere minuscole, cifre e trattini separatori, per esempio `informatica`.
+`attiva` è facoltativo: vale true in creazione e conserva il valore corrente
+in modifica. Nome e slug sono univoci.
+
+```json
+{ "nome": "Informatica", "slug": "informatica", "attiva": true }
+```
+
+Il catalogo e il dettaglio pubblici mostrano solo prodotti attivi di categorie
+attive. Un prodotto nascosto o inesistente restituisce `404 RISORSA_NON_TROVATA`.
+Disattivare una categoria non modifica stock, flag dei prodotti o aste;
+riattivarla ripristina la visibilità dei prodotti ancora attivi.
+Le letture ADMIN includono anche prodotti di categorie disattivate.
+
+`GET /prodotti` e `GET /admin/prodotti` accettano `query` (ricerca senza
+distinzione maiuscole/minuscole su nome, SKU e descrizione; `%` e `_` letterali),
+`categoria` (slug), `astabile` (boolean), `page` (default 0, minimo 0) e `size`
+(default 12, da 1 a 100). Solo ADMIN accetta anche `attivo`; se omesso include
+prodotti attivi e inattivi. Ordinamento stabile per nome e ID.
+
 ```http
 GET /api/v1/prodotti?query=laptop&categoria=informatica&astabile=true&page=0&size=12
 ```
@@ -103,21 +141,78 @@ GET /api/v1/prodotti?query=laptop&categoria=informatica&astabile=true&page=0&siz
     "id": 1,
     "sku": "INF-LAP-001",
     "nome": "Laptop Pro 15",
+    "descrizione": "Laptop per lo studio",
     "prezzoFisso": 1299.90,
     "astabile": true,
     "quantitaDisponibile": 3,
     "quantitaBloccata": 1,
-    "asteProgrammate": 1
+    "asteProgrammate": 1,
+    "attivo": true,
+    "categoria": { "id": 1, "nome": "Informatica", "slug": "informatica", "attiva": true },
+    "versione": 0,
+    "dataCreazione": "2026-10-07T08:00:00Z"
   }],
   "page": 0,
   "size": 12,
-  "totalElements": 1
+  "totalElements": 1,
+  "totalPages": 1
 }
 ```
 
 `astabile` è un campo persistito, non è derivato da altri valori. La possibilità
 effettiva di programmare una nuova asta richiede anche
 `quantitaDisponibile > 0`.
+
+`asteProgrammate` conta le aste in `PROGRAMMATA`, `STANZA_APERTA` e `APERTA`,
+escludendo `CHIUSA` e `ANNULLATA`. Il dettaglio restituisce lo stesso DTO prodotto
+presente in `content`, senza l'involucro di paginazione.
+
+### Creazione e modifica prodotto ADMIN
+
+`POST /admin/prodotti` restituisce `201` e il DTO prodotto. Richiede
+`categoriaId` positivo ed esistente, `sku` non vuoto (max 30), `nome` non vuoto
+(max 200), `astabile` boolean e `quantitaDisponibile` intera non negativa.
+`descrizione` è facoltativa (max 5000); `prezzoFisso` è facoltativo o null,
+altrimenti deve essere positivo con max 10 cifre intere e 2 decimali.
+SKU normalizzato in maiuscolo senza spazi esterni; nome e descrizione vengono
+ripuliti dagli spazi esterni. Un prodotto nuovo è attivo, con quantità bloccata
+e versione iniziali a zero. L'ADMIN può gestire prodotti in categorie inattive,
+che restano nascosti al pubblico.
+
+`PUT /admin/prodotti/{id}` restituisce `200` e sostituisce tutti i campi
+modificabili: usa gli stessi campi del POST e richiede anche `attivo` e
+`versione` non negativa, ottenuta dall'ultima lettura. Campi facoltativi omessi
+o null vengono azzerati. Esempio:
+
+```json
+{
+  "categoriaId": 1,
+  "sku": "INF-LAP-001",
+  "nome": "Laptop Pro 15",
+  "descrizione": "Laptop per lo studio",
+  "prezzoFisso": 1299.90,
+  "astabile": true,
+  "quantitaDisponibile": 3,
+  "attivo": true,
+  "versione": 0
+}
+```
+
+`quantitaBloccata`, `id` e `dataCreazione` non sono campi modificabili.
+La disattivazione tramite PUT sostituisce la cancellazione fisica e conserva
+relazioni e storici; non è esposto un endpoint DELETE del catalogo.
+
+Errori catalogo in `application/problem+json`:
+
+| Status | Caso/codice |
+| --- | --- |
+| 400 | DTO, parametri o paginazione non validi |
+| 401 | operazione ADMIN senza autenticazione |
+| 403 | operazione ADMIN con ruolo USER |
+| 404 | `RISORSA_NON_TROVATA` (prodotto/categoria assenti o dettaglio pubblico nascosto) |
+| 409 | `CATEGORIA_GIA_ESISTENTE` (nome o slug duplicati) |
+| 409 | `SKU_GIA_UTILIZZATO` |
+| 409 | `VERSIONE_NON_AGGIORNATA` (rileggere prima di riprovare) |
 
 ## Portafoglio
 

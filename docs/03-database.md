@@ -163,6 +163,16 @@ CREATE INDEX idx_movimenti_wallet_data
 
 ## Coerenza dello stock
 
+La modifica ADMIN del prodotto richiede la `versione` letta dal client.
+Un aggiornamento concorrente o una versione obsoleta restituisce
+`409 VERSIONE_NON_AGGIORNATA`. Ogni modulo che aggiorna lo stock, anche tramite
+SQL, deve incrementare `prodotti.versione` nella stessa transazione, affinché
+il controllo ottimistico JPA impedisca di sovrascrivere quantità cambiate.
+`quantita_bloccata` non è un campo di input della modifica ADMIN.
+
+La visibilità pubblica richiede sia `prodotti.attivo` sia `categorie.attiva`;
+la disattivazione della categoria non aggiorna né elimina le righe prodotto.
+
 La programmazione deve bloccare la riga `prodotti` con lock pessimista, verificare
 il flag e decrementare la quantità disponibile nella stessa transazione che crea
 `aste`. Il campo `versione` aggiunge protezione da aggiornamenti concorrenti.
