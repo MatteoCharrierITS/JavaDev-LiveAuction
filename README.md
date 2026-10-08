@@ -1,46 +1,20 @@
 # LiveAuction — Spring Boot Producer/Consumer
 
-## Divisione dei compiti
+> **[DA FARE — attività e prossimi passi per ogni persona](docs/todo.md)**
+>
+> Il riferimento del team per cosa manca, priorità e dipendenze. Aggiornalo quando completi o integri un'attività.
 
-Il progetto è suddiviso per dominio, così ogni persona può lavorare in un
-package dedicato limitando i conflitti Git. Le assegnazioni attuali sono
-indicate sotto; l'area Consumer e interfaccia resta da assegnare con una
-decisione del team.
+## Assegnazioni
 
-### Autenticazione e utenti - MATTEO
-
-Registrazione, login, ruoli `USER` e `ADMIN`, password hashate, sicurezza degli
-endpoint e gestione della sessione o dei token.
-
-### WebSocket e notifiche - MAIKOL
-
-Configurazione STOMP, ticket temporanei, eventi delle stanze, presenza degli
-utenti, riconnessione ed email inviata al vincitore dopo la chiusura.
-
-### Prodotti e catalogo - CRISTIAN
-
-Categorie, prodotti, CRUD ADMIN, ricerca, paginazione, campo `astabile` e
-gestione delle quantità disponibili e bloccate.
-
-### Portafoglio e movimenti - MONDIR
-
-Saldo totale, riservato e disponibile, ledger dei movimenti e controllo dei
-crediti prima di accettare un'offerta.
-
-### Programmazione delle aste - MARCO
-
-Creazione riservata all'ADMIN, prezzo iniziale, conversione `Europe/Rome` → UTC,
-apertura della stanza tre minuti prima e blocco atomico dello stock.
-
-### Offerte e chiusura - TOMMI
-
-Validazione dei rilanci, incremento di venti secondi, concorrenza, selezione
-del vincitore e trasferimento di crediti e prodotto.
-
-### Consumer e interfaccia - DA ASSEGNARE
-
-Client REST, pagine Thymeleaf, marketplace, lobby, stanza live, inventario,
-portafoglio e pannello amministrativo.
+| Persona | Area e funzionalità |
+| --- | --- |
+| **Matteo** | Autenticazione e utenti: registrazione, login, token, ruoli e sicurezza. **Consumer/frontend:** client REST, sessione web, pagine Thymeleaf e stanza live. |
+| **Maikol** | WebSocket e notifiche: STOMP, ticket, presenza, eventi delle stanze ed email al vincitore. |
+| **Cristian** | Prodotti e catalogo: categorie, CRUD ADMIN, ricerca, paginazione e stock. |
+| **Mondir** | Portafoglio e movimenti: saldi, ledger e integrazione delle operazioni sui crediti. |
+| **Marco** | Programmazione aste: creazione ADMIN, orari, blocco stock, scheduler, annullamento e storici. |
+| **Tommi** | Offerte e chiusura: rilanci, estensioni, concorrenza, vincitore e trasferimento di crediti e prodotto. |
+| **Da assegnare** | API inventario e acquisti a prezzo fisso; referente da decidere nel team. |
 
 ### Regole di collaborazione
 
@@ -70,7 +44,7 @@ Il sistema è composto da due applicazioni indipendenti:
 > annullamento, storici e API dedicate di portafoglio/inventario. La
 > Consumer è ancora uno scheletro senza pagine applicative: il flusso completo
 > LiveAuction non è ancora disponibile. Stato dettagliato in
-> `docs/06-piano-lavoro.md` e [stato del modulo aste](docs/README.md#stato-del-modulo-aste).
+> [attività del team](docs/todo.md) e [stato del modulo aste](docs/README.md#stato-del-modulo-aste).
 
 ## La feature distintiva: LiveAuction
 

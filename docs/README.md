@@ -12,7 +12,8 @@ Questa è la specifica corrente di **LiveAuction**.
 6. [Roadmap e criteri di accettazione](06-piano-lavoro.md)
 7. [Motore LiveAuction](07-liveauction.md)
 8. [Offerte e chiusura: integrazione](08-offerte-chiusura.md)
-9. [Prossimi passi del team](09-prossimi-passi.md)
+
+**[DA FARE — attività e prossimi passi del team](todo.md)**
 
 Report di integrazione: [attenzioni dopo il collegamento WebSocket](report-integrazione-websocket.md).
 
