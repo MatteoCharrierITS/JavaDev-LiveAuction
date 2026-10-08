@@ -82,6 +82,13 @@ dei test WebSocket è stata completata.
 - [ ] Gestire errori e retry dell'invio: un errore email non deve annullare
   la vittoria o ripetere il settlement.
 
+Nota di avanzamento Maikol (branch `web_socket`, non ancora mergiato): implementati
+listener post-commit, coda V11, invio su executor dedicato, recupero e retry
+persistenti. SMTP resta disabilitato per default. Le caselle sopra restano aperte
+finché l'attività non viene integrata in `main`. Dettagli in
+[Notifiche email](10-notifiche-email.md). Restano configurazione SMTP e verifica
+end-to-end dopo il collegamento della chiusura automatica da parte di Marco/Tommi.
+
 ## Cristian — prodotti e catalogo
 
 L'area assegnata è completa: categorie, prodotti, CRUD ADMIN, filtri,

@@ -35,7 +35,7 @@ Nel branch corrente sono implementati:
   e settlement con assegnazione all'inventario; eventi economici sui topic.
 
 Chiusura automatica, annullamento, storici, API dedicate di portafoglio/inventario
-ed email restano da completare. Il settlement è già implementato nel servizio
+e attivazione SMTP email restano da completare. Il settlement è già implementato nel servizio
 interno, ma non viene invocato automaticamente alla scadenza.
 La UI Consumer resta un modulo separato.
 
@@ -46,6 +46,11 @@ disponibili. Le verifiche aggiornate di questa integrazione sono nel report
 WebSocket sopra indicato.
 
 ## Decisioni chiave
+
+Nel branch `web_socket` è disponibile anche il
+[modulo email al vincitore](10-notifiche-email.md), con coda persistente e retry.
+L'invio è disabilitato per default; attivazione SMTP e chiusura automatica
+restano da completare. Non è ancora indicato come integrato in `main`.
 
 | Tema | Decisione |
 | --- | --- |

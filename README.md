@@ -40,13 +40,17 @@ Il sistema è composto da due applicazioni indipendenti:
 > catalogo REST (categorie, prodotti, gestione ADMIN di stock, filtri e
 > paginazione) e la programmazione ADMIN delle aste con blocco atomico dello
 > stock, apertura automatica, lobby e snapshot pubblici. I servizi di offerte e
-> settlement sono implementati; mancano la chiusura automatica, l'email,
+> settlement sono implementati; mancano la chiusura automatica, l'attivazione SMTP dell'email,
 > annullamento, storici e API dedicate di portafoglio/inventario. La
 > Consumer è ancora uno scheletro senza pagine applicative: il flusso completo
 > LiveAuction non è ancora disponibile. Stato dettagliato in
 > [attività del team](docs/todo.md) e [stato del modulo aste](docs/README.md#stato-del-modulo-aste).
 
 ## La feature distintiva: LiveAuction
+
+Avanzamento locale nel branch `web_socket`: implementati email al vincitore,
+coda persistente e retry; invio disabilitato per default, nessun invio reale
+durante i test. Configurazione e limiti in [Notifiche email](docs/10-notifiche-email.md).
 
 L'ADMIN decide se un prodotto è astabile e, per ogni asta, imposta prodotto,
 data e ora di inizio e prezzo iniziale. Il sistema riserva subito una unità:

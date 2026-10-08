@@ -13,7 +13,8 @@ endpoint REST, controller STOMP, scheduler o pagine Consumer. Gli endpoint
 di `aste.json` restano previsti. Dall'8 ottobre 2026 il modulo WebSocket richiama
 `OffertaService` tramite `/app/aste/{id}/offerte` e trasporta gli eventi Spring
 sui topic delle stanze. Il flusso completo richiede ancora il collegamento
-della chiusura automatica e dell'email.
+della chiusura automatica e la configurazione SMTP. L'email è implementata
+localmente nel branch `web_socket`, come descritto sotto.
 
 ## Offerte
 
@@ -105,6 +106,11 @@ una nuova transazione (`REQUIRES_NEW`). Username mascherati, nessun token o pass
 Un rollback non pubblica eventi; un errore di listener viene registrato e non
 annulla il settlement. Trasporto, retry email e consegna durevole restano al
 modulo notifiche: questa pubblicazione Spring è best effort.
+
+Nel branch `web_socket` il listener email usa una nuova transazione per
+accodare la richiesta; un job riconcilia le aste già CHIUSA con vincitore per
+recuperare eventi persi. Invio e retry non richiamano il settlement. Vedere
+[Notifiche email](10-notifiche-email.md); SMTP è disabilitato per default.
 
 `OffertaException` segue il pattern del branch Prodotti: `ProblemDetail` con
 `code`. Il trasporto STOMP deve adattarlo alla coda privata BID_REJECTED.

@@ -578,6 +578,11 @@ senza vincitore). Non espone `migliorOfferenteId`, `vincitoreId` o l'UUID del
 comando nel topic pubblico. Non genera email né avvia il settlement.
 La consegna resta best effort in memoria: riconnessioni e gap richiedono REST.
 
+Nel branch `web_socket` un listener separato del modulo `notifica` accoda l'email
+al vincitore con persistenza/retry. Non cambia il protocollo STOMP né aggiunge
+endpoint REST. L'invio resta disabilitato finché SMTP non è configurato; dettagli
+in [Notifiche email](10-notifiche-email.md).
+
 ### Decisione sulla `sequence` e sulla presenza
 
 `aste.sequence` è un contatore persistito per singola asta. Il Producer lo

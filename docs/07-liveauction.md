@@ -3,7 +3,8 @@
 Questo documento descrive il motore completo previsto. Programmazione,
 attivazione temporale, lobby, snapshot, servizi di rilancio/settlement e trasporto
 WebSocket sono implementati. Restano da collegare la chiusura automatica e
-l'email; annullamento, storici e UI sono ancora da completare. Vedere lo
+l'attivazione SMTP dell'email (modulo implementato localmente nel branch web_socket);
+annullamento, storici e UI sono ancora da completare. Vedere lo
 [stato del modulo aste](README.md#stato-del-modulo-aste).
 I nomi `startsAt` e `endsAt` usati nei diagrammi corrispondono ai campi
 `inizioAt` e `fineAt` delle API implementate.

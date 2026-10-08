@@ -202,6 +202,8 @@ class OfferteWebSocketIntegrationTests {
                 Timestamp.from(now.minusSeconds(500)), Timestamp.from(now.minusSeconds(1)), data.auctionId);
         chiusura.chiudi(data.auctionId);
         Map<?, ?> closed = receive(first.room(), "AUCTION_CLOSED");
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM notifiche_email WHERE asta_id = ?",
+                Integer.class, data.auctionId)).isEqualTo(1);
         assertThat(closed.get("vincitoreDisplay").toString()).contains("***");
         assertThat(closed.containsKey("vincitoreId")).isFalse();
         assertThat(closed.get("sequence")).isEqualTo(4);
@@ -209,6 +211,8 @@ class OfferteWebSocketIntegrationTests {
                 Integer.class, primo.id(), data.productId)).isEqualTo(1);
         chiusura.chiudi(data.auctionId);
         assertThat(first.room().poll(300, TimeUnit.MILLISECONDS)).isNull();
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM notifiche_email WHERE asta_id = ?",
+                Integer.class, data.auctionId)).isEqualTo(1);
     }
 
     private Account account() throws Exception {
