@@ -105,7 +105,7 @@ per default. Dettagli in [Notifiche email](10-notifiche-email.md).
 L'area assegnata è completa: categorie, prodotti, CRUD ADMIN, filtri,
 paginazione e gestione dello stock.
 
-- [ ] Verificare che documentazione e collection Postman descrivano gli
+- [x] Verificare che documentazione e collection Postman descrivano gli
   endpoint realmente disponibili dopo le integrazioni.
 
 Gli acquisti a prezzo fisso restano da assegnare nel team.
