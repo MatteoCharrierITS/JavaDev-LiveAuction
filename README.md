@@ -8,7 +8,8 @@
 
 | Persona | Area e funzionalità |
 | --- | --- |
-| **Matteo** | Autenticazione e utenti: registrazione, login, token, ruoli e sicurezza. **Consumer/frontend:** client REST, sessione web, pagine Thymeleaf e stanza live. |
+| **Matteo** | Autenticazione e utenti: registrazione, login, token, ruoli e sicurezza. |
+| **Andrea** | Consumer/frontend: client REST verso il Producer, sessione web, pagine Thymeleaf e stanza live. |
 | **Maikol** | WebSocket e notifiche: STOMP, ticket, presenza, eventi delle stanze ed email al vincitore. |
 | **Cristian** | Prodotti e catalogo: categorie, CRUD ADMIN, ricerca, paginazione e stock. |
 | **Matteo (subentro dal 9 ottobre 2026)** | Portafoglio e movimenti: riallineamento del lavoro di Mondir, API del saldo/ledger e integrazione delle operazioni sui crediti con Tommi. |

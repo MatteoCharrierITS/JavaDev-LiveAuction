@@ -10,13 +10,13 @@ presente soltanto in un branch personale non va indicato come integrato.
 
 ## Priorità e dipendenze
 
-1. **Matteo:** avviare il Consumer usando anche le API del portafoglio,
+1. **Andrea:** avviare il Consumer usando anche le API del portafoglio,
    integrate e verificate il 9 ottobre. Le operazioni economiche sono condivise
    con i servizi di Tommi.
 2. **Marco e Tommi:** collegare la chiusura automatica al servizio esistente.
 3. **Maikol:** configurare SMTP e verificare il flusso email dopo il collegamento
    della chiusura automatica; coda e retry sono già integrati.
-4. **Matteo:** avviare il Consumer; autenticazione, catalogo e lobby possono
+4. **Andrea:** avviare il Consumer; autenticazione, catalogo e lobby possono
    partire subito. Il portafoglio può usare le nuove API integrate;
    inventario e storici richiedono ancora le API mancanti.
 5. **Team:** assegnare le API inventario e gli acquisti a prezzo fisso.
@@ -25,7 +25,7 @@ presente soltanto in un branch personale non va indicato come integrato.
 
 Dal 9 ottobre 2026 Matteo prende in carico il riallineamento e il completamento
 del portafoglio, partendo dal lavoro di Mondir. È la priorità operativa di oggi;
-Implementazione, verifiche e integrazione in `main` sono completate. Il Consumer resta in carico a Matteo.
+Implementazione, verifiche e integrazione in `main` sono completate. Il Consumer è in carico ad Andrea.
 
 Implementazione integrata in `main`. Il precedente branch `portafoglio-movimenti`
 conteneva modelli incompatibili con Flyway e viene eliminato, essendo sostituito
@@ -110,10 +110,22 @@ paginazione e gestione dello stock.
 
 Gli acquisti a prezzo fisso restano da assegnare nel team.
 
-## Matteo — autenticazione e Consumer/frontend
+## Matteo — autenticazione Producer
 
-L'autenticazione Producer è completa. Matteo prende in carico il
-**Consumer/frontend**, oggi ancora uno scheletro senza pagine applicative.
+L'autenticazione Producer è completa e resta in carico a Matteo, insieme al
+portafoglio integrato il 9 ottobre.
+
+- [ ] Supportare la protezione delle nuove rotte Producer: ruoli nel contratto
+  e `@PreAuthorize` sulle operazioni di dominio. Le letture riservate sotto
+  `/prodotti/**` o `/aste/**` richiedono regole HTTP più specifiche prima dei
+  GET pubblici.
+
+## Andrea — Consumer/frontend
+
+Il **Consumer/frontend** è assegnato ad Andrea: client REST, sessione web,
+pagine Thymeleaf e stanza live. La versione presente in `main` è ancora uno
+scheletro senza pagine applicative; il lavoro del collega non viene indicato
+come integrato finché non è pubblicato nel repository.
 
 - [ ] Implementare client REST e flusso web di registrazione, login, refresh e
   logout. Conservare i token nella sessione server-side del Consumer.
@@ -127,10 +139,6 @@ L'autenticazione Producer è completa. Matteo prende in carico il
 - [ ] Realizzare il pannello ADMIN per prodotti/categorie, programmazione,
   annullamento e storico delle aste.
 - [ ] Gestire errori di validazione, sessione scaduta e Producer non disponibile.
-- [ ] Supportare la protezione delle nuove rotte Producer: ruoli nel contratto
-  e `@PreAuthorize` sulle operazioni di dominio. Le letture riservate sotto
-  `/prodotti/**` o `/aste/**` richiedono regole HTTP più specifiche prima dei
-  GET pubblici.
 
 Il Consumer usa le API del Producer e non accede direttamente al database.
 Riferimento per le pagine: [UI e flussi](05-ui-flussi.md).
