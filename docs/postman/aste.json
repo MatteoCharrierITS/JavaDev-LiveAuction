@@ -2,7 +2,7 @@
   "info": {
     "name": "LiveAuction • Aste",
     "_postman_id": "833135da-ce7e-4249-8eb7-4ed4cea808d1",
-    "description": "Programmazione ADMIN, lobby pubblica, snapshot e ticket WebSocket implementati secondo docs/04-api-rest.md; annullamento e storici sono ancora previsti. La connessione STOMP /ws richiede un client WebSocket e non è rappresentata in Collection v2.1.",
+    "description": "Lobby pubblica, snapshot, ticket WebSocket USER e programmazione ADMIN implementati su main secondo docs/04-api-rest.md. Le API non integrate sono raccolte nella cartella \"Contratto futuro — non implementato\". La connessione STOMP /ws richiede un client WebSocket e non è rappresentata in Collection v2.1.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -149,61 +149,67 @@
       ]
     },
     {
-      "name": "Annulla asta ADMIN",
-      "request": {
-        "method": "POST",
-        "header": [],
-        "url": "{{baseUrl}}/admin/aste/{{astaId}}/annullamento",
-        "description": "Previsto dal contratto docs/04-api-rest.md; l'endpoint non è ancora implementato. Modifica lo stato dell'asta: usare solo su un'asta di prova.",
-        "auth": {
-          "type": "bearer",
-          "bearer": [
-            {
-              "key": "token",
-              "value": "{{adminToken}}",
-              "type": "string"
+      "name": "Contratto futuro — non implementato",
+      "description": "Endpoint previsti dal contratto ma privi di controller su main. Usarli solo come riferimento documentale.",
+      "item": [
+        {
+          "name": "Annulla asta ADMIN",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/admin/aste/{{astaId}}/annullamento",
+            "description": "Previsto dal contratto docs/04-api-rest.md; l'endpoint non è ancora implementato. Modifica lo stato dell'asta: usare solo su un'asta di prova. Richiesta documentativa: può restituire 404 su main.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
             }
-          ]
-        }
-      }
-    },
-    {
-      "name": "Le mie vittorie",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": "{{baseUrl}}/me/vittorie",
-        "description": "Previsto dal contratto docs/04-api-rest.md; l'endpoint non è ancora implementato.",
-        "auth": {
-          "type": "bearer",
-          "bearer": [
-            {
-              "key": "token",
-              "value": "{{userToken}}",
-              "type": "string"
+          }
+        },
+        {
+          "name": "Le mie vittorie",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/me/vittorie",
+            "description": "Previsto dal contratto docs/04-api-rest.md; l'endpoint non è ancora implementato. Richiesta documentativa: può restituire 404 su main.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userToken}}",
+                  "type": "string"
+                }
+              ]
             }
-          ]
-        }
-      }
-    },
-    {
-      "name": "Storico aste ADMIN",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": "{{baseUrl}}/admin/aste/storico",
-        "description": "Previsto dal contratto docs/04-api-rest.md; l'endpoint non è ancora implementato. Filtri previsti: prodotto, vincitore e intervallo temporale.",
-        "auth": {
-          "type": "bearer",
-          "bearer": [
-            {
-              "key": "token",
-              "value": "{{adminToken}}",
-              "type": "string"
+          }
+        },
+        {
+          "name": "Storico aste ADMIN",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/admin/aste/storico",
+            "description": "Previsto dal contratto docs/04-api-rest.md; l'endpoint non è ancora implementato. Filtri previsti: prodotto, vincitore e intervallo temporale. Richiesta documentativa: può restituire 404 su main.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
             }
-          ]
+          }
         }
-      }
+      ]
     }
   ]
 }

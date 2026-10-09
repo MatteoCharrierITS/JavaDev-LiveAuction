@@ -2,7 +2,7 @@
   "info": {
     "name": "LiveAuction • Prodotti",
     "_postman_id": "30d10e9b-c2fe-47c0-a65e-3fe7ebe3c137",
-    "description": "Catalogo e gestione ADMIN implementati. Eseguire 01–10 dopo il login ADMIN. Acquisti fissi futuri.",
+    "description": "Catalogo e gestione ADMIN implementati su main. Eseguire 01–10 dopo il login ADMIN. Le richieste future sono nella cartella \"Contratto futuro — non implementato\".",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -312,37 +312,43 @@
       ]
     },
     {
-      "name": "FUTURO Acquisto fisso (manuale)",
-      "request": {
-        "method": "POST",
-        "url": "{{baseUrl}}/prodotti/{{prodottoId}}/acquisti",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "auth": {
-          "type": "bearer",
-          "bearer": [
-            {
-              "key": "token",
-              "value": "{{userToken}}",
-              "type": "string"
-            }
-          ]
-        },
-        "description": "NON IMPLEMENTATO. Integrazione con portafoglio, ledger e inventario; escluso dalla sequenza catalogo.",
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"quantita\": 1\n}",
-          "options": {
-            "raw": {
-              "language": "json"
+      "name": "Contratto futuro — non implementato",
+      "description": "Richieste previste dal contratto API ma senza controller su main. Non includere nella sequenza principale.",
+      "item": [
+        {
+          "name": "Acquisto fisso USER",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/prodotti/{{prodottoId}}/acquisti",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Previsto dal contratto ma non implementato su main. Richiesta documentativa: può restituire 404 e non fa parte della sequenza catalogo eseguibile.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantita\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           }
         }
-      }
+      ]
     }
   ]
 }

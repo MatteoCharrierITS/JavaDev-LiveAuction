@@ -12,34 +12,34 @@
 
 ## REST
 
-| Metodo | Endpoint | Accesso | Scopo |
-| --- | --- | --- | --- |
-| `POST` | `/auth/register` | pubblico | registra utente e wallet |
-| `POST` | `/auth/login` | pubblico | apre una sessione e restituisce i token |
-| `POST` | `/auth/refresh` | pubblico | rinnova i token usando il refresh token |
-| `POST` | `/auth/logout` | Bearer | revoca la sessione corrente |
-| `DELETE` | `/me` | Bearer | disattiva e anonimizza il proprio account |
-| `GET` | `/categorie` | pubblico | categorie attive |
-| `GET` | `/admin/categorie` | ADMIN | tutte le categorie |
-| `POST` | `/admin/categorie` | ADMIN | crea categoria |
-| `PUT` | `/admin/categorie/{id}` | ADMIN | modifica categoria |
-| `GET` | `/admin/prodotti` | ADMIN | catalogo completo con filtri |
-| `GET` | `/admin/prodotti/{id}` | ADMIN | dettaglio anche non pubblico |
-| `POST` | `/admin/prodotti` | ADMIN | crea prodotto |
-| `GET` | `/prodotti` | pubblico | catalogo paginato |
-| `GET` | `/prodotti/{id}` | pubblico | dettaglio, stock e `astabile` |
-| `POST` | `/prodotti/{id}/acquisti` | USER | acquisto fisso |
-| `GET` | `/me/inventario` | USER | prodotti posseduti |
-| `GET` | `/me/portafoglio` | USER | saldo e movimenti |
-| `PUT` | `/me/portafoglio/impostazioni` | USER | imposta saldo finto |
-| `GET` | `/me/vittorie` | USER | storico personale vittorie |
-| `GET` | `/aste` | pubblico | lobby filtrabile |
-| `GET` | `/aste/{id}` | pubblico | snapshot autorevole |
-| `POST` | `/aste/{id}/ticket` | USER | ticket WebSocket breve |
-| `POST` | `/admin/aste` | ADMIN | programma asta e blocca stock |
-| `POST` | `/admin/aste/{id}/annullamento` | ADMIN | annulla quando consentito |
-| `GET` | `/admin/aste/storico` | ADMIN | storico globale e vincitori |
-| `PUT` | `/admin/prodotti/{id}` | ADMIN | modifica prodotto, stock e flag |
+| Metodo | Endpoint | Accesso | Scopo | Stato su `main` |
+| --- | --- | --- | --- | --- |
+| `POST` | `/auth/register` | pubblico | registra utente e wallet | Implementato |
+| `POST` | `/auth/login` | pubblico | apre una sessione e restituisce i token | Implementato |
+| `POST` | `/auth/refresh` | pubblico | rinnova i token usando il refresh token | Implementato |
+| `POST` | `/auth/logout` | autenticato | revoca la sessione corrente | Implementato |
+| `DELETE` | `/me` | autenticato | disattiva e anonimizza il proprio account | Implementato |
+| `GET` | `/categorie` | pubblico | categorie attive | Implementato |
+| `GET` | `/admin/categorie` | ADMIN | tutte le categorie | Implementato |
+| `POST` | `/admin/categorie` | ADMIN | crea categoria | Implementato |
+| `PUT` | `/admin/categorie/{id}` | ADMIN | modifica categoria | Implementato |
+| `GET` | `/admin/prodotti` | ADMIN | catalogo completo con filtri | Implementato |
+| `GET` | `/admin/prodotti/{id}` | ADMIN | dettaglio anche non pubblico | Implementato |
+| `POST` | `/admin/prodotti` | ADMIN | crea prodotto | Implementato |
+| `PUT` | `/admin/prodotti/{id}` | ADMIN | modifica prodotto, stock e flag | Implementato |
+| `GET` | `/prodotti` | pubblico | catalogo paginato | Implementato |
+| `GET` | `/prodotti/{id}` | pubblico | dettaglio, stock e `astabile` | Implementato |
+| `POST` | `/prodotti/{id}/acquisti` | USER | acquisto fisso | Contratto futuro — non implementato |
+| `GET` | `/me/inventario` | USER | prodotti posseduti | Contratto futuro — non implementato |
+| `GET` | `/me/portafoglio` | USER | saldo e movimenti | Implementato |
+| `PUT` | `/me/portafoglio/impostazioni` | USER | imposta saldo finto | Implementato |
+| `GET` | `/me/vittorie` | USER | storico personale vittorie | Contratto futuro — non implementato |
+| `GET` | `/aste` | pubblico | lobby filtrabile | Implementato |
+| `GET` | `/aste/{id}` | pubblico | snapshot autorevole | Implementato |
+| `POST` | `/aste/{id}/ticket` | USER | ticket WebSocket breve | Implementato |
+| `POST` | `/admin/aste` | ADMIN | programma asta e blocca stock | Implementato |
+| `POST` | `/admin/aste/{id}/annullamento` | ADMIN | annulla quando consentito | Contratto futuro — non implementato |
+| `GET` | `/admin/aste/storico` | ADMIN | storico globale e vincitori | Contratto futuro — non implementato |
 
 ## Autenticazione
 
@@ -100,10 +100,15 @@ possono essere registrati nuovamente.
 
 ## Catalogo
 
-Gli endpoint catalogo e gestione categorie/prodotti sono implementati nel
-branch Prodotti. `POST /prodotti/{id}/acquisti` resta un contratto futuro:
-richiede l'integrazione atomica con portafoglio, ledger e inventario e non ha
-ancora un controller. Non fa parte della gestione catalogo completata qui.
+Gli endpoint catalogo e gestione categorie/prodotti sono integrati nel branch
+`main`. I branch personali (`Prodotti`, `Aste`, `feature/*`, `web_socket`)
+non costituiscono codice integrato.
+
+`POST /prodotti/{id}/acquisti`, `GET /me/inventario`,
+`GET /me/vittorie`, `POST /admin/aste/{id}/annullamento` e
+`GET /admin/aste/storico` restano contratti futuri: richiedono integrazione
+atomica con portafoglio, ledger e inventario e non hanno ancora un controller
+su `main`.
 
 `GET /categorie` restituisce un array di categorie attive ordinate per nome;
 `GET /admin/categorie` include anche quelle disattivate. Ogni categoria ha

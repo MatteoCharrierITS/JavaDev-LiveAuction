@@ -144,24 +144,38 @@ applicativa. Rispondono `200` se disponibili, `503` altrimenti.
 
 Base REST: `http://localhost:8081/api/v1`
 
-| Metodo | Endpoint | Scopo |
-| --- | --- | --- |
-| `POST` | `/auth/register` | registra un utente |
-| `POST` | `/auth/login` | apre una sessione applicativa |
-| `POST` | `/auth/refresh` | rinnova i token della sessione |
-| `POST` | `/auth/logout` | revoca la sessione corrente |
-| `DELETE` | `/me` | disattiva e anonimizza il proprio account |
-| `GET` | `/prodotti` | catalogo filtrabile |
-| `POST` | `/prodotti/{id}/acquisti` | acquisto a prezzo fisso |
-| `GET` | `/me/inventario` | prodotti vinti o acquistati |
-| `GET` | `/me/portafoglio` | saldo e movimenti paginati |
-| `PUT` | `/me/portafoglio/impostazioni` | imposta saldo virtuale USER |
-| `POST` | `/admin/aste` | programma un'asta e riserva lo stock |
-| `GET` | `/aste` | lobby delle aste |
-| `GET` | `/aste/{id}` | snapshot autorevole |
-| `POST` | `/aste/{id}/ticket` | ticket WebSocket monouso |
-| `GET` | `/me/vittorie` | storico personale delle vittorie |
-| `GET` | `/admin/aste/storico` | storico globale per l'ADMIN |
+> La tabella seguente descrive **solo** il codice integrato nel branch `main`.
+> I branch personali (`Prodotti`, `Aste`, `feature/*`, `web_socket`) non
+> costituiscono funzionalità integrate.
+
+| Metodo | Endpoint | Scopo | Stato su `main` |
+| --- | --- | --- | --- |
+| `POST` | `/auth/register` | registra un utente | Implementato |
+| `POST` | `/auth/login` | apre una sessione applicativa | Implementato |
+| `POST` | `/auth/refresh` | rinnova i token della sessione | Implementato |
+| `POST` | `/auth/logout` | revoca la sessione corrente | Implementato |
+| `DELETE` | `/me` | disattiva e anonimizza il proprio account | Implementato |
+| `GET` | `/categorie` | categorie pubbliche attive | Implementato |
+| `GET` | `/prodotti` | catalogo filtrabile | Implementato |
+| `GET` | `/prodotti/{id}` | dettaglio pubblico del prodotto | Implementato |
+| `GET` | `/admin/categorie` | elenco categorie completo ADMIN | Implementato |
+| `POST` | `/admin/categorie` | creazione categoria ADMIN | Implementato |
+| `PUT` | `/admin/categorie/{id}` | modifica categoria ADMIN | Implementato |
+| `GET` | `/admin/prodotti` | catalogo completo ADMIN | Implementato |
+| `GET` | `/admin/prodotti/{id}` | dettaglio prodotto ADMIN | Implementato |
+| `POST` | `/admin/prodotti` | creazione prodotto ADMIN | Implementato |
+| `PUT` | `/admin/prodotti/{id}` | modifica prodotto, stock e flag ADMIN | Implementato |
+| `POST` | `/prodotti/{id}/acquisti` | acquisto a prezzo fisso | Contratto futuro — non implementato |
+| `GET` | `/me/inventario` | prodotti vinti o acquistati | Contratto futuro — non implementato |
+| `GET` | `/me/portafoglio` | saldo e movimenti paginati | Implementato |
+| `PUT` | `/me/portafoglio/impostazioni` | imposta saldo virtuale USER | Implementato |
+| `POST` | `/admin/aste` | programma un'asta e riserva lo stock | Implementato |
+| `GET` | `/aste` | lobby delle aste | Implementato |
+| `GET` | `/aste/{id}` | snapshot autorevole | Implementato |
+| `POST` | `/aste/{id}/ticket` | ticket WebSocket monouso | Implementato |
+| `POST` | `/admin/aste/{id}/annullamento` | annulla un'asta | Contratto futuro — non implementato |
+| `GET` | `/me/vittorie` | storico personale delle vittorie | Contratto futuro — non implementato |
+| `GET` | `/admin/aste/storico` | storico globale per l'ADMIN | Contratto futuro — non implementato |
 
 WebSocket Producer: `ws://localhost:8081/ws`
 
