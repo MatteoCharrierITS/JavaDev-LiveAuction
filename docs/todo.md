@@ -1,7 +1,7 @@
 # Da fare — attività del team
 
-Aggiornato all'8 ottobre 2026, sul `main` che include l'integrazione WebSocket
-(commit `1178810`). Questo è il riferimento unico per le attività ancora da
+Aggiornato al 9 ottobre 2026, sul `main` che include WebSocket e notifiche email
+(base `c9e2a11`) e il modulo portafoglio completato da Matteo. Questo è il riferimento unico per le attività ancora da
 completare. Le assegnazioni sono riassunte nel [README](../README.md#assegnazioni);
 contratti e regole restano nei documenti di progettazione.
 
@@ -10,31 +10,39 @@ presente soltanto in un branch personale non va indicato come integrato.
 
 ## Priorità e dipendenze
 
-1. **Mondir e Tommi:** riallineare il portafoglio e concordare le operazioni
-   economiche già esistenti, evitando implementazioni duplicate.
+1. **Matteo:** avviare il Consumer usando anche le API del portafoglio,
+   integrate e verificate il 9 ottobre. Le operazioni economiche sono condivise
+   con i servizi di Tommi.
 2. **Marco e Tommi:** collegare la chiusura automatica al servizio esistente.
-3. **Maikol:** completare l'email al vincitore, da attivare dopo la chiusura.
+3. **Maikol:** configurare SMTP e verificare il flusso email dopo il collegamento
+   della chiusura automatica; coda e retry sono già integrati.
 4. **Matteo:** avviare il Consumer; autenticazione, catalogo e lobby possono
-   partire subito. Portafoglio, inventario e storici richiedono le API mancanti.
+   partire subito. Il portafoglio può usare le nuove API integrate;
+   inventario e storici richiedono ancora le API mancanti.
 5. **Team:** assegnare le API inventario e gli acquisti a prezzo fisso.
 
-## Mondir — portafoglio e movimenti
+## Matteo — portafoglio e movimenti (subentro a Mondir)
 
-Il branch `portafoglio-movimenti` non è integrato: le entità non corrispondono
-allo schema Flyway e `ddl-auto=validate` impedisce l'avvio del Producer.
+Dal 9 ottobre 2026 Matteo prende in carico il riallineamento e il completamento
+del portafoglio, partendo dal lavoro di Mondir. È la priorità operativa di oggi;
+Implementazione, verifiche e integrazione in `main` sono completate. Il Consumer resta in carico a Matteo.
 
-- [ ] Aggiornare il branch con `main` e adattare `Wallet`, `Movimento` e
-  `TipoMovimento` allo [schema database](03-database.md).
-- [ ] Usare `portafogli` e `movimenti_portafoglio`, con `portafoglio_id` e i
-  campi previsti (`data_movimento`, `asta_id`, `saldo_totale_dopo`,
-  `saldo_riservato_dopo`). Riallineare anche i tipi di movimento agli enum
-  definiti nello schema. Non modificare le migrazioni V2/V8 già applicate.
-- [ ] Implementare `GET /api/v1/me/portafoglio`, con saldo totale, riservato,
-  disponibile e movimenti, secondo il [contratto REST](04-api-rest.md).
-- [ ] Concordare con Tommi come riusare o estrarre riserva, rilascio, pagamento
-  e incasso già implementati via JDBC. Ogni modifica al saldo deve avere un
-  movimento di ledger; gli importi usano `BigDecimal`.
-- [ ] Verificare avvio e test con PostgreSQL prima di proporre il merge.
+Implementazione integrata in `main`. Il precedente branch `portafoglio-movimenti`
+conteneva modelli incompatibili con Flyway e viene eliminato, essendo sostituito
+dal modulo verificato. Il modulo usa proiezioni JDBC sulle
+tabelle esistenti, senza introdurre quelle entity o modificare le migrazioni.
+
+- Implementati `GET /api/v1/me/portafoglio` (saldi e ledger paginato) e
+  `PUT /api/v1/me/portafoglio/impostazioni` secondo il contratto aggiornato.
+- Estratti lock, aggiornamenti dei saldi e scrittura ledger da `OfferteRepository`
+  a `PortafoglioRepository`; rilanci, ritiri e settlement delegano allo stesso
+  componente. Conservati ordine dei lock, atomicità ed errori STOMP.
+- Validati importi, ruolo USER, identità del token, riserve, PUT identico,
+  rollback e concorrenza. Documentazione e Postman aggiornati.
+- [x] Integrare le modifiche verificate in `main`, sostituendo i vecchi modelli
+  incompatibili.
+
+Dettagli e verifiche in [Portafoglio e ledger](09-portafoglio.md).
 
 ## Tommi — offerte e chiusura
 
@@ -47,8 +55,10 @@ settlement assegna già il prodotto all'inventario del vincitore.
 - [ ] Verificare chiusura con e senza vincitore, scadenza estesa, concorrenza
   tra rilancio e chiusura e recupero dopo un riavvio. Crediti, prodotto ed
   eventi non devono essere trasferiti o pubblicati due volte.
-- [ ] Concordare con Mondir le interfacce delle operazioni economiche, mantenendo
-  ordine dei lock, ledger e atomicità. Non duplicare le operazioni esistenti.
+
+Le operazioni economiche sono ora estratte nel modulo portafoglio integrato;
+`OfferteRepository` conserva le deleghe usate dai servizi. Per nuove operazioni
+riusare `PortafoglioRepository`, mantenendo ordine dei lock, ledger e atomicità.
 
 La chiusura resta un servizio interno: non serve un endpoint pubblico di
 settlement. Il relay degli eventi WebSocket è già collegato.
@@ -77,17 +87,18 @@ Ticket, STOMP, presenza, comando rilancio, conferme/rifiuti privati e relay
 degli eventi post-commit sono integrati in `main`. Anche la pulizia dei dati
 dei test WebSocket è stata completata.
 
-- [ ] Implementare l'email riepilogativa al vincitore dopo il commit della
+- [x] Implementare l'email riepilogativa al vincitore dopo il commit della
   chiusura, coordinandosi con Marco e Tommi.
-- [ ] Gestire errori e retry dell'invio: un errore email non deve annullare
+- [x] Gestire errori e retry dell'invio: un errore email non deve annullare
   la vittoria o ripetere il settlement.
 
-Nota di avanzamento Maikol (branch `web_socket`, non ancora mergiato): implementati
-listener post-commit, coda V11, invio su executor dedicato, recupero e retry
-persistenti. SMTP resta disabilitato per default. Le caselle sopra restano aperte
-finché l'attività non viene integrata in `main`. Dettagli in
-[Notifiche email](10-notifiche-email.md). Restano configurazione SMTP e verifica
-end-to-end dopo il collegamento della chiusura automatica da parte di Marco/Tommi.
+Integrati in `main` nel commit `c9e2a11`: listener post-commit, coda V11,
+invio su executor dedicato, recupero e retry persistenti. SMTP resta disabilitato
+per default. Dettagli in [Notifiche email](10-notifiche-email.md).
+
+- [ ] Configurare e attivare SMTP nell'ambiente concordato dal team.
+- [ ] Verificare il flusso end-to-end dopo il collegamento della chiusura
+  automatica da parte di Marco/Tommi.
 
 ## Cristian — prodotti e catalogo
 

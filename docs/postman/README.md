@@ -9,7 +9,7 @@ Importare `local.postman_environment.json` e selezionare l'ambiente
 | `auth.json` | Registrazione, login, refresh, logout ed eliminazione account | Implementato |
 | `prodotti.json` | Categorie, catalogo e gestione ADMIN | Implementato; acquisti fissi futuri |
 | `inventario.json` | Inventario personale | API prevista |
-| `portafoglio.json` | Saldo e impostazioni | API previste |
+| `portafoglio.json` | Saldo, movimenti paginati e impostazioni | Implementato |
 | `aste.json` | Lobby, ticket, programmazione e storici | Programmazione ADMIN, lobby, snapshot e ticket implementati; altre API previste |
 
 L'ambiente usa `http://localhost:8081/api/v1` come `baseUrl`. Modificarlo se
@@ -69,7 +69,13 @@ Per provare i rilanci, usare un client STOMP con il ticket monouso ottenuto dall
 collection, sottoscrivere `/topic/aste/{astaId}` e `/user/queue/aste`, quindi
 inviare `PLACE_BID` a `/app/aste/{astaId}/offerte` come nel
 [contratto STOMP](../04-api-rest.md#websocketstomp). L'asta deve essere APERTA e
-l'utente deve avere saldo disponibile: le API di ricarica sono ancora future.
+l'utente deve avere saldo disponibile: impostarlo con la richiesta PUT della
+collection `portafoglio.json`.
 Il mittente riceve `BID_CONFIRMED` o `BID_REJECTED`; il topic riceve gli eventi
 post-commit. Un retry dello stesso UUID non ripubblica l'evento pubblico.
 La chiusura è un servizio interno, non un endpoint REST manuale.
+
+Per `portafoglio.json`, effettuare il login USER: il GET verifica saldi e pagina
+dei movimenti; il PUT imposta il saldo virtuale assoluto (esempio: 10000 CRD).
+Ripetere il GET dopo il PUT mostra il movimento `IMPOSTAZIONE_SALDO`. Un PUT
+identico non aggiunge movimenti. Le due API non sono accessibili agli ADMIN.

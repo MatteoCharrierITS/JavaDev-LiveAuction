@@ -1,7 +1,7 @@
 # Email al vincitore — modulo Maikol
 
-Implementazione locale nel branch `web_socket`, 8 ottobre 2026; non ancora
-indicata come integrata in `main`. Il modulo non chiude aste né modifica saldi,
+Modulo integrato in `main` nel commit `c9e2a11`; stato aggiornato al
+9 ottobre 2026. Il modulo non chiude aste né modifica saldi,
 ledger o inventario. Non aggiunge endpoint REST/STOMP.
 
 ## Flusso e dipendenze
@@ -72,7 +72,8 @@ errore e retry persistiti, recupero di un evento perso, asta senza vincitore,
 utente disattivato, concorrenza e comportamento del job.
 I fixture vengono rimossi dopo ogni test. Non sono state inviate email reali.
 
-Ultima suite completa: **200 test Producer superati, 0 fallimenti, 0 errori,
+Verifica completa riportata l'8 ottobre 2026 sul branch di sviluppo:
+**200 test Producer superati, 0 fallimenti, 0 errori,
 0 saltati**, inclusi PostgreSQL, WebSocket e SMTP simulato:
 
 ```sh
@@ -83,4 +84,16 @@ sh producer/mvnw -f producer/pom.xml clean test
 
 Il database è dedicato ai test; i job automatici delle aste sono disattivati
 durante la suite, i test del ciclo di vita li richiamano esplicitamente.
-Validata anche la configurazione Docker Compose. Nessun commit eseguito.
+Nel report dell'8 ottobre è riportata anche la validazione della configurazione
+Docker Compose.
+
+Verifica del 9 ottobre 2026 su `main` (`c9e2a11`): build di Producer e Consumer
+riuscita, 92 test superati e 82 saltati, senza fallimenti o errori. I test
+PostgreSQL e WebSocket non sono stati eseguiti in questa verifica. Con la JVM
+locale Java 25 è stato necessario caricare Mockito come agente all'avvio;
+il progetto resta configurato per Java 21:
+
+```sh
+./producer/mvnw -f pom.xml test \
+  -DargLine=-javaagent:$HOME/.m2/repository/org/mockito/mockito-core/5.17.0/mockito-core-5.17.0.jar
+```

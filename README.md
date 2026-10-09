@@ -11,7 +11,7 @@
 | **Matteo** | Autenticazione e utenti: registrazione, login, token, ruoli e sicurezza. **Consumer/frontend:** client REST, sessione web, pagine Thymeleaf e stanza live. |
 | **Maikol** | WebSocket e notifiche: STOMP, ticket, presenza, eventi delle stanze ed email al vincitore. |
 | **Cristian** | Prodotti e catalogo: categorie, CRUD ADMIN, ricerca, paginazione e stock. |
-| **Mondir** | Portafoglio e movimenti: saldi, ledger e integrazione delle operazioni sui crediti. |
+| **Matteo (subentro dal 9 ottobre 2026)** | Portafoglio e movimenti: riallineamento del lavoro di Mondir, API del saldo/ledger e integrazione delle operazioni sui crediti con Tommi. |
 | **Marco** | Programmazione aste: creazione ADMIN, orari, blocco stock, scheduler, annullamento e storici. |
 | **Tommi** | Offerte e chiusura: rilanci, estensioni, concorrenza, vincitore e trasferimento di crediti e prodotto. |
 | **Da assegnare** | API inventario e acquisti a prezzo fisso; referente da decidere nel team. |
@@ -40,15 +40,17 @@ Il sistema è composto da due applicazioni indipendenti:
 > catalogo REST (categorie, prodotti, gestione ADMIN di stock, filtri e
 > paginazione) e la programmazione ADMIN delle aste con blocco atomico dello
 > stock, apertura automatica, lobby e snapshot pubblici. I servizi di offerte e
-> settlement sono implementati; mancano la chiusura automatica, l'attivazione SMTP dell'email,
-> annullamento, storici e API dedicate di portafoglio/inventario. La
+> settlement e notifiche email con coda persistente e retry sono implementati;
+> mancano la chiusura automatica, l'attivazione SMTP dell'email,
+> annullamento, storici e API inventario. Le API del portafoglio (saldo, movimenti
+> e impostazione del saldo virtuale) sono integrate in `main`. La
 > Consumer è ancora uno scheletro senza pagine applicative: il flusso completo
 > LiveAuction non è ancora disponibile. Stato dettagliato in
 > [attività del team](docs/todo.md) e [stato del modulo aste](docs/README.md#stato-del-modulo-aste).
 
 ## La feature distintiva: LiveAuction
 
-Avanzamento locale nel branch `web_socket`: implementati email al vincitore,
+Integrati in `main` (commit `c9e2a11`): email al vincitore,
 coda persistente e retry; invio disabilitato per default, nessun invio reale
 durante i test. Configurazione e limiti in [Notifiche email](docs/10-notifiche-email.md).
 
@@ -152,7 +154,8 @@ Base REST: `http://localhost:8081/api/v1`
 | `GET` | `/prodotti` | catalogo filtrabile |
 | `POST` | `/prodotti/{id}/acquisti` | acquisto a prezzo fisso |
 | `GET` | `/me/inventario` | prodotti vinti o acquistati |
-| `GET` | `/me/portafoglio` | saldo e movimenti |
+| `GET` | `/me/portafoglio` | saldo e movimenti paginati |
+| `PUT` | `/me/portafoglio/impostazioni` | imposta saldo virtuale USER |
 | `POST` | `/admin/aste` | programma un'asta e riserva lo stock |
 | `GET` | `/aste` | lobby delle aste |
 | `GET` | `/aste/{id}` | snapshot autorevole |
@@ -272,3 +275,5 @@ docker compose --profile prod down
 - [Roadmap e test](docs/06-piano-lavoro.md)
 - [Motore LiveAuction](docs/07-liveauction.md)
 - [Offerte e chiusura: integrazione](docs/08-offerte-chiusura.md)
+- [Portafoglio e ledger](docs/09-portafoglio.md)
+- [Notifiche email](docs/10-notifiche-email.md)

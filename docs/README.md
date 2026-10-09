@@ -12,6 +12,8 @@ Questa è la specifica corrente di **LiveAuction**.
 6. [Roadmap e criteri di accettazione](06-piano-lavoro.md)
 7. [Motore LiveAuction](07-liveauction.md)
 8. [Offerte e chiusura: integrazione](08-offerte-chiusura.md)
+9. [Portafoglio e ledger](09-portafoglio.md)
+10. [Notifiche email al vincitore](10-notifiche-email.md)
 
 **[DA FARE — attività e prossimi passi del team](todo.md)**
 
@@ -33,10 +35,15 @@ Nel branch corrente sono implementati:
   con conferme/rifiuti alla sola sessione mittente.
 - Servizi JDBC di rilancio, estensione, riserva/rilascio con ledger, ritiro offerte
   e settlement con assegnazione all'inventario; eventi economici sui topic.
+- Email al vincitore dopo il commit, con coda persistente V11, recupero e retry;
+  invio SMTP disabilitato per default.
 
-Chiusura automatica, annullamento, storici, API dedicate di portafoglio/inventario
+Chiusura automatica, annullamento, storici, API inventario
 e attivazione SMTP email restano da completare. Il settlement è già implementato nel servizio
 interno, ma non viene invocato automaticamente alla scadenza.
+Le API del portafoglio sono integrate in `main`: saldo e movimenti
+paginati, impostazione del saldo virtuale e operazioni JDBC condivise con le aste.
+Dettagli in [Portafoglio e ledger](09-portafoglio.md).
 La UI Consumer resta un modulo separato.
 
 Payload, filtri ed errori sono descritti in [Contratti REST](04-api-rest.md);
@@ -47,10 +54,10 @@ WebSocket sopra indicato.
 
 ## Decisioni chiave
 
-Nel branch `web_socket` è disponibile anche il
+In `main`, dal commit `c9e2a11`, è disponibile anche il
 [modulo email al vincitore](10-notifiche-email.md), con coda persistente e retry.
 L'invio è disabilitato per default; attivazione SMTP e chiusura automatica
-restano da completare. Non è ancora indicato come integrato in `main`.
+restano da completare.
 
 | Tema | Decisione |
 | --- | --- |

@@ -90,7 +90,7 @@ class AuthFlowIntegrationTests {
         assertThat(rotatedToken).isNotEqualTo(refreshToken);
         mvc.perform(get("/api/v1/me/portafoglio")
                         .header("Authorization", "Bearer " + refreshed.get("accessToken").asText()))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isOk());
         mvc.perform(post("/api/v1/auth/refresh")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json.writeValueAsString(new Refresh(refreshToken))))
@@ -106,7 +106,7 @@ class AuthFlowIntegrationTests {
 
         mvc.perform(get("/api/v1/me/portafoglio")
                         .header("Authorization", "Bearer " + token))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isOk());
         mvc.perform(post("/api/v1/auth/logout")
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isNoContent());

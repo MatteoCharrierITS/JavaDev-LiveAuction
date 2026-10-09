@@ -2,7 +2,7 @@
   "info": {
     "name": "LiveAuction • Portafoglio",
     "_postman_id": "bbcb8340-cae7-47fa-9376-ac004a4aa984",
-    "description": "Previsto dal contratto docs/04-api-rest.md; l'endpoint non è ancora implementato.",
+    "description": "API implementate: saldo e movimenti paginati, impostazione del saldo virtuale. Richiedono un token USER.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -11,8 +11,8 @@
       "request": {
         "method": "GET",
         "header": [],
-        "url": "{{baseUrl}}/me/portafoglio",
-        "description": "Previsto dal contratto docs/04-api-rest.md; l'endpoint non è ancora implementato.",
+        "url": "{{baseUrl}}/me/portafoglio?page=0&size=20",
+        "description": "Saldo personale e movimenti ordinati per data/ID decrescenti. page >= 0, size da 1 a 100; default 0 e 20.",
         "auth": {
           "type": "bearer",
           "bearer": [
@@ -23,7 +23,19 @@
             }
           ]
         }
-      }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Saldo personale disponibile\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"Saldo coerente e movimenti paginati\", function () { const data = pm.response.json(); pm.expect(data.valuta).to.eql(\"CRD\"); pm.expect(data.saldoDisponibile).to.be.closeTo(data.saldoTotale - data.saldoRiservato, 0.001); pm.expect(data.movimenti).to.be.an(\"array\"); pm.expect(data.page).to.eql(0); pm.expect(data.size).to.eql(20); });"
+            ]
+          }
+        }
+      ]
     },
     {
       "name": "Imposta saldo virtuale",
@@ -36,7 +48,7 @@
           }
         ],
         "url": "{{baseUrl}}/me/portafoglio/impostazioni",
-        "description": "Previsto dal contratto docs/04-api-rest.md; l'endpoint non è ancora implementato. L'importo deve restare almeno pari al saldo riservato.",
+        "description": "Imposta un saldo assoluto non negativo (max 9999999999.99, due decimali). Non può scendere sotto il riservato (409 SALDO_INFERIORE_AL_RISERVATO). Ripetere lo stesso saldo non crea movimenti.",
         "auth": {
           "type": "bearer",
           "bearer": [
@@ -56,7 +68,19 @@
             }
           }
         }
-      }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Saldo virtuale impostato\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"Saldo coerente\", function () { const data = pm.response.json(); const body = JSON.parse(pm.variables.replaceIn(pm.request.body.raw)); pm.expect(data.saldoTotale).to.eql(body.saldoTotale); pm.expect(data.valuta).to.eql(\"CRD\"); pm.expect(data.saldoDisponibile).to.be.closeTo(data.saldoTotale - data.saldoRiservato, 0.001); });"
+            ]
+          }
+        }
+      ]
     }
   ]
 }

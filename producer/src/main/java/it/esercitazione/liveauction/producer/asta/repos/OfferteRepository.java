@@ -1,5 +1,9 @@
 package it.esercitazione.liveauction.producer.asta.repos;
 
+import it.esercitazione.liveauction.producer.portafoglio.repos.PortafoglioRepository;
+import it.esercitazione.liveauction.producer.portafoglio.repos.PortafoglioRepository.PortafoglioBloccato;
+import it.esercitazione.liveauction.producer.portafoglio.model.TipoMovimento;
+import it.esercitazione.liveauction.producer.portafoglio.exceptions.PortafoglioException;
 import it.esercitazione.liveauction.producer.asta.exceptions.OffertaException;
 import it.esercitazione.liveauction.producer.asta.responses.ChiusuraAstaResponse;
 import it.esercitazione.liveauction.producer.asta.responses.StatoOfferteResponse;
@@ -19,8 +23,8 @@ import java.util.*;
 @Repository
 @RequiredArgsConstructor
 public class OfferteRepository {
-    private static final BigDecimal MASSIMO_SALDO = new BigDecimal("9999999999.99");
     private final JdbcTemplate jdbc;
+    private final PortafoglioRepository portafogli;
 
     public Optional<UtenteOfferta> bloccaUtente(long id) {
         // Compatibile con KEY SHARE delle FK: il settlement può assegnare l'inventario
@@ -69,24 +73,9 @@ public class OfferteRepository {
                 """, (rs, row) -> offerta(rs), astaId);
     }
 
-    /** Un solo ordine globale: id del portafoglio, anche per ritiri su più aste. */
+    /** Delega al modulo economico mantenendo l'ordine dei lock usato dalle aste. */
     public Map<Long, PortafoglioBloccato> bloccaPortafogli(Collection<Long> utenti) {
-        if (utenti.isEmpty()) {
-            return new HashMap<>();
-        }
-        List<Long> ids = utenti.stream().distinct().toList();
-        String placeholders = String.join(",", Collections.nCopies(ids.size(), "?"));
-        List<PortafoglioBloccato> portafogli = jdbc.query(
-                "SELECT id, utente_id, saldo_totale, saldo_riservato FROM portafogli "
-                        + "WHERE utente_id IN (" + placeholders + ") ORDER BY id FOR UPDATE",
-                (rs, row) -> new PortafoglioBloccato(rs.getLong("id"), rs.getLong("utente_id"),
-                        rs.getBigDecimal("saldo_totale"), rs.getBigDecimal("saldo_riservato")), ids.toArray());
-        Map<Long, PortafoglioBloccato> risultato = new HashMap<>();
-        portafogli.forEach(portafoglio -> risultato.put(portafoglio.utenteId(), portafoglio));
-        if (risultato.size() != ids.size()) {
-            throw new IllegalStateException("Portafoglio mancante per un utente coinvolto nell'asta");
-        }
-        return risultato;
+        return portafogli.bloccaPortafogli(utenti);
     }
 
     public OffertaRegistrata inserisci(long astaId, long utenteId, UUID clientBidId,
@@ -106,26 +95,14 @@ public class OfferteRepository {
     public PortafoglioBloccato movimenta(PortafoglioBloccato portafoglio, long astaId,
                                          String tipo, BigDecimal importo,
                                          BigDecimal variazioneTotale, BigDecimal variazioneRiserva, Instant now) {
-        BigDecimal totale = portafoglio.totale().add(variazioneTotale);
-        BigDecimal riservato = portafoglio.riservato().add(variazioneRiserva);
-        if (totale.compareTo(MASSIMO_SALDO) > 0) {
-            throw new OffertaException(HttpStatus.CONFLICT, "LIMITE_SALDO_SUPERATO",
-                    "Il conto destinatario supera il saldo massimo consentito");
+        try {
+            return portafogli.movimenta(portafoglio, astaId, TipoMovimento.valueOf(tipo), importo,
+                    variazioneTotale, variazioneRiserva, now);
+        } catch (PortafoglioException exception) {
+            // Conserva il contratto degli errori del comando STOMP esistente.
+            throw new OffertaException(HttpStatus.valueOf(exception.getStatusCode().value()),
+                    (String) exception.getBody().getProperties().get("code"), exception.getBody().getDetail());
         }
-        if (importo.signum() <= 0 || totale.signum() < 0 || riservato.signum() < 0
-                || riservato.compareTo(totale) > 0) {
-            throw new IllegalStateException("Saldo o riserva incoerenti con l'offerta");
-        }
-        jdbc.update("""
-                UPDATE portafogli SET saldo_totale = ?, saldo_riservato = ?,
-                    versione = versione + 1, data_modifica = ? WHERE id = ?
-                """, totale, riservato, Timestamp.from(now), portafoglio.id());
-        jdbc.update("""
-                INSERT INTO movimenti_portafoglio
-                    (portafoglio_id, asta_id, tipo, importo, saldo_totale_dopo, saldo_riservato_dopo, data_movimento)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-                """, portafoglio.id(), astaId, tipo, importo, totale, riservato, Timestamp.from(now));
-        return new PortafoglioBloccato(portafoglio.id(), portafoglio.utenteId(), totale, riservato);
     }
 
     public void cambiaLeader(AstaBloccata asta, OffertaRegistrata leader, Instant fineAt) {
@@ -225,9 +202,5 @@ public class OfferteRepository {
     public record OffertaRegistrata(long id, long astaId, long utenteId, UUID clientBidId,
                                     BigDecimal importo, Instant ritirataAt) {}
 
-    public record PortafoglioBloccato(long id, long utenteId, BigDecimal totale, BigDecimal riservato) {
-        public BigDecimal disponibile() {
-            return totale.subtract(riservato);
-        }
-    }
+
 }

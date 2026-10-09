@@ -55,7 +55,7 @@ dalle relative `offerte`.
 
 ## DDL di riferimento
 
-### Coda email (V11, branch web_socket)
+### Coda email (V11, integrata in main)
 
 `notifiche_email` conserva una richiesta per asta: `asta_id` è PK e FK verso
 `aste` (ON DELETE CASCADE). Campi: `stato` (PENDING/SENT/SKIPPED), `tentativi`,

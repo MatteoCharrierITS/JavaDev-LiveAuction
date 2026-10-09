@@ -216,6 +216,53 @@ Errori catalogo in `application/problem+json`:
 
 ## Portafoglio
 
+Entrambe le operazioni sono implementate e riservate a `USER`. Il Producer
+ricava l'utente dal token Bearer; non accetta ID di altri utenti. Anche i metodi
+di servizio verificano ruolo e corrispondenza del subject con `@PreAuthorize`.
+
+### Saldo e movimenti
+
+```http
+GET /api/v1/me/portafoglio?page=0&size=20
+```
+
+`page` parte da zero; `size` è compresa tra 1 e 100. I movimenti sono ordinati
+per `dataMovimento` decrescente, poi `id` decrescente. Una pagina oltre l'ultima
+restituisce una lista vuota. Saldi, conteggio e movimenti appartengono allo
+stesso snapshot transazionale, anche durante rilanci o settlement concorrenti.
+
+```json
+{
+  "saldoTotale": 10000.00,
+  "saldoRiservato": 1250.00,
+  "saldoDisponibile": 8750.00,
+  "valuta": "CRD",
+  "movimenti": [
+    {
+      "id": 42,
+      "astaId": 7,
+      "tipo": "RISERVA_OFFERTA",
+      "importo": 1250.00,
+      "saldoTotaleDopo": 10000.00,
+      "saldoRiservatoDopo": 1250.00,
+      "dataMovimento": "2026-10-09T07:00:00Z"
+    }
+  ],
+  "page": 0,
+  "size": 20,
+  "totalElements": 1,
+  "totalPages": 1
+}
+```
+
+I tipi di movimento sono quelli della migrazione V8: `IMPOSTAZIONE_SALDO`,
+`RISERVA_OFFERTA`, `RILASCIO_OFFERTA`, `PAGAMENTO_ASTA`, `INCASSO_ASTA`,
+`ACQUISTO_FISSO`. `astaId` è null per operazioni non legate a un'asta.
+Gli importi sono positivi; i saldi successivi descrivono l'effetto del movimento.
+Non sono esposti entity, informazioni di altri utenti o credenziali.
+
+### Impostazione del saldo virtuale
+
 ```http
 PUT /api/v1/me/portafoglio/impostazioni
 ```
@@ -224,19 +271,31 @@ PUT /api/v1/me/portafoglio/impostazioni
 { "saldoTotale": 10000.00 }
 ```
 
-Risposta:
+`saldoTotale` è obbligatorio, non negativo, con massimo dieci cifre intere e
+due decimali (`9999999999.99`). È un valore assoluto, non una ricarica da sommare.
+La risposta `200` contiene `saldoTotale`, `saldoRiservato`, `saldoDisponibile`
+e `valuta`, come nell'esempio del GET, senza la pagina dei movimenti.
 
-```json
-{
-  "saldoTotale": 10000.00,
-  "saldoRiservato": 1250.00,
-  "saldoDisponibile": 8750.00,
-  "valuta": "CRD"
-}
-```
+Il servizio blocca prima l'utente, poi il portafoglio. Non cambia le riserve
+esistenti e verifica il saldo riservato dopo l'attesa dei lock. Un cambiamento
+crea un movimento `IMPOSTAZIONE_SALDO`, con `astaId` null, importo pari al
+valore assoluto della differenza e saldi successivi. Saldo, versione, istante
+UTC di modifica e ledger vengono aggiornati nella stessa transazione.
+Un PUT con saldo uguale a quello corrente non crea movimenti né cambia versione
+o data di modifica. Anche il saldo zero è consentito se non ci sono riserve.
 
-Un valore inferiore al riservato produce
-`409 SALDO_INFERIORE_AL_RISERVATO`.
+Errori in `application/problem+json`:
+
+| Status | Caso/codice |
+| --- | --- |
+| 400 | Body, importo o parametri non validi; `PAGINAZIONE_NON_VALIDA` per page < 0 o size fuori da 1–100 |
+| 401 | Token assente, scaduto o revocato; account disattivato |
+| 403 | Ruolo diverso da USER |
+| 404 | `RISORSA_NON_TROVATA` per lettura di un portafoglio mancante |
+| 409 | `SALDO_INFERIORE_AL_RISERVATO` per impostazione inferiore ai crediti già riservati |
+
+Le operazioni economiche condivise con offerte e settlement sono descritte
+in [Portafoglio e ledger](09-portafoglio.md).
 
 ## Programmazione di un'asta
 
@@ -404,8 +463,8 @@ Il timer conserva eventuali estensioni già persistite.
 
 Entrambe le letture restituiscono `Cache-Control: no-store`, orari UTC e tempo
 server; non attivano aste e non modificano stock. Le transizioni restano
-responsabilità dello scheduler. Ticket, annullamento e storici sono ancora
-previsti dal contratto e non implementati nel modulo aste di questo branch.
+responsabilità dello scheduler. Il ticket WebSocket è implementato nel modulo
+auth; annullamento e storici restano previsti dal contratto e non implementati.
 
 ## Storici
 
@@ -578,7 +637,7 @@ senza vincitore). Non espone `migliorOfferenteId`, `vincitoreId` o l'UUID del
 comando nel topic pubblico. Non genera email né avvia il settlement.
 La consegna resta best effort in memoria: riconnessioni e gap richiedono REST.
 
-Nel branch `web_socket` un listener separato del modulo `notifica` accoda l'email
+In `main` un listener separato del modulo `notifica` accoda l'email
 al vincitore con persistenza/retry. Non cambia il protocollo STOMP né aggiunge
 endpoint REST. L'invio resta disabilitato finché SMTP non è configurato; dettagli
 in [Notifiche email](10-notifiche-email.md).

@@ -3,6 +3,7 @@ package it.esercitazione.liveauction.producer.asta.services;
 import it.esercitazione.liveauction.producer.asta.events.EventiOffertePublisher;
 import it.esercitazione.liveauction.producer.asta.events.EventoOfferte;
 import it.esercitazione.liveauction.producer.asta.exceptions.OffertaException;
+import it.esercitazione.liveauction.producer.portafoglio.repos.PortafoglioRepository.PortafoglioBloccato;
 import it.esercitazione.liveauction.producer.asta.repos.OfferteRepository;
 import it.esercitazione.liveauction.producer.asta.repos.OfferteRepository.*;
 import it.esercitazione.liveauction.producer.asta.requests.OffertaRequest;
