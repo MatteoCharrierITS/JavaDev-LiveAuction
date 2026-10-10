@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Account')}"></head>
+<body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<main class="auth-card">
+    <h1>Your account</h1>
+    <p>Signed in as <strong th:text="${username}">username</strong>.</p>
+    <section aria-labelledby="delete-heading">
+        <h2 id="delete-heading">Delete account</h2>
+        <p>This permanently deactivates and anonymizes your account.</p>
+        <form th:action="@{/account/delete}" method="post">
+            <label><input type="checkbox" required> I understand this cannot be undone.</label>
+            <button class="danger" type="submit">Delete my account</button>
+        </form>
+    </section>
+</main>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+</body>
+</html>

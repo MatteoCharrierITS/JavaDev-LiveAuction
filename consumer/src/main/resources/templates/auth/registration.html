@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Create account')}"></head>
+<body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<main class="auth-card">
+    <h1>Create account</h1>
+    <div th:replace="~{fragments/alerts :: alerts}"></div>
+    <form th:action="@{/registrazione}" th:object="${form}" method="post">
+        <label for="username">Username</label>
+        <input id="username" th:field="*{username}" minlength="3" maxlength="50" autocomplete="username" required>
+        <p class="field-error" th:if="${#fields.hasErrors('username')}">Use 3 to 50 characters.</p>
+        <label for="email">Email</label>
+        <input id="email" th:field="*{email}" type="email" maxlength="200" autocomplete="email" required>
+        <p class="field-error" th:if="${#fields.hasErrors('email')}">Enter a valid email address.</p>
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" minlength="8" maxlength="72" autocomplete="new-password" required>
+        <p class="field-error" th:if="${#fields.hasErrors('password')}">Use 8 to 72 characters.</p>
+        <button type="submit">Create account</button>
+    </form>
+    <p>Already registered? <a th:href="@{/login}">Sign in</a>.</p>
+</main>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+</body>
+</html>

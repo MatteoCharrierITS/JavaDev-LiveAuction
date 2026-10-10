@@ -85,3 +85,7 @@ failsafe-reports/
 Thumbs.db
 Desktop.ini
 $RECYCLE.BIN/
+
+
+# Obsidian
+.obsidian/

@@ -16,9 +16,9 @@ sessione server-side. Il browser invia le credenziali alla Consumer, che chiama
 `POST /auth/login` sul Producer. Per ogni chiamata protetta la Consumer invia
 `Authorization: Bearer <accessToken>`; alla scadenza usa `POST /auth/refresh` e
 sostituisce entrambi i token nella sessione. Al logout chiama
-`POST /auth/logout` e svuota la sessione. La Consumer può adattare la UI al
-ruolo, ma l'autorizzazione resta al Producer. La sicurezza web della Consumer
-è ancora da implementare: attualmente consente tutte le richieste.
+`POST /auth/logout` e svuota la sessione. La Consumer protegge le rotte MVC
+tramite lo stato di sessione e usa CSRF per i form; il Producer resta l'autorità
+finale per ogni operazione protetta.
 Per entrare in una stanza richiede al Producer un ticket WebSocket monouso,
 valido 30 secondi. Il token principale non viene esposto al JavaScript.
 

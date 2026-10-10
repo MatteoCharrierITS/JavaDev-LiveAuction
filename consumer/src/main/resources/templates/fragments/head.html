@@ -1,0 +1,10 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(pageTitle)">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title th:text="${pageTitle} + ' · LiveAuction'">LiveAuction</title>
+    <link rel="stylesheet" th:href="@{/css/site.css}">
+</head>
+</html>

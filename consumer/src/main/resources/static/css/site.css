@@ -1,0 +1,23 @@
+:root { color-scheme: light; font-family: system-ui, sans-serif; color: #18232b; background: #f4f6f8; }
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
+a { color: #155b83; }
+button, input { font: inherit; }
+button { cursor: pointer; border: 0; border-radius: .4rem; background: #155b83; color: white; padding: .7rem 1rem; }
+button:hover { background: #104766; }
+button.danger { background: #9b3030; margin-top: 1rem; }
+.site-nav { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1rem max(1rem, calc((100vw - 64rem) / 2)); background: #112c3b; color: white; }
+.site-nav a { color: white; }
+.brand { font-weight: 700; font-size: 1.2rem; text-decoration: none; }
+.nav-links { display: flex; align-items: center; gap: 1rem; }
+.link-button { padding: 0; background: none; text-decoration: underline; }
+.link-button:hover { background: none; }
+.auth-card { width: min(100% - 2rem, 30rem); margin: 3rem auto; padding: 2rem; background: white; border: 1px solid #dce2e6; border-radius: .7rem; box-shadow: 0 .5rem 2rem #132d3b12; }
+.auth-card h1 { margin-top: 0; }
+.auth-card form { display: flex; flex-direction: column; gap: .5rem; }
+.auth-card input:not([type=checkbox]) { width: 100%; padding: .7rem; margin-bottom: .7rem; border: 1px solid #8999a3; border-radius: .35rem; }
+.alert { padding: .8rem; border-radius: .35rem; }
+.alert-error, .field-error { color: #8c2525; background: #fff1f1; }
+.alert-success { color: #17552c; background: #eaf7ed; }
+.field-error { margin: -.6rem 0 .7rem; padding: .3rem; }
+.site-footer { margin-top: auto; text-align: center; padding: 2rem; color: #52636e; }

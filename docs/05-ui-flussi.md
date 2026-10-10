@@ -6,6 +6,7 @@
 | --- | --- | --- |
 | `/login` | pubblico | accesso |
 | `/registrazione` | pubblico | nuovo account |
+| `/account` | autenticato | account e richiesta di eliminazione |
 | `/marketplace` | pubblico | catalogo completo |
 | `/prodotti/{id}` | pubblico | dettaglio, stock e astabilità |
 | `/aste` | pubblico | lobby |

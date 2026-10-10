@@ -1,0 +1,14 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<nav th:fragment="navbar" class="site-nav" aria-label="Main navigation">
+    <a class="brand" th:href="@{/}">LiveAuction</a>
+    <div class="nav-links">
+        <a th:if="${!signedIn}" th:href="@{/login}">Sign in</a>
+        <a th:if="${!signedIn}" th:href="@{/registrazione}">Create account</a>
+        <a th:if="${signedIn}" th:href="@{/account}" th:text="${displayName}">Account</a>
+        <form th:if="${signedIn}" th:action="@{/logout}" method="post">
+            <button type="submit" class="link-button">Sign out</button>
+        </form>
+    </div>
+</nav>
+</html>
