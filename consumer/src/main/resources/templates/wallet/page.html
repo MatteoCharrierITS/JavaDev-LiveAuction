@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Wallet')}"></head>
+<body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<main class="wallet-page">
+    <header>
+        <h1>Your wallet</h1>
+        <p class="muted">Virtual credits for LiveAuction.</p>
+    </header>
+    <div th:replace="~{wallet/fragments :: balance}"></div>
+    <div th:replace="~{wallet/fragments :: settings}"></div>
+    <div th:replace="~{wallet/fragments :: ledger}"></div>
+</main>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+</body>
+</html>

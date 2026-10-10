@@ -47,3 +47,17 @@ button.danger { background: #9b3030; margin-top: 1rem; }
 .auction-countdown { padding: .7rem; background: #eaf2f7; border-radius: .35rem; }
 .auction-card h2 { overflow-wrap: anywhere; }
 @media (max-width: 40rem) { .site-nav, .nav-links { flex-wrap: wrap; } .catalog-filters { align-items: stretch; flex-direction: column; } .catalog-filters input[type=search] { min-width: 0; width: 100%; } }
+.wallet-page { width: min(100% - 2rem, 68rem); margin: 2.5rem auto; }
+.wallet-panel { background: white; border: 1px solid #dce2e6; border-radius: .7rem; padding: 1.5rem; margin: 1rem 0; }
+.wallet-panel h2 { margin-top: 0; }
+.wallet-balances { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: 1rem; margin: 0; }
+.wallet-balances div { background: #eaf2f7; border-radius: .4rem; padding: 1rem; }
+.wallet-balances dt { color: #52636e; }
+.wallet-balances dd { margin: .3rem 0 0; font-size: 1.3rem; font-weight: 700; }
+.wallet-form { display: grid; gap: .6rem; max-width: 24rem; }
+.wallet-form label { font-weight: 600; }
+.wallet-form input { padding: .65rem; border: 1px solid #8999a3; border-radius: .35rem; }
+.wallet-table-wrap { overflow-x: auto; }
+.wallet-table { width: 100%; border-collapse: collapse; text-align: left; }
+.wallet-table caption { text-align: left; color: #52636e; padding-bottom: .5rem; }
+.wallet-table th, .wallet-table td { padding: .65rem; border-bottom: 1px solid #dce2e6; white-space: nowrap; }

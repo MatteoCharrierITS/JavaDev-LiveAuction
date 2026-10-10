@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Wallet')}"></head>
+<body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<main class="wallet-page">
+    <div class="error-page" role="alert">
+        <h1 th:text="${errorTitle}">Wallet unavailable</h1>
+        <p th:text="${errorMessage}">Please try again.</p>
+        <a th:href="@{/impostazioni/portafoglio}">Return to wallet</a>
+    </div>
+</main>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+</body>
+</html>

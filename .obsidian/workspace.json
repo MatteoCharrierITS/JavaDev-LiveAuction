@@ -190,17 +190,17 @@
   },
   "active": "96836a2f2f7886ee",
   "lastOpenFiles": [
-    "consumer/src/test/js/auction-lobby.test.cjs",
-    "consumer/src/test/js",
-    "consumer/target/surefire-reports/TEST-it.esercitazione.liveauction.consumer.AuctionLobbyTests.xml",
-    "consumer/target/surefire-reports/it.esercitazione.liveauction.consumer.AuctionLobbyTests.txt",
+    "consumer/target/surefire-reports/TEST-it.esercitazione.liveauction.consumer.WalletTests.xml",
+    "consumer/target/surefire-reports/it.esercitazione.liveauction.consumer.WalletTests.txt",
+    "consumer/target/test-classes/it/esercitazione/liveauction/consumer/WalletTests$StubConfig.class",
+    "consumer/target/test-classes/it/esercitazione/liveauction/consumer/WalletTests$WalletStub.class",
+    "consumer/target/test-classes/it/esercitazione/liveauction/consumer/WalletTests.class",
+    "consumer/src/test/java/it/esercitazione/liveauction/consumer/WalletTests.java",
     "consumer/target/classes/it/esercitazione/liveauction/consumer/marketplace/MarketplaceController$1.class",
-    "consumer/target/test-classes/it/esercitazione/liveauction/consumer/AuctionLobbyTests$StubConfig.class",
-    "consumer/target/test-classes/it/esercitazione/liveauction/consumer/AuctionLobbyTests.class",
-    "consumer/target/test-classes/it/esercitazione/liveauction/consumer/AuctionLobbyTests$AuctionStub.class",
-    "consumer/src/test/java/it/esercitazione/liveauction/consumer/AuctionLobbyTests.java",
-    "consumer/target/classes/templates/fragments/auction-card.html",
-    "consumer/target/classes/templates/auction/lobby.html",
+    "consumer/target/classes/templates/wallet/page.html",
+    "consumer/target/classes/templates/wallet/fragments.html",
+    "consumer/target/classes/templates/wallet/error.html",
+    "consumer/target/classes/templates/wallet",
     "README.md"
   ]
 }

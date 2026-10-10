@@ -7,6 +7,8 @@ import it.esercitazione.liveauction.consumer.marketplace.CategoriaView;
 import it.esercitazione.liveauction.consumer.marketplace.ProdottoPage;
 import it.esercitazione.liveauction.consumer.marketplace.ProdottoView;
 import it.esercitazione.liveauction.consumer.auction.AuctionPage;
+import it.esercitazione.liveauction.consumer.wallet.WalletPage;
+import it.esercitazione.liveauction.consumer.wallet.WalletBalance;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,6 +22,7 @@ import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.ResourceAccessException;
 
 import java.time.Duration;
+import java.math.BigDecimal;
 
 @Component
 public class ProducerClient {
@@ -83,6 +86,22 @@ public class ProducerClient {
             return builder.queryParam("page", page).queryParam("size", size).build();
         }).retrieve().body(AuctionPage.class));
     }
+
+    public WalletPage wallet(String accessToken, int page, int size) {
+        return call(() -> client.get().uri(builder -> builder.path("/me/portafoglio")
+                .queryParam("page", page).queryParam("size", size).build())
+                .header(HttpHeaders.AUTHORIZATION, bearer(accessToken))
+                .retrieve().body(WalletPage.class));
+    }
+
+    public WalletBalance setWalletBalance(String accessToken, BigDecimal total) {
+        return call(() -> client.put().uri("/me/portafoglio/impostazioni")
+                .header(HttpHeaders.AUTHORIZATION, bearer(accessToken))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new WalletBalanceRequest(total)).retrieve().body(WalletBalance.class));
+    }
+
+    private record WalletBalanceRequest(BigDecimal saldoTotale) {}
 
     // Shared entry point for later domain clients: supply the session token, never a browser token.
     public <T> T getProtected(String path, String accessToken, Class<T> responseType) {

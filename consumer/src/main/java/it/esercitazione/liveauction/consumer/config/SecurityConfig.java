@@ -26,7 +26,8 @@ public class SecurityConfig {
 						.requestMatchers("/", "/login", "/registrazione", "/error", "/css/**", "/images/**", "/actuator/health", "/actuator/health/**").permitAll()
 						.requestMatchers(HttpMethod.GET, "/marketplace", "/prodotti/**", "/aste").permitAll()
 						.requestMatchers("/admin/**").hasRole("ADMIN")
-						.requestMatchers("/aste/**", "/inventario/**", "/me/vittorie/**", "/impostazioni/portafoglio/**").hasRole("USER")
+						.requestMatchers("/aste/**", "/inventario/**", "/me/vittorie/**",
+								"/impostazioni/portafoglio", "/impostazioni/portafoglio/**").hasRole("USER")
 						.anyRequest().authenticated())
 				.formLogin(form -> form.disable())
 				.logout(logout -> logout.disable())

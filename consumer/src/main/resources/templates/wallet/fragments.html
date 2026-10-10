@@ -1,0 +1,51 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<section th:fragment="balance" class="wallet-panel" aria-labelledby="balance-heading">
+    <h2 id="balance-heading">Current balance</h2>
+    <div th:replace="~{fragments/alerts :: alerts}"></div>
+    <dl class="wallet-balances">
+        <div><dt>Total</dt><dd th:text="${display.amount(wallet.saldoTotale) + ' ' + wallet.valuta}">0,00 CRD</dd></div>
+        <div><dt>Reserved</dt><dd th:text="${display.amount(wallet.saldoRiservato) + ' ' + wallet.valuta}">0,00 CRD</dd></div>
+        <div><dt>Available</dt><dd th:text="${display.amount(wallet.saldoDisponibile) + ' ' + wallet.valuta}">0,00 CRD</dd></div>
+    </dl>
+</section>
+<section th:fragment="settings" class="wallet-panel" aria-labelledby="settings-heading">
+    <h2 id="settings-heading">Set virtual balance</h2>
+    <p>Enter the new <strong>total balance</strong>. This absolute amount replaces the current total while keeping existing reservations.</p>
+    <form th:action="@{/impostazioni/portafoglio}" method="post" class="wallet-form">
+        <input type="hidden" name="page" th:value="${wallet.page}">
+        <input type="hidden" name="size" th:value="${wallet.size}">
+        <label for="saldoTotale">New total balance (<span th:text="${wallet.valuta}">CRD</span>)</label>
+        <input id="saldoTotale" name="saldoTotale" type="number" min="0" max="9999999999.99" step="0.01"
+               required th:value="${enteredBalance}" th:attr="aria-invalid=${formError != null}">
+        <p th:if="${formError}" class="field-error" role="alert" th:text="${formError}"></p>
+        <button type="submit">Set balance</button>
+    </form>
+</section>
+<section th:fragment="ledger" class="wallet-panel" aria-labelledby="ledger-heading">
+    <h2 id="ledger-heading">Ledger</h2>
+    <p th:if="${wallet.movimenti.isEmpty()}" class="empty-state">No movements yet.</p>
+    <div th:unless="${wallet.movimenti.isEmpty()}" class="wallet-table-wrap">
+        <table class="wallet-table">
+            <caption th:text="${wallet.totalElements} + ' movements, newest first'">Movements</caption>
+            <thead><tr><th scope="col">Date (Europe/Rome)</th><th scope="col">Type</th><th scope="col">Auction</th>
+                <th scope="col">Amount</th><th scope="col">Total after</th><th scope="col">Reserved after</th></tr></thead>
+            <tbody>
+            <tr th:each="movement : ${wallet.movimenti}">
+                <td th:text="${display.date(movement.dataMovimento)}">09/10/2026 09:00</td>
+                <td th:text="${display.type(movement.tipo)}">Balance set</td>
+                <td th:text="${movement.astaId == null ? '—' : movement.astaId}">—</td>
+                <td th:text="${display.amount(movement.importo) + ' ' + wallet.valuta}">0,00 CRD</td>
+                <td th:text="${display.amount(movement.saldoTotaleDopo) + ' ' + wallet.valuta}">0,00 CRD</td>
+                <td th:text="${display.amount(movement.saldoRiservatoDopo) + ' ' + wallet.valuta}">0,00 CRD</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <nav th:if="${wallet.totalPages > 1}" class="pagination" aria-label="Ledger pages">
+        <a th:if="${wallet.page > 0}" th:href="@{/impostazioni/portafoglio(page=${wallet.page - 1},size=${wallet.size})}">Previous</a>
+        <span th:text="'Page ' + ${wallet.page + 1} + ' of ' + ${wallet.totalPages}">Page</span>
+        <a th:if="${wallet.page + 1 < wallet.totalPages}" th:href="@{/impostazioni/portafoglio(page=${wallet.page + 1},size=${wallet.size})}">Next</a>
+    </nav>
+</section>
+</html>
