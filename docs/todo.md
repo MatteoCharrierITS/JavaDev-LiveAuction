@@ -1,7 +1,9 @@
 # Da fare — attività del team
 
-Aggiornato al 9 ottobre 2026, sul `main` che include WebSocket e notifiche email
-(base `c9e2a11`) e il modulo portafoglio completato da Matteo. Questo è il riferimento unico per le attività ancora da
+Aggiornato al 10 ottobre 2026, sul `main` dopo il merge `3bcc9cc`: include i
+moduli di Cristian, Marco e Tommi, chiusura automatica, fix dello snapshot,
+WebSocket, notifiche email e portafoglio completato da Matteo.
+Questo è il riferimento unico per le attività ancora da
 completare. Le assegnazioni sono riassunte nel [README](../README.md#assegnazioni);
 contratti e regole restano nei documenti di progettazione.
 
@@ -13,19 +15,21 @@ presente soltanto in un branch personale non va indicato come integrato.
 1. **Andrea:** avviare il Consumer usando anche le API del portafoglio,
    integrate e verificate il 9 ottobre. Le operazioni economiche sono condivise
    con i servizi di Tommi.
-2. **Marco e Tommi:** collegare la chiusura automatica al servizio esistente.
-3. **Maikol:** configurare SMTP e verificare il flusso email dopo il collegamento
-   della chiusura automatica; coda e retry sono già integrati.
-4. **Andrea:** avviare il Consumer; autenticazione, catalogo e lobby possono
-   partire subito. Il portafoglio può usare le nuove API integrate;
-   inventario e storici richiedono ancora le API mancanti.
-5. **Team:** assegnare le API inventario e gli acquisti a prezzo fisso.
+2. **Marco:** completare annullamento e API degli storici, con contratto e Postman.
+3. **Maikol:** configurare SMTP e verificare il flusso email end-to-end;
+   chiusura automatica, coda e retry sono già integrati.
+4. **Team:** assegnare le API inventario e gli acquisti a prezzo fisso.
+
+Verifica del risultato del merge: **230 test Producer e 1 test Consumer
+superati**, senza fallimenti, errori o test saltati, con PostgreSQL di prova,
+WebSocket e SMTP simulato. La verifica non equivale all'invio SMTP reale né
+al completamento dell'interfaccia Consumer.
 
 ## Matteo — portafoglio e movimenti (subentro a Mondir)
 
 Dal 9 ottobre 2026 Matteo prende in carico il riallineamento e il completamento
-del portafoglio, partendo dal lavoro di Mondir. È la priorità operativa di oggi;
-Implementazione, verifiche e integrazione in `main` sono completate. Il Consumer è in carico ad Andrea.
+del portafoglio, partendo dal lavoro di Mondir. Implementazione, verifiche e
+integrazione in `main` sono completate. Il Consumer è in carico ad Andrea.
 
 Implementazione integrata in `main`. Il precedente branch `portafoglio-movimenti`
 conteneva modelli incompatibili con Flyway e viene eliminato, essendo sostituito
@@ -46,22 +50,22 @@ Dettagli e verifiche in [Portafoglio e ledger](09-portafoglio.md).
 
 ## Tommi — offerte e chiusura
 
-**Stato branch al 10 ottobre 2026:** `feature/logica_aste` collega la chiusura
-automatica periodica e al riavvio (commit `69502b1`), con nuovi test permanenti
-di chiusura/retry/concorrenza e correzione dello snapshot dopo il ritiro offerte.
-Queste modifiche non sono ancora integrate in `main`: le attività sotto
-restano aperte fino al merge. Dopo l'integrazione, aggiornare anche le voci
-condivise con Marco e procedere alla verifica SMTP end-to-end.
+**Integrato in main al 10 ottobre 2026:** chiusura automatica periodica e al
+riavvio (commit `69502b1`), nuovi test permanenti di chiusura/retry/concorrenza
+e correzione dello snapshot dopo il ritiro offerte (`b65acc4`), inclusi nel
+merge `3bcc9cc`. La verifica SMTP reale end-to-end resta in carico a Maikol.
 
 Rilanci, estensioni, riserve/rilasci con ledger, ritiro offerte e settlement
 sono già implementati. Il comando STOMP richiama `OffertaService`; il
 settlement assegna già il prodotto all'inventario del vincitore.
 
-- [ ] Collegare con Marco `ChiusuraAstaService` allo scheduler. Oggi un'asta
-  scaduta rifiuta i rilanci, ma non viene chiusa e regolata automaticamente.
-- [ ] Verificare chiusura con e senza vincitore, scadenza estesa, concorrenza
-  tra rilancio e chiusura e recupero dopo un riavvio. Crediti, prodotto ed
-  eventi non devono essere trasferiti o pubblicati due volte.
+- [x] Collegare con Marco `ChiusuraAstaService` allo scheduler, sia nei cicli
+  periodici sia al riavvio, con errori isolati e retry al ciclo successivo.
+- [x] Verificare chiusura con e senza vincitore, scadenza estesa, concorrenza
+  tra rilancio e chiusura e recupero dopo un riavvio. Test permanenti verificano
+  l'assenza di trasferimenti ed eventi duplicati.
+- [x] Correggere lo snapshot REST: usa il leader operativo non ritirato,
+  anche dopo cancellazione account, conservando il conteggio storico.
 
 Le operazioni economiche sono ora estratte nel modulo portafoglio integrato;
 `OfferteRepository` conserva le deleghe usate dai servizi. Per nuove operazioni
@@ -79,13 +83,13 @@ sono già implementati.
   coerente dello stock e degli eventi.
 - [ ] Implementare `GET /api/v1/me/vittorie` e
   `GET /api/v1/admin/aste/storico`, rispettando visibilità USER/ADMIN.
-- [ ] Collegare con Tommi lo scheduler alla chiusura delle aste APERTA scadute,
+- [x] Collegare con Tommi lo scheduler alla chiusura delle aste APERTA scadute,
   sia nei cicli periodici sia al riavvio. Isolare gli errori per asta e
   ritentare al ciclo successivo.
-- [ ] Verificare la stabilità di `dueJobConcorrentiNonDuplicanoStatiOEventi`:
-  il piano precedente segnalava un fallimento intermittente. L'ultima
-  integrazione ha corretto il conteggio degli eventi nei test del ciclo di vita;
-  verificare se resta un problema prima di introdurre altre correzioni.
+- [x] Ricontrollare `dueJobConcorrentiNonDuplicanoStatiOEventi`: superato nella
+  suite e nelle cinque esecuzioni aggiuntive della verifica del branch Aste.
+  Il fallimento intermittente precedente non è stato riprodotto; mantenere
+  la copertura di regressione senza considerare le ripetizioni una garanzia assoluta.
 - [ ] Aggiornare contratto e Postman per annullamento e storici.
 
 ## Maikol — WebSocket e notifiche
@@ -104,8 +108,8 @@ invio su executor dedicato, recupero e retry persistenti. SMTP resta disabilitat
 per default. Dettagli in [Notifiche email](10-notifiche-email.md).
 
 - [ ] Configurare e attivare SMTP nell'ambiente concordato dal team.
-- [ ] Verificare il flusso end-to-end dopo il collegamento della chiusura
-  automatica da parte di Marco/Tommi.
+- [ ] Verificare il flusso end-to-end con SMTP reale dopo la chiusura
+  automatica già integrata; accodamento e invio simulato sono verificati.
 
 ## Cristian — prodotti e catalogo
 

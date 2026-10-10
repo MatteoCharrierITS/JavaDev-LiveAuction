@@ -9,9 +9,9 @@ Usa JDBC come il modulo auth e le tabelle Flyway esistenti.
 Marco mantiene programmazione, modello/repository condivisi, blocco iniziale
 dello stock e apertura delle aste. WebSocket/notifiche mantiene ticket,
 controller STOMP, trasporto eventi ed email. Questo modulo non aggiunge
-endpoint REST, controller STOMP o pagine Consumer. Il branch `feature/logica_aste`
-collega ora il settlement allo scheduler condiviso di Marco, anche al riavvio;
-questa integrazione non è ancora inclusa in `main`. Annullamento e storici
+endpoint REST, controller STOMP o pagine Consumer. Il settlement è collegato
+allo scheduler condiviso di Marco, anche al riavvio, e integrato in `main`
+con il merge `3bcc9cc` del 10 ottobre 2026. Annullamento e storici
 di `aste.json` restano previsti. Dall'8 ottobre 2026 il modulo WebSocket richiama
 `OffertaService` tramite `/app/aste/{id}/offerte` e trasporta gli eventi Spring
 sui topic delle stanze. Il flusso completo richiede ancora la configurazione
@@ -144,7 +144,7 @@ Le verifiche coprono validazioni, tempo server, concorrenza tra rilanci e chiusu
 retry, riserve su più aste, rollback, pubblicazione post-commit ed eliminazione
 account con ripristino del leader.
 
-Dal 10 ottobre 2026 il branch include regressioni REST e di cancellazione
+Dal 10 ottobre 2026 `main` include regressioni REST e di cancellazione
 account per il leader ripristinato/assente, oltre a test unitari e PostgreSQL
 della chiusura via scheduler: con/senza vincitore, scadenza estesa, recupero
 al riavvio, rollback/retry e due cicli concorrenti senza duplicazioni di ledger,
@@ -152,7 +152,8 @@ inventario o eventi. Le fixture del modulo offerte e della nuova suite
 scheduler vengono rimosse dopo ogni test; i job automatici sono disabilitati
 nei contesti di prova e invocati esplicitamente.
 
-Verifica del 10 ottobre 2026 su PostgreSQL 16: **230 test Producer e 1 test
+Verifica del 10 ottobre 2026 su `main` dopo il merge `3bcc9cc`, con PostgreSQL 16:
+**230 test Producer e 1 test
 Consumer superati**, senza fallimenti, errori o test saltati, con
 `RUN_DB_TESTS=true` e `RUN_WS_TESTS=true`. Inclusi WebSocket ed email con SMTP
 simulato; nessuna email reale inviata. Per la suite completa si disabilita il

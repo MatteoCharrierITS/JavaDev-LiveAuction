@@ -2,8 +2,9 @@
 
 Questo documento descrive il motore completo previsto. Programmazione,
 attivazione temporale, lobby, snapshot, servizi di rilancio/settlement e trasporto
-WebSocket sono implementati. Il branch corrente collega la chiusura automatica
-allo scheduler e al recupero dopo un riavvio. Restano da completare l'attivazione
+WebSocket sono implementati. La chiusura automatica è integrata in `main`
+dal merge `3bcc9cc` del 10 ottobre 2026, nello scheduler e nel recupero dopo
+un riavvio. Restano da completare l'attivazione
 SMTP dell'email (modulo integrato in `main` con coda e retry), annullamento,
 storici e UI. Vedere lo
 [stato del modulo aste](README.md#stato-del-modulo-aste).

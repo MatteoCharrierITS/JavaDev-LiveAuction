@@ -35,20 +35,24 @@ Il sistema è composto da due applicazioni indipendenti:
 - **consumer** (`:8082`): interfaccia Thymeleaf che usa esclusivamente i
   contratti esposti dal Producer.
 
-> **Stato del branch corrente:** include l'infrastruttura Spring Boot/Docker, lo schema Flyway,
+> **Stato di main al 10 ottobre 2026:** include l'infrastruttura Spring Boot/Docker, lo schema Flyway,
 > l'autenticazione, il WebSocket con ticket, presenza, comando di rilancio e
 > trasporto degli eventi post-commit, il
 > catalogo REST (categorie, prodotti, gestione ADMIN di stock, filtri e
 > paginazione) e la programmazione ADMIN delle aste con blocco atomico dello
 > stock, apertura automatica, lobby e snapshot pubblici. I servizi di offerte e
 > settlement e notifiche email con coda persistente e retry sono implementati;
-> questo branch collega la chiusura automatica allo scheduler, anche nel recupero
+> la chiusura automatica è integrata nello scheduler, anche nel recupero
 > dopo un riavvio. Mancano l'attivazione SMTP dell'email,
-> annullamento, storici e API inventario. Le API del portafoglio (saldo, movimenti
+> annullamento, storici, API inventario e acquisti a prezzo fisso. Le API del portafoglio (saldo, movimenti
 > e impostazione del saldo virtuale) sono integrate in `main`. La
 > Consumer è ancora uno scheletro senza pagine applicative: il flusso completo
 > LiveAuction non è ancora disponibile. Stato dettagliato in
 > [attività del team](docs/todo.md) e [stato del modulo aste](docs/README.md#stato-del-modulo-aste).
+
+Verifica dopo il merge `3bcc9cc`: **230 test Producer e 1 test Consumer
+superati**, senza fallimenti, errori o test saltati, con PostgreSQL di prova,
+WebSocket ed email con SMTP simulato. Nessuna email reale inviata.
 
 ## La feature distintiva: LiveAuction
 

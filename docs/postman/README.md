@@ -65,7 +65,7 @@ rispondere `404` fino all'implementazione.
 Lo snapshot espone il leader operativo, escludendo le offerte ritirate; il
 conteggio delle offerte resta storico. Dopo la cancellazione del leader,
 verificare che REST mostri il leader ripristinato oppure null. La chiusura
-automatica è collegata nel branch `feature/logica_aste`, senza endpoint pubblico
+automatica è integrata in `main` (merge `3bcc9cc`), senza endpoint pubblico
 di settlement: verificare l'esito tramite lo snapshot dopo la scadenza.
 
 Il protocollo STOMP su `/ws` richiede un client WebSocket: `aste.json` include

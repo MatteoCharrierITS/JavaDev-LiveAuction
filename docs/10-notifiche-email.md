@@ -1,7 +1,7 @@
 # Email al vincitore — modulo Maikol
 
 Modulo integrato in `main` nel commit `c9e2a11`; stato aggiornato al
-9 ottobre 2026. Il modulo non chiude aste né modifica saldi,
+10 ottobre 2026. Il modulo non chiude aste né modifica saldi,
 ledger o inventario. Non aggiunge endpoint REST/STOMP.
 
 ## Flusso e dipendenze
@@ -59,8 +59,8 @@ del modulo. Per una prova usare un destinatario/server di test, non utenti reali
 
 ## Cosa manca fuori dal modulo
 
-Il branch `feature/logica_aste` collega la chiusura automatica allo scheduler;
-questa modifica deve ancora essere integrata in `main`. Il modulo email è già
+La chiusura automatica è collegata allo scheduler e integrata in `main`
+dal merge `3bcc9cc`. Il modulo email è già
 collegato al servizio di chiusura ed è testabile senza SMTP reale. Il provider
 SMTP e le sue credenziali devono essere configurati dal team, poi va verificato
 il flusso completo dopo la chiusura automatica. Il frontend è di Andrea.
