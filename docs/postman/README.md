@@ -3,14 +3,14 @@
 Importare `local.postman_environment.json` e selezionare l'ambiente
 **LiveAuction • Locale**. Importare poi le collection desiderate:
 
-| File | Modulo | Stato |
+| File | Modulo | Stato su `main` |
 | --- | --- | --- |
 | `monitoring.json` | Health e Ready | Implementato |
 | `auth.json` | Registrazione, login, refresh, logout ed eliminazione account | Implementato |
-| `prodotti.json` | Categorie, catalogo e gestione ADMIN | Implementato; acquisti fissi futuri |
-| `inventario.json` | Inventario personale | API prevista |
+| `prodotti.json` | Categorie, catalogo e gestione ADMIN | Implementato su `main`; acquisto fisso nella cartella `Contratto futuro — non implementato` |
+| `inventario.json` | Inventario personale | Contratto futuro — non implementato su `main` |
 | `portafoglio.json` | Saldo, movimenti paginati e impostazioni | Implementato |
-| `aste.json` | Lobby, ticket, programmazione e storici | Programmazione ADMIN, lobby, snapshot e ticket implementati; altre API previste |
+| `aste.json` | Lobby, snapshot, ticket e programmazione | Implementato su `main`; annullamento, vittorie e storico ADMIN nella cartella `Contratto futuro — non implementato` |
 
 L'ambiente usa `http://localhost:8081/api/v1` come `baseUrl`. Modificarlo se
 il Producer è esposto su un'altra porta. Le migrazioni non creano account demo:
@@ -38,8 +38,7 @@ al PUT aggiorna anche il body per il prossimo invio. In caso di 409 sulla
 versione, rileggere il prodotto (09) e riapplicare la modifica desiderata.
 Per provare la visibilità, disattivare la categoria (04): catalogo e dettaglio
 pubblici nascondono i suoi prodotti, mentre le letture ADMIN li conservano.
-La richiesta FUTURO per acquisto fisso va eseguita solo dopo l'implementazione
-del modulo transazionale; non includerla nella sequenza di verifica catalogo.
+La richiesta di acquisto fisso si trova nella cartella `Contratto futuro — non implementato`: è documentativa, può restituire `404` e non va inclusa nella sequenza principale di verifica catalogo su `main`.
 
 Le altre collection seguono [il contratto REST](../04-api-rest.md). Finché i
 relativi controller non saranno sviluppati, una risposta `404` è attesa dopo
@@ -64,6 +63,18 @@ rispondere `404` fino all'implementazione.
 
 Il protocollo STOMP su `/ws` richiede un client WebSocket: `aste.json` include
 la richiesta REST del ticket, ma non i comandi e le sottoscrizioni STOMP.
+
+## Convenzione di disponibilità
+
+Le sequenze principali delle collection devono verificare solo endpoint
+realmente disponibili su `main`.
+
+Le richieste nella cartella `Contratto futuro — non implementato` servono come
+riferimento al contratto API: finché i controller non esistono su `main`, una
+risposta `404` è attesa (oppure `401`/`403` se mancano token o ruolo).
+
+I branch personali (`Prodotti`, `Aste`, `feature/*`, `web_socket`) non
+rappresentano funzionalità integrate nel codice di riferimento.
 
 Per provare i rilanci, usare un client STOMP con il ticket monouso ottenuto dalla
 collection, sottoscrivere `/topic/aste/{astaId}` e `/user/queue/aste`, quindi
