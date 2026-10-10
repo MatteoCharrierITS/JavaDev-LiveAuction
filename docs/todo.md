@@ -111,6 +111,18 @@ per default. Dettagli in [Notifiche email](10-notifiche-email.md).
 - [ ] Verificare il flusso end-to-end con SMTP reale dopo la chiusura
   automatica già integrata; accodamento e invio simulato sono verificati.
 
+**Stato branch web_socket al 10 ottobre 2026 (non ancora integrato in main):**
+
+- [x] Completare `.env.example` e il passaggio delle opzioni SMTP in Compose,
+  inclusi STARTTLS obbligatorio e TLS implicito, con controlli di avvio.
+- [x] Verificare il flusso STOMP → offerta → scheduler → chiusura → email
+  con trasporto SMTP locale via TCP, retry senza nuovo settlement, assenza
+  di email senza vincitore e rifiuto di downgrade a testo in chiaro.
+
+Le due attività sull'ambiente del team restano aperte: i test locali non
+attivano il provider SMTP esterno né verificano la consegna in una inbox reale.
+I parametri e le credenziali del provider vanno configurati fuori da Git.
+
 ## Cristian — prodotti e catalogo
 
 L'area assegnata è completa: categorie, prodotti, CRUD ADMIN, filtri,

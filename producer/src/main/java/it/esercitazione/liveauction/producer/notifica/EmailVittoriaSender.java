@@ -28,6 +28,22 @@ public class EmailVittoriaSender {
                 && (smtp.getHost() == null || smtp.getHost().isBlank())))) {
             throw new IllegalStateException("Email abilitate: configurare SMTP_HOST e il mittente");
         }
+        if (properties.isEnabled() && mail instanceof JavaMailSenderImpl smtp) {
+            if (smtp.getPort() != -1 && (smtp.getPort() < 1 || smtp.getPort() > 65535)) {
+                throw new IllegalStateException("Email abilitate: SMTP_PORT deve essere tra 1 e 65535");
+            }
+            var config = smtp.getJavaMailProperties();
+            if (Boolean.parseBoolean(config.getProperty("mail.smtp.auth"))
+                    && (smtp.getUsername() == null || smtp.getUsername().isBlank()
+                    || smtp.getPassword() == null || smtp.getPassword().isBlank())) {
+                throw new IllegalStateException("Email abilitate: configurare SMTP_USERNAME e SMTP_PASSWORD oppure SMTP_AUTH=false");
+            }
+            if (Boolean.parseBoolean(config.getProperty("mail.smtp.ssl.enable"))
+                    && (Boolean.parseBoolean(config.getProperty("mail.smtp.starttls.enable"))
+                    || Boolean.parseBoolean(config.getProperty("mail.smtp.starttls.required")))) {
+                throw new IllegalStateException("SMTP_SSL richiede SMTP_STARTTLS=false e SMTP_STARTTLS_REQUIRED=false");
+            }
+        }
     }
 
     public void invia(Vittoria vittoria) {

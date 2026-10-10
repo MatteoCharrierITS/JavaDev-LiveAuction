@@ -32,6 +32,34 @@ class EmailVittoriaSenderTests {
     }
 
     @Test
+    void validatesCredentialsPortAndConflictingTlsBeforeSending() {
+        var mail = new JavaMailSenderImpl();
+        mail.setHost("smtp.example.invalid");
+        var beans = new StaticListableBeanFactory();
+        beans.addBean("mail", mail);
+        var properties = new EmailProperties();
+        properties.setEnabled(true);
+        properties.setFrom("aste@example.test");
+        var sender = new EmailVittoriaSender(beans.getBeanProvider(JavaMailSender.class), properties);
+        mail.getJavaMailProperties().setProperty("mail.smtp.auth", "true");
+        assertThatThrownBy(sender::verificaConfigurazione).isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("SMTP_USERNAME");
+        mail.setUsername("fixture");
+        mail.setPassword("fixture-not-a-real-secret");
+        mail.setPort(0);
+        assertThatThrownBy(sender::verificaConfigurazione).isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("SMTP_PORT");
+        mail.setPort(587);
+        assertThatCode(sender::verificaConfigurazione).doesNotThrowAnyException();
+        mail.getJavaMailProperties().setProperty("mail.smtp.ssl.enable", "true");
+        mail.getJavaMailProperties().setProperty("mail.smtp.starttls.enable", "true");
+        assertThatThrownBy(sender::verificaConfigurazione).isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("SMTP_SSL");
+        mail.getJavaMailProperties().setProperty("mail.smtp.starttls.enable", "false");
+        assertThatCode(sender::verificaConfigurazione).doesNotThrowAnyException();
+    }
+
+    @Test
     void disabledSenderNeedsNoSmtpButEnabledSenderFailsFastWithoutHost() {
         var beans = new StaticListableBeanFactory();
         beans.addBean("mail", new JavaMailSenderImpl());

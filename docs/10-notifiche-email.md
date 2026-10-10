@@ -4,6 +4,10 @@ Modulo integrato in `main` nel commit `c9e2a11`; stato aggiornato al
 10 ottobre 2026. Il modulo non chiude aste né modifica saldi,
 ledger o inventario. Non aggiunge endpoint REST/STOMP.
 
+Nel branch `web_socket`, dal 10 ottobre 2026, sono aggiunti template SMTP,
+controlli di configurazione e test end-to-end con SMTP locale via TCP reale.
+Queste ultime modifiche devono ancora essere integrate in `main`.
+
 ## Flusso e dipendenze
 
 - `EmailQueueService` ascolta `AUCTION_CLOSED`, già pubblicato dopo il commit.
@@ -47,15 +51,47 @@ il modulo. Per attivarlo servono:
 | `SMTP_USERNAME`, `SMTP_PASSWORD` | credenziali esterne, mai committate |
 | `SMTP_AUTH` | default `true`; false solo se il server non richiede autenticazione |
 | `SMTP_STARTTLS` | default `true`; false solo per un server di prova appropriato |
+| `SMTP_STARTTLS_REQUIRED` | default uguale a `SMTP_STARTTLS`; rifiuta il server se non offre STARTTLS |
+| `SMTP_SSL` | TLS implicito, default `false`; richiede STARTTLS e REQUIRED entrambi false |
 | `EMAIL_INTERVAL_MS` | pausa fra cicli, default `30000`, minimo `1000` |
 | `EMAIL_BATCH_SIZE` | massimo tentativi/recuperi per ciclo, default `20`, da 1 a 100 |
 | `EMAIL_RETRY_SECONDS` | attesa dopo errore SMTP, default `60`, minimo `1` |
 
 Anche il servizio Producer nel profilo Docker `prod` riceve queste variabili.
 Configurazione abilitata senza host/mittente causa un errore di avvio esplicito.
+Con `SMTP_AUTH=true`, username e password sono obbligatori; una porta fuori
+da 1–65535 o TLS implicito insieme a STARTTLS causano un errore di avvio.
+Le credenziali non vengono incluse nel messaggio di errore.
 Prima di abilitare SMTP reale controllare le richieste arretrate: il recupero
 include **tutte** le aste già concluse con vincitore, anche prima dell'installazione
 del modulo. Per una prova usare un destinatario/server di test, non utenti reali.
+
+### Attivazione nell'ambiente concordato
+
+1. Copiare `.env.example` in `.env` (ignorato da Git) e configurare host,
+   mittente e credenziali del provider scelto dal team. Lasciare
+   `EMAIL_ENABLED=false` durante la preparazione.
+2. Per SMTP con STARTTLS (tipicamente porta 587), usare `SMTP_STARTTLS=true`,
+   `SMTP_STARTTLS_REQUIRED=true`, `SMTP_SSL=false`. Per TLS implicito
+   (tipicamente porta 465), usare `SMTP_SSL=true`, `SMTP_STARTTLS=false`,
+   `SMTP_STARTTLS_REQUIRED=false`. Verificare i parametri del provider.
+3. Controllare le richieste PENDING e le aste concluse senza notifica prima
+   dell'attivazione: il job può recuperare anche vittorie precedenti.
+   Effettuare la prima prova su un database dedicato e con destinatari di test.
+4. Impostare `EMAIL_ENABLED=true` e riavviare il Producer. Docker Compose
+   passa i valori di `.env` al servizio `producer`; l'avvio da IDE **non** carica
+   automaticamente `.env`: inserire le stesse variabili nella run configuration.
+   Per Docker `prod` resta obbligatoria anche `AUTH_JWT_SECRET`.
+5. Verificare, dopo la scadenza, `AUCTION_CLOSED`, stato CHIUSA e richiesta
+   email SENT. Un errore SMTP deve lasciare PENDING con `SMTP_ERROR` e retry
+   futuro, senza ripetere addebiti o assegnazione. Mai condividere dump delle
+   variabili d'ambiente o dei token per diagnosticare un errore SMTP.
+
+I server locali senza TLS/autenticazione sono utilizzabili soltanto per prove
+isolate: `SMTP_AUTH=false`, `SMTP_STARTTLS=false`,
+`SMTP_STARTTLS_REQUIRED=false`, `SMTP_SSL=false`. Non usare questi valori per
+inviare credenziali a un server remoto. Il test automatizzato avvia da sé un
+server in loopback su porta casuale, che non inoltra alcuna email all'esterno.
 
 ## Cosa manca fuori dal modulo
 
@@ -65,13 +101,34 @@ collegato al servizio di chiusura ed è testabile senza SMTP reale. Il provider
 SMTP e le sue credenziali devono essere configurati dal team, poi va verificato
 il flusso completo dopo la chiusura automatica. Il frontend è di Andrea.
 
+La configurazione e i test locali non costituiscono l'attivazione del provider
+del team: host, porta, mittente e credenziali reali restano una scelta esterna.
+
 ## Verifiche
 
 Test con PostgreSQL di prova e SMTP simulato: contenuto del riepilogo,
 configurazione, accodamento post-commit, rollback senza notifica, idempotenza,
 errore e retry persistiti, recupero di un evento perso, asta senza vincitore,
 utente disattivato, concorrenza e comportamento del job.
-I fixture vengono rimossi dopo ogni test. Non sono state inviate email reali.
+I fixture vengono rimossi dopo ogni test. Nessuna email è stata inviata a
+provider o destinatari esterni.
+
+La suite WebSocket del branch `web_socket` usa un `JavaMailSender` reale e un
+server SMTP locale via TCP, senza mock del client email. Copre comando STOMP,
+rilancio, chiusura tramite `AstaScheduler`, evento pubblico, ledger/inventario,
+accodamento post-commit e ricezione del messaggio MIME con destinatario,
+prodotto e importo. Verifica anche assenza di duplicati, errore SMTP e retry
+senza nuovo settlement, chiusura senza vincitore e rifiuto dell'invio in chiaro
+quando STARTTLS è obbligatorio. Scheduler e worker sono invocati esplicitamente
+per non dipendere da attese temporali o interferire con fixture di altre suite.
+Non verifica il provider esterno, i suoi certificati TLS o la consegna in inbox.
+
+Verifica del branch `web_socket` del 10 ottobre 2026: **235 test Producer e
+1 test Consumer superati**, senza fallimenti, errori o test saltati, con
+`RUN_DB_TESTS=true`, `RUN_WS_TESTS=true`, `ASTE_SCHEDULER_ENABLED=false` e
+PostgreSQL 16 dedicato. Il server SMTP di test ascolta soltanto in loopback.
+Configurazione Compose validata, inclusa la disattivazione coerente di
+STARTTLS e del requisito STARTTLS per server locali. Nessuna nuova migrazione.
 
 Verifica completa riportata l'8 ottobre 2026 sul branch di sviluppo:
 **200 test Producer superati, 0 fallimenti, 0 errori,

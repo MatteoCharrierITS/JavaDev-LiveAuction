@@ -60,6 +60,13 @@ Integrati in `main` (commit `c9e2a11`): email al vincitore,
 coda persistente e retry; invio disabilitato per default, nessun invio reale
 durante i test. Configurazione e limiti in [Notifiche email](docs/10-notifiche-email.md).
 
+Nel branch `web_socket` sono disponibili anche il template SMTP in
+`.env.example`, STARTTLS obbligatorio/TLS implicito e test del flusso completo
+WebSocket → chiusura via scheduler → email su SMTP locale via TCP. L'attivazione
+del provider esterno richiede i parametri concordati dal team; nessuna
+credenziale viene salvata nel repository. Dettagli e procedura nel documento
+[Notifiche email](docs/10-notifiche-email.md#attivazione-nellambiente-concordato).
+
 L'ADMIN decide se un prodotto è astabile e, per ogni asta, imposta prodotto,
 data e ora di inizio e prezzo iniziale. Il sistema riserva subito una unità:
 non è possibile programmare un'asta se lo stock disponibile è terminato.
