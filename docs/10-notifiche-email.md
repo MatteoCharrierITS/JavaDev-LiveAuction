@@ -59,10 +59,11 @@ del modulo. Per una prova usare un destinatario/server di test, non utenti reali
 
 ## Cosa manca fuori dal modulo
 
-Marco e Tommi devono ancora collegare la chiusura automatica allo scheduler.
-Il modulo email è già collegato al servizio di chiusura esistente ed è testabile
-senza quel job; non rende automatico il settlement. Il provider SMTP e le sue
-credenziali devono essere configurati dal team. Il frontend resta di Matteo.
+Il branch `feature/logica_aste` collega la chiusura automatica allo scheduler;
+questa modifica deve ancora essere integrata in `main`. Il modulo email è già
+collegato al servizio di chiusura ed è testabile senza SMTP reale. Il provider
+SMTP e le sue credenziali devono essere configurati dal team, poi va verificato
+il flusso completo dopo la chiusura automatica. Il frontend è di Andrea.
 
 ## Verifiche
 

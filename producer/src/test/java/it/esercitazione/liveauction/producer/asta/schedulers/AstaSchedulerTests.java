@@ -74,6 +74,51 @@ class AstaSchedulerTests {
         });
     }
 
+    @Test
+    void chiudeLeAsteScaduteUnaVoltaAncheAllAvvio() {
+        when(repository.trovaIdDaChiudere(Stato.APERTA, ADESSO)).thenReturn(List.of(4L, 4L, 5L));
+        scheduler.recuperaAllAvvio();
+        verify(chiusura).chiudi(4L);
+        verify(chiusura).chiudi(5L);
+        verifyNoMoreInteractions(chiusura);
+        var ordine = inOrder(repository, chiusura);
+        ordine.verify(repository).trovaIdDaAttivare(Stato.PROGRAMMATA, ADESSO.plusSeconds(180));
+        ordine.verify(repository).trovaIdDaAttivare(Stato.STANZA_APERTA, ADESSO);
+        ordine.verify(repository).trovaIdDaChiudere(Stato.APERTA, ADESSO);
+        ordine.verify(chiusura).chiudi(4L);
+    }
+
+    @Test
+    void erroreDiChiusuraNonBloccaLeAltreERitentaAlCicloSuccessivo() {
+        when(repository.trovaIdDaChiudere(Stato.APERTA, ADESSO)).thenReturn(List.of(4L, 5L));
+        doThrow(new IllegalStateException("errore simulato")).doReturn(null).when(chiusura).chiudi(4L);
+        scheduler.aggiornaAste();
+        verify(chiusura).chiudi(5L);
+        scheduler.aggiornaAste();
+        verify(chiusura, times(2)).chiudi(4L);
+    }
+
+    @Test
+    void erroreLetturaChiusureNonImpedisceApertureERitenta() {
+        when(repository.trovaIdDaAttivare(Stato.PROGRAMMATA, ADESSO.plusSeconds(180))).thenReturn(List.of(1L));
+        when(repository.trovaIdDaChiudere(Stato.APERTA, ADESSO))
+                .thenThrow(new IllegalStateException("errore simulato")).thenReturn(List.of(4L));
+        scheduler.aggiornaAste();
+        verify(service).aggiornaStato(1L);
+        verifyNoInteractions(chiusura);
+        scheduler.aggiornaAste();
+        verify(chiusura).chiudi(4L);
+    }
+
+    @Test
+    void erroreLetturaApertureNonImpedisceLeChiusure() {
+        when(repository.trovaIdDaAttivare(Stato.PROGRAMMATA, ADESSO.plusSeconds(180)))
+                .thenThrow(new IllegalStateException("errore simulato"));
+        when(repository.trovaIdDaChiudere(Stato.APERTA, ADESSO)).thenReturn(List.of(4L));
+        scheduler.aggiornaAste();
+        verify(chiusura).chiudi(4L);
+    }
+
     private ApplicationContextRunner contesto() {
         return new ApplicationContextRunner()
                 .withBean(AstaRepository.class, () -> repository)

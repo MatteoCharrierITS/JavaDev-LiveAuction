@@ -46,6 +46,13 @@ Dettagli e verifiche in [Portafoglio e ledger](09-portafoglio.md).
 
 ## Tommi — offerte e chiusura
 
+**Stato branch al 10 ottobre 2026:** `feature/logica_aste` collega la chiusura
+automatica periodica e al riavvio (commit `69502b1`), con nuovi test permanenti
+di chiusura/retry/concorrenza e correzione dello snapshot dopo il ritiro offerte.
+Queste modifiche non sono ancora integrate in `main`: le attività sotto
+restano aperte fino al merge. Dopo l'integrazione, aggiornare anche le voci
+condivise con Marco e procedere alla verifica SMTP end-to-end.
+
 Rilanci, estensioni, riserve/rilasci con ledger, ritiro offerte e settlement
 sono già implementati. Il comando STOMP richiama `OffertaService`; il
 settlement assegna già il prodotto all'inventario del vincitore.
@@ -151,7 +158,7 @@ Riferimento per le pagine: [UI e flussi](05-ui-flussi.md).
   `POST /api/v1/prodotti/{id}/acquisti`, coordinando stock, portafoglio,
   ledger e inventario in una transazione.
 
-Queste responsabilità richiedono una decisione del team; la UI relativa è di Matteo.
+Queste responsabilità richiedono una decisione del team; la UI relativa è di Andrea.
 
 ## Per completare ogni attività
 

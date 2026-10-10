@@ -30,7 +30,8 @@ Nel branch corrente sono implementati:
   sequence e partecipanti mascherati.
 - Scheduler: passaggi a `STANZA_APERTA` e `APERTA`, recupero all'avvio ed
   eventi Spring dopo il commit collegati ai topic WebSocket.
-  Il job non richiama ancora la chiusura.
+  Nel branch `feature/logica_aste` il job richiama anche la chiusura delle aste
+  APERTA scadute, con recupero al riavvio e retry isolati per asta.
 - Ticket monouso, STOMP e presenza temporanea; comando `/app/aste/{id}/offerte`
   con conferme/rifiuti alla sola sessione mittente.
 - Servizi JDBC di rilancio, estensione, riserva/rilascio con ledger, ritiro offerte
@@ -38,9 +39,9 @@ Nel branch corrente sono implementati:
 - Email al vincitore dopo il commit, con coda persistente V11, recupero e retry;
   invio SMTP disabilitato per default.
 
-Chiusura automatica, annullamento, storici, API inventario
-e attivazione SMTP email restano da completare. Il settlement è già implementato nel servizio
-interno, ma non viene invocato automaticamente alla scadenza.
+Annullamento, storici, API inventario e attivazione SMTP email restano da
+completare. La chiusura automatica è implementata in questo branch ma deve
+ancora essere integrata in `main`.
 Le API del portafoglio sono integrate in `main`: saldo e movimenti
 paginati, impostazione del saldo virtuale e operazioni JDBC condivise con le aste.
 Dettagli in [Portafoglio e ledger](09-portafoglio.md).
@@ -56,8 +57,8 @@ WebSocket sopra indicato.
 
 In `main`, dal commit `c9e2a11`, è disponibile anche il
 [modulo email al vincitore](10-notifiche-email.md), con coda persistente e retry.
-L'invio è disabilitato per default; attivazione SMTP e chiusura automatica
-restano da completare.
+L'invio è disabilitato per default; resta da attivare SMTP. La chiusura
+automatica è collegata nel branch corrente, non ancora in `main`.
 
 | Tema | Decisione |
 | --- | --- |

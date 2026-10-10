@@ -6,9 +6,11 @@ import it.esercitazione.liveauction.producer.asta.requests.OffertaRequest;
 import it.esercitazione.liveauction.producer.asta.responses.OffertaResponse;
 import it.esercitazione.liveauction.producer.asta.services.ChiusuraAstaService;
 import it.esercitazione.liveauction.producer.asta.services.OffertaService;
+import it.esercitazione.liveauction.producer.asta.services.AstaLetturaService;
 import it.esercitazione.liveauction.producer.auth.services.EliminazioneUtenteService;
 import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +40,7 @@ import java.util.function.Supplier;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest(properties = "spring.docker.compose.enabled=false", classes = {
+@SpringBootTest(properties = {"spring.docker.compose.enabled=false", "app.aste.scheduler.enabled=false"}, classes = {
         it.esercitazione.liveauction.producer.LiveAuctionProducerApplication.class,
         OfferteIntegrationTests.EventiTestConfig.class
 })
@@ -50,6 +52,7 @@ class OfferteIntegrationTests {
     @Autowired JdbcTemplate jdbc;
     @Autowired OffertaService offerte;
     @Autowired ChiusuraAstaService chiusura;
+    @Autowired AstaLetturaService lettura;
     @Autowired EliminazioneUtenteService eliminazione;
     @Autowired EventiRegistrati eventi;
     @MockitoBean(name = "clockOfferte") Clock clock;
@@ -60,6 +63,8 @@ class OfferteIntegrationTests {
     private long terzo;
     private long prodotto;
     private long asta;
+    private long categoria;
+    private final List<Long> utentiCreati = new java.util.ArrayList<>();
 
     @BeforeEach
     void prepara() {
@@ -69,13 +74,29 @@ class OfferteIntegrationTests {
         secondo = utente("USER", "1000");
         terzo = utente("USER", "1000");
         String suffisso = UUID.randomUUID().toString().substring(0, 8);
-        long categoria = jdbc.queryForObject("INSERT INTO categorie(nome, slug) VALUES (?, ?) RETURNING id",
+        categoria = jdbc.queryForObject("INSERT INTO categorie(nome, slug) VALUES (?, ?) RETURNING id",
                 Long.class, "Categoria " + suffisso, "test-" + suffisso);
         prodotto = jdbc.queryForObject("""
                 INSERT INTO prodotti(categoria_id, sku, nome, astabile, quantita_disponibile, quantita_bloccata)
                 VALUES (?, ?, 'Prodotto test', TRUE, 2, 1) RETURNING id
                 """, Long.class, categoria, "TEST-" + suffisso);
         asta = nuovaAsta(prodotto);
+    }
+
+    @AfterEach
+    void pulisciSoloFixturePropri() {
+        SecurityContextHolder.clearContext();
+        jdbc.update("DELETE FROM movimenti_portafoglio WHERE asta_id IN (SELECT id FROM aste WHERE prodotto_id=?)", prodotto);
+        jdbc.update("DELETE FROM offerte WHERE asta_id IN (SELECT id FROM aste WHERE prodotto_id=?)", prodotto);
+        jdbc.update("DELETE FROM aste WHERE prodotto_id=?", prodotto);
+        jdbc.update("DELETE FROM inventario_utenti WHERE prodotto_id=?", prodotto);
+        jdbc.update("DELETE FROM prodotti WHERE id=?", prodotto);
+        jdbc.update("DELETE FROM categorie WHERE id=?", categoria);
+        for (long id : utentiCreati) {
+            jdbc.update("DELETE FROM auth_sessions WHERE utente_id=?", id);
+            jdbc.update("DELETE FROM portafogli WHERE utente_id=?", id);
+            jdbc.update("DELETE FROM utenti WHERE id=?", id);
+        }
     }
 
     @Test
@@ -315,6 +336,8 @@ class OfferteIntegrationTests {
         offri(terzo, asta, "120");
         jdbc.update("UPDATE portafogli SET saldo_totale = 50 WHERE utente_id = ?", secondo);
         elimina(terzo);
+        assertThat(lettura.snapshot(asta).migliorOfferente().id()).isEqualTo(primo);
+        assertThat(lettura.snapshot(asta).offertaCorrente()).isEqualByComparingTo("100");
         saldo(terzo, "1000", "0");
         saldo(primo, "1000", "100");
         saldo(secondo, "50", "0");
@@ -333,6 +356,7 @@ class OfferteIntegrationTests {
         elimina(primo);
         assertThat(jdbc.queryForObject("SELECT offerta_corrente FROM aste WHERE id = ?", BigDecimal.class, asta))
                 .isNull();
+        assertThat(lettura.snapshot(asta).migliorOfferente()).isNull();
         assertThat(offri(secondo, asta, "100").stato().migliorOfferenteId()).isEqualTo(secondo);
         saldo(primo, "1000", "0");
     }
@@ -431,6 +455,7 @@ class OfferteIntegrationTests {
         long id = jdbc.queryForObject("""
                 INSERT INTO utenti(username, email, password_hash, ruolo) VALUES (?, ?, 'test-fixture', ?) RETURNING id
                 """, Long.class, username, username + "@example.com", ruolo);
+        utentiCreati.add(id);
         jdbc.update("INSERT INTO portafogli(utente_id, saldo_totale) VALUES (?, ?)", id, new BigDecimal(saldo));
         return id;
     }
