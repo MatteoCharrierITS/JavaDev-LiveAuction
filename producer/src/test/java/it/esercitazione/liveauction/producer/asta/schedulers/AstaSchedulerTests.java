@@ -4,6 +4,7 @@ import it.esercitazione.liveauction.producer.asta.config.AstaSchedulingConfig;
 import it.esercitazione.liveauction.producer.asta.models.Stato;
 import it.esercitazione.liveauction.producer.asta.repos.AstaRepository;
 import it.esercitazione.liveauction.producer.asta.services.AstaLifecycleService;
+import it.esercitazione.liveauction.producer.asta.services.ChiusuraAstaService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor;
@@ -21,7 +22,8 @@ class AstaSchedulerTests {
     private static final Instant ADESSO = Instant.parse("2026-10-03T16:27:00Z");
     private final AstaRepository repository = mock(AstaRepository.class);
     private final AstaLifecycleService service = mock(AstaLifecycleService.class);
-    private final AstaScheduler scheduler = new AstaScheduler(repository, service,
+    private final ChiusuraAstaService chiusura = mock(ChiusuraAstaService.class);
+    private final AstaScheduler scheduler = new AstaScheduler(repository, service, chiusura,
             Clock.fixed(ADESSO, ZoneOffset.UTC));
 
     @Test
@@ -76,6 +78,7 @@ class AstaSchedulerTests {
         return new ApplicationContextRunner()
                 .withBean(AstaRepository.class, () -> repository)
                 .withBean(AstaLifecycleService.class, () -> service)
+                .withBean(ChiusuraAstaService.class, () -> chiusura)
                 .withUserConfiguration(AstaSchedulingConfig.class, AstaScheduler.class);
     }
 }

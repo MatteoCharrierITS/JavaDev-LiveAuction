@@ -2,9 +2,10 @@
 
 Questo documento descrive il motore completo previsto. Programmazione,
 attivazione temporale, lobby, snapshot, servizi di rilancio/settlement e trasporto
-WebSocket sono implementati. Restano da collegare la chiusura automatica e
-l'attivazione SMTP dell'email (modulo integrato in `main` con coda e retry);
-annullamento, storici e UI sono ancora da completare. Vedere lo
+WebSocket sono implementati. Il branch corrente collega la chiusura automatica
+allo scheduler e al recupero dopo un riavvio. Restano da completare l'attivazione
+SMTP dell'email (modulo integrato in `main` con coda e retry), annullamento,
+storici e UI. Vedere lo
 [stato del modulo aste](README.md#stato-del-modulo-aste).
 I nomi `startsAt` e `endsAt` usati nei diagrammi corrispondono ai campi
 `inizioAt` e `fineAt` delle API implementate.
@@ -41,8 +42,9 @@ con `PESSIMISTIC_WRITE` e legge il tempo UTC dopo l'acquisizione del lock.
   job concorrenti non duplicano le transizioni.
 - Se al riavvio l'inizio è già passato, recupera entrambe le transizioni nella
   stessa transazione e conserva la scadenza originale.
-- Le aste già `APERTA`, `CHIUSA` o `ANNULLATA` non vengono modificate da questo
-  job; una scadenza estesa dalle offerte non viene azzerata.
+- `AstaLifecycleService` non modifica le aste già `APERTA`, `CHIUSA` o
+  `ANNULLATA`; una scadenza estesa dalle offerte non viene azzerata. Lo scheduler
+  tratta le `APERTA` scadute nella fase separata di chiusura descritta sotto.
 
 Un errore su una singola asta non ferma le altre; un errore di lettura o di
 transizione viene ritentato al ciclo successivo. L'intervallo si configura con
@@ -51,8 +53,11 @@ transizione viene ritentato al ciclo successivo. L'intervallo si configura con
 
 La chiusura e il settlement appartengono al modulo offerte/chiusura. Se il
 riavvio avviene dopo `fineAt`, il recupero porta l'asta fino a `APERTA` con una
-scadenza già trascorsa: il modulo di chiusura dovrà completarla, senza concedere
-una nuova durata di sette minuti.
+scadenza già trascorsa. Nello stesso ciclo il job seleziona le aste `APERTA` con
+`fineAt <= serverTime` e richiama `ChiusuraAstaService`; il servizio ricontrolla
+stato e scadenza sotto lock, quindi non riapre il timer né duplica il settlement.
+Un errore isolato di chiusura viene ritentato al ciclo successivo e non impedisce
+di processare le altre aste.
 
 ## Programmazione sicura
 
