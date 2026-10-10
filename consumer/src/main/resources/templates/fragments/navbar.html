@@ -4,6 +4,7 @@
     <a class="brand" th:href="@{/}">LiveAuction</a>
     <div class="nav-links">
         <a th:href="@{/marketplace}">Marketplace</a>
+        <a th:href="@{/aste}">Auctions</a>
         <a th:if="${!signedIn}" th:href="@{/login}">Sign in</a>
         <a th:if="${!signedIn}" th:href="@{/registrazione}">Create account</a>
         <a th:if="${signedIn}" th:href="@{/account}" th:text="${displayName}">Account</a>

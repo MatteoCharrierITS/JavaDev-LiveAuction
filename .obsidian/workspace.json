@@ -190,17 +190,17 @@
   },
   "active": "96836a2f2f7886ee",
   "lastOpenFiles": [
-    "consumer/target/surefire-reports/TEST-it.esercitazione.liveauction.consumer.MarketplaceTests.xml",
-    "consumer/target/surefire-reports/it.esercitazione.liveauction.consumer.MarketplaceTests.txt",
-    "consumer/target/test-classes/it/esercitazione/liveauction/consumer/MarketplaceTests$StubHolder.class",
-    "consumer/target/test-classes/it/esercitazione/liveauction/consumer/MarketplaceTests$StubConfig.class",
-    "consumer/target/test-classes/it/esercitazione/liveauction/consumer/MarketplaceTests.class",
-    "consumer/src/test/java/it/esercitazione/liveauction/consumer/MarketplaceTests.java",
-    "consumer/target/classes/it/esercitazione/liveauction/consumer/web/PageModelAdvice.class",
-    "consumer/target/classes/it/esercitazione/liveauction/consumer/dto/RefreshRequest.class",
-    "consumer/target/classes/it/esercitazione/liveauction/consumer/config/SecurityConfig.class",
-    "consumer/target/classes/it/esercitazione/liveauction/consumer/dto/LoginRequest.class",
-    "consumer/target/classes/it/esercitazione/liveauction/consumer/dto/RegistrationResponse.class",
+    "consumer/src/test/js/auction-lobby.test.cjs",
+    "consumer/src/test/js",
+    "consumer/target/surefire-reports/TEST-it.esercitazione.liveauction.consumer.AuctionLobbyTests.xml",
+    "consumer/target/surefire-reports/it.esercitazione.liveauction.consumer.AuctionLobbyTests.txt",
+    "consumer/target/classes/it/esercitazione/liveauction/consumer/marketplace/MarketplaceController$1.class",
+    "consumer/target/test-classes/it/esercitazione/liveauction/consumer/AuctionLobbyTests$StubConfig.class",
+    "consumer/target/test-classes/it/esercitazione/liveauction/consumer/AuctionLobbyTests.class",
+    "consumer/target/test-classes/it/esercitazione/liveauction/consumer/AuctionLobbyTests$AuctionStub.class",
+    "consumer/src/test/java/it/esercitazione/liveauction/consumer/AuctionLobbyTests.java",
+    "consumer/target/classes/templates/fragments/auction-card.html",
+    "consumer/target/classes/templates/auction/lobby.html",
     "README.md"
   ]
 }

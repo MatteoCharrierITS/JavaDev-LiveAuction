@@ -6,6 +6,7 @@ import it.esercitazione.liveauction.consumer.dto.*;
 import it.esercitazione.liveauction.consumer.marketplace.CategoriaView;
 import it.esercitazione.liveauction.consumer.marketplace.ProdottoPage;
 import it.esercitazione.liveauction.consumer.marketplace.ProdottoView;
+import it.esercitazione.liveauction.consumer.auction.AuctionPage;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -71,6 +72,16 @@ public class ProducerClient {
 
     public ProdottoView publicProduct(long id) {
         return call(() -> client.get().uri("/prodotti/{id}", id).retrieve().body(ProdottoView.class));
+    }
+
+    public AuctionPage publicAuctions(String stato, String categoria, String query, int page, int size) {
+        return call(() -> client.get().uri(builder -> {
+            builder.path("/aste");
+            if (stato != null) builder.queryParam("stato", stato);
+            if (categoria != null) builder.queryParam("categoria", categoria);
+            if (query != null) builder.queryParam("query", query);
+            return builder.queryParam("page", page).queryParam("size", size).build();
+        }).retrieve().body(AuctionPage.class));
     }
 
     // Shared entry point for later domain clients: supply the session token, never a browser token.

@@ -1,0 +1,25 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<article th:fragment="card(auction, serverTime, userVisitor, signedIn)" class="product-card auction-card">
+    <p class="auction-state" th:text="${auction.stato}">State</p>
+    <h2 th:text="${auction.prodotto.nome}">Product</h2>
+    <p class="product-price">Starting price: <span th:text="${auction.prezzoIniziale}">0.00</span> CRD</p>
+    <p class="product-price" th:if="${auction.offertaCorrente != null}">Current offer: <span th:text="${auction.offertaCorrente}">0.00</span> CRD</p>
+    <dl class="product-facts">
+        <div><dt>Offers</dt><dd th:text="${auction.numeroOfferte}">0</dd></div>
+        <div><dt>Room opens</dt><dd><time class="auction-time" th:attr="datetime=${auction.aperturaStanzaAt}" th:text="${auction.aperturaStanzaAt}">Time</time></dd></div>
+        <div><dt>Starts</dt><dd><time class="auction-time" th:attr="datetime=${auction.inizioAt}" th:text="${auction.inizioAt}">Time</time></dd></div>
+        <div><dt>Ends</dt><dd><time class="auction-time" th:attr="datetime=${auction.fineAt}" th:text="${auction.fineAt}">Time</time></dd></div>
+    </dl>
+    <p class="auction-countdown" th:if="${auction.countdownLabel() != null and auction.countdownTarget() != null}"
+       th:attr="data-target=${auction.countdownTarget()}">
+        <span th:text="${auction.countdownLabel()}">Countdown</span>:
+        <strong class="auction-remaining">Calculating…</strong>
+    </p>
+    <p th:if="${auction.stato == 'CHIUSA'}" class="muted">Closed auction. Winner details are not available in the lobby.</p>
+    <p th:if="${auction.stato == 'ANNULLATA'}" class="muted">This auction was cancelled.</p>
+    <p th:if="${auction.roomAvailableAt(serverTime) and userVisitor}"><a th:href="@{/aste/{id}(id=${auction.id})}">Enter auction room</a></p>
+    <p th:if="${auction.roomAvailableAt(serverTime) and !signedIn}"><a th:href="@{/login}">Sign in to enter the room</a></p>
+    <p th:if="${auction.stato == 'PROGRAMMATA'}" class="muted">Room access begins when the Producer opens it.</p>
+</article>
+</html>

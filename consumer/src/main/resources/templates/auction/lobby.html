@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Auctions')}"></head>
+<body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<main class="catalog-page auction-lobby" th:attr="data-server-time=${auctions.serverTime}">
+    <header class="catalog-heading">
+        <h1>Auctions</h1>
+        <p>Browse public auctions. Times are shown in Rome time.</p>
+    </header>
+    <form class="catalog-filters" th:action="@{/aste}" method="get" aria-label="Filter auctions">
+        <label for="stato">State</label>
+        <select id="stato" name="stato">
+            <option value="" th:selected="${stato == null}">All states</option>
+            <option value="PROGRAMMATA" th:selected="${stato == 'PROGRAMMATA'}">Scheduled</option>
+            <option value="STANZA_APERTA" th:selected="${stato == 'STANZA_APERTA'}">Room open</option>
+            <option value="APERTA" th:selected="${stato == 'APERTA'}">Live</option>
+            <option value="CHIUSA" th:selected="${stato == 'CHIUSA'}">Closed</option>
+            <option value="ANNULLATA" th:selected="${stato == 'ANNULLATA'}">Cancelled</option>
+        </select>
+        <label for="categoria">Category slug</label>
+        <input id="categoria" name="categoria" th:value="${categoria}" placeholder="e.g. informatica">
+        <label for="query">Search</label>
+        <input id="query" name="query" type="search" th:value="${query}" placeholder="Product name, SKU, or description">
+        <input type="hidden" name="size" th:value="${auctions.size}">
+        <button type="submit">Apply filters</button>
+        <a th:href="@{/aste}">Clear filters</a>
+    </form>
+    <section aria-label="Auction results">
+        <p th:if="${auctions.content.isEmpty()}" class="empty-state">No auctions match these filters.</p>
+        <th:block th:unless="${auctions.content.isEmpty()}">
+            <p class="result-count" th:text="${auctions.totalElements} + ' auctions found'">Auctions found</p>
+            <div class="product-grid">
+                <th:block th:each="auction : ${auctions.content}">
+                    <div th:replace="~{fragments/auction-card :: card(${auction}, ${auctions.serverTime}, ${userVisitor}, ${signedIn})}"></div>
+                </th:block>
+            </div>
+        </th:block>
+    </section>
+    <nav th:if="${auctions.totalPages > 1}" class="pagination" aria-label="Auction pages">
+        <a th:if="${auctions.page > 0}" th:href="@{/aste(stato=${stato},categoria=${categoria},query=${query},page=${auctions.page - 1},size=${auctions.size})}">Previous</a>
+        <span th:text="'Page ' + ${auctions.page + 1} + ' of ' + ${auctions.totalPages}">Page</span>
+        <a th:if="${auctions.page + 1 < auctions.totalPages}" th:href="@{/aste(stato=${stato},categoria=${categoria},query=${query},page=${auctions.page + 1},size=${auctions.size})}">Next</a>
+    </nav>
+</main>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+<script th:src="@{/js/auction-lobby.js}" defer></script>
+</body>
+</html>
