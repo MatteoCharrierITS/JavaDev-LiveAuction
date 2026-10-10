@@ -69,10 +69,8 @@ public class AstaLetturaRepository {
                 , leader.offerente_id, offerente.username AS offerente_username,
                 a.vincitore_id, vincitore.username AS vincitore_username, a.chiusa_at
                 FROM aste a JOIN prodotti p ON p.id = a.prodotto_id
-                LEFT JOIN LATERAL (
-                    SELECT o.offerente_id FROM offerte o WHERE o.asta_id = a.id
-                    ORDER BY o.importo DESC, o.data_offerta DESC, o.id DESC LIMIT 1
-                ) leader ON TRUE
+                LEFT JOIN offerte leader ON leader.asta_id = a.id
+                    AND leader.leader AND leader.ritirata_at IS NULL
                 LEFT JOIN utenti offerente ON offerente.id = leader.offerente_id
                 LEFT JOIN utenti vincitore ON vincitore.id = a.vincitore_id
                 WHERE a.id = :id

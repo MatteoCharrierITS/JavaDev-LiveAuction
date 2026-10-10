@@ -447,8 +447,13 @@ In `CHIUSA` lo snapshot include anche:
 }
 ```
 
-`numeroOfferte` conta le offerte persistite; `migliorOfferente` identifica
-l'autore dell'offerta più alta, con username mascherato come `g***i`.
+`numeroOfferte` conta tutte le offerte persistite, incluse quelle ritirate;
+`migliorOfferente` identifica il leader operativo (`offerte.leader = true`,
+`ritirata_at IS NULL`), con username mascherato come `g***i`.
+La cancellazione di un account può ripristinare un'offerta inferiore:
+lo snapshot espone quel leader, non l'autore della massima offerta storica.
+Se nessun candidato viene ripristinato, leader e prezzo corrente sono null
+anche quando il conteggio storico è maggiore di zero.
 Senza offerte, `offertaCorrente` e `migliorOfferente` sono `null` e il conteggio
 è zero. `prezzoFinale` deriva da `offertaCorrente` solo in `CHIUSA` con vincitore;
 senza vincitore, `vincitore` e `prezzoFinale` vengono omessi. I campi di esito

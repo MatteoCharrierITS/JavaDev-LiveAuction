@@ -2,7 +2,7 @@
   "info": {
     "name": "LiveAuction • Aste",
     "_postman_id": "833135da-ce7e-4249-8eb7-4ed4cea808d1",
-    "description": "Programmazione ADMIN, lobby pubblica, snapshot e ticket WebSocket implementati secondo docs/04-api-rest.md; annullamento e storici sono ancora previsti. La connessione STOMP /ws richiede un client WebSocket e non è rappresentata in Collection v2.1.",
+    "description": "Programmazione ADMIN, lobby pubblica, snapshot e ticket WebSocket implementati secondo docs/04-api-rest.md; annullamento e storici sono ancora previsti. Lo snapshot usa il leader operativo non ritirato, non la massima offerta storica. Nel branch feature/logica_aste la chiusura è automatica anche al riavvio: verificarla via snapshot, senza endpoint di settlement. La connessione STOMP /ws richiede un client WebSocket e non è rappresentata in Collection v2.1.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [

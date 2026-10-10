@@ -62,6 +62,12 @@ Il ticket è implementato e richiede un USER e una stanza accessibile da tre
 minuti prima dell'inizio. Annullamento e storici restano previsti e possono
 rispondere `404` fino all'implementazione.
 
+Lo snapshot espone il leader operativo, escludendo le offerte ritirate; il
+conteggio delle offerte resta storico. Dopo la cancellazione del leader,
+verificare che REST mostri il leader ripristinato oppure null. La chiusura
+automatica è collegata nel branch `feature/logica_aste`, senza endpoint pubblico
+di settlement: verificare l'esito tramite lo snapshot dopo la scadenza.
+
 Il protocollo STOMP su `/ws` richiede un client WebSocket: `aste.json` include
 la richiesta REST del ticket, ma non i comandi e le sottoscrizioni STOMP.
 

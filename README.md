@@ -42,7 +42,8 @@ Il sistema è composto da due applicazioni indipendenti:
 > paginazione) e la programmazione ADMIN delle aste con blocco atomico dello
 > stock, apertura automatica, lobby e snapshot pubblici. I servizi di offerte e
 > settlement e notifiche email con coda persistente e retry sono implementati;
-> mancano la chiusura automatica, l'attivazione SMTP dell'email,
+> questo branch collega la chiusura automatica allo scheduler, anche nel recupero
+> dopo un riavvio. Mancano l'attivazione SMTP dell'email,
 > annullamento, storici e API inventario. Le API del portafoglio (saldo, movimenti
 > e impostazione del saldo virtuale) sono integrate in `main`. La
 > Consumer è ancora uno scheletro senza pagine applicative: il flusso completo

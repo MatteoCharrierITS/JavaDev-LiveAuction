@@ -306,8 +306,36 @@ class AstaLetturaIntegrationTests {
         return id;
     }
 
+    @Test
+    void snapshotUsaIlLeaderRipristinatoNonLaMassimaOffertaRitirata() throws Exception {
+        long asta = asta(prodottoId, Stato.APERTA, inizio);
+        offerta(asta, secondoOfferente, 630);
+        jdbc.update("UPDATE offerte SET leader = FALSE, ritirata_at = CURRENT_TIMESTAMP WHERE asta_id = ?", asta);
+        offerta(asta, primoOfferente, 500);
+        jdbc.update("UPDATE aste SET offerta_corrente = 500 WHERE id = ?", asta);
+        mvc.perform(get("/api/v1/aste/{id}", asta))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.migliorOfferente.id").value(primoOfferente))
+                .andExpect(jsonPath("$.offertaCorrente").value(500))
+                .andExpect(jsonPath("$.numeroOfferte").value(2));
+    }
+
+    @Test
+    void snapshotSenzaLeaderNonRiproponeOfferteStoriche() throws Exception {
+        long asta = asta(prodottoId, Stato.APERTA, inizio);
+        offerta(asta, secondoOfferente, 630);
+        jdbc.update("UPDATE offerte SET leader = FALSE, ritirata_at = CURRENT_TIMESTAMP WHERE asta_id = ?", asta);
+        jdbc.update("UPDATE aste SET offerta_corrente = NULL WHERE id = ?", asta);
+        mvc.perform(get("/api/v1/aste/{id}", asta))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.migliorOfferente").value(org.hamcrest.Matchers.nullValue()))
+                .andExpect(jsonPath("$.offertaCorrente").value(org.hamcrest.Matchers.nullValue()))
+                .andExpect(jsonPath("$.numeroOfferte").value(1));
+    }
+
     private void offerta(long asta, long utente, int importo) {
-        jdbc.update("INSERT INTO offerte (asta_id, offerente_id, client_bid_id, importo) VALUES (?, ?, ?, ?)",
+        jdbc.update("UPDATE offerte SET leader = FALSE WHERE asta_id = ? AND leader", asta);
+        jdbc.update("INSERT INTO offerte (asta_id, offerente_id, client_bid_id, importo, leader) VALUES (?, ?, ?, ?, TRUE)",
                 asta, utente, UUID.randomUUID(), importo);
     }
 }

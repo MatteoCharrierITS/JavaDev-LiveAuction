@@ -6,6 +6,7 @@ import it.esercitazione.liveauction.producer.asta.models.Stato;
 import it.esercitazione.liveauction.producer.asta.repos.AstaRepository;
 import it.esercitazione.liveauction.producer.asta.schedulers.AstaScheduler;
 import it.esercitazione.liveauction.producer.asta.services.AstaLifecycleService;
+import it.esercitazione.liveauction.producer.asta.services.ChiusuraAstaService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,6 +48,8 @@ class AstaLifecycleIntegrationTests {
     AstaRepository repository;
     @Autowired
     AstaLifecycleService service;
+    @Autowired
+    ChiusuraAstaService chiusuraAstaService;
     @Autowired
     PlatformTransactionManager transactionManager;
     @Autowired
@@ -171,7 +174,7 @@ class AstaLifecycleIntegrationTests {
         long preLive = creaAsta(Stato.STANZA_APERTA, adesso.minusSeconds(10), 1);
         long futura = creaAsta(Stato.PROGRAMMATA, adesso.plusSeconds(600), 0);
         long annullata = creaAsta(Stato.ANNULLATA, adesso.minusSeconds(10), 0);
-        AstaScheduler scheduler = new AstaScheduler(repository, service);
+        AstaScheduler scheduler = new AstaScheduler(repository, service, chiusuraAstaService);
         scheduler.recuperaAllAvvio();
         scheduler.aggiornaAste();
         assertAsta(stanza, Stato.STANZA_APERTA, 1, adesso.plusSeconds(540));
