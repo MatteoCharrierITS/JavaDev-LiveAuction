@@ -21,3 +21,26 @@ button.danger { background: #9b3030; margin-top: 1rem; }
 .alert-success { color: #17552c; background: #eaf7ed; }
 .field-error { margin: -.6rem 0 .7rem; padding: .3rem; }
 .site-footer { margin-top: auto; text-align: center; padding: 2rem; color: #52636e; }
+.catalog-page { width: min(100% - 2rem, 68rem); margin: 2.5rem auto; }
+.catalog-heading h1 { margin-bottom: .25rem; }
+.catalog-filters { display: flex; flex-wrap: wrap; align-items: end; gap: .7rem; background: white; padding: 1rem; border: 1px solid #dce2e6; border-radius: .7rem; margin: 1.5rem 0; }
+.catalog-filters label { font-weight: 600; }
+.catalog-filters input, .catalog-filters select { padding: .65rem; border: 1px solid #8999a3; border-radius: .35rem; }
+.catalog-filters input[type=search] { min-width: 14rem; flex: 1; }
+.product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr)); gap: 1rem; }
+.product-card, .product-detail, .empty-state, .error-page { background: white; border: 1px solid #dce2e6; border-radius: .7rem; padding: 1.5rem; }
+.product-card h2 { margin: .2rem 0 1rem; }
+.product-category { color: #52636e; font-weight: 600; margin-bottom: .3rem; }
+.product-description { white-space: pre-line; overflow-wrap: anywhere; }
+.product-price { font-size: 1.2rem; font-weight: 600; }
+.muted { color: #52636e; }
+.stock-unavailable { color: #8c2525; font-weight: 600; }
+.product-facts { display: grid; gap: .5rem; margin: 1rem 0 0; }
+.product-facts div { display: flex; justify-content: space-between; gap: 1rem; border-top: 1px solid #e6ecef; padding-top: .5rem; }
+.product-facts dt { color: #52636e; }
+.product-facts dd { margin: 0; font-weight: 600; text-align: right; }
+.pagination { display: flex; justify-content: center; gap: 1.5rem; align-items: center; margin: 2rem 0; }
+.loading-state { padding: .7rem; background: #eaf2f7; }
+.result-count { color: #52636e; }
+.product-detail { max-width: 48rem; }
+@media (max-width: 40rem) { .site-nav, .nav-links { flex-wrap: wrap; } .catalog-filters { align-items: stretch; flex-direction: column; } .catalog-filters input[type=search] { min-width: 0; width: 100%; } }

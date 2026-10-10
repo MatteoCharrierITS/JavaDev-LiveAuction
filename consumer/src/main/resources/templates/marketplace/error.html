@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(${errorTitle})}"></head>
+<body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<main class="catalog-page error-page">
+    <h1 th:text="${errorTitle}">Catalogue unavailable</h1>
+    <p role="alert" th:text="${errorMessage}">Please try again.</p>
+    <a th:href="@{/marketplace}">Go to marketplace</a>
+</main>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Marketplace')}"></head>
+<body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<main class="catalog-page">
+    <header class="catalog-heading">
+        <h1>Marketplace</h1>
+        <p>Explore products available in the public catalogue.</p>
+    </header>
+    <form id="catalog-filters" class="catalog-filters" th:action="@{/marketplace}" method="get" aria-label="Filter products">
+        <label for="query">Search</label>
+        <input id="query" name="query" type="search" th:value="${query}" placeholder="Name, SKU, or description">
+        <label for="categoria">Category</label>
+        <select id="categoria" name="categoria">
+            <option value="">All categories</option>
+            <option th:each="category : ${categories}" th:value="${category.slug}" th:text="${category.nome}"
+                    th:selected="${category.slug == categoria}">Category</option>
+        </select>
+        <label for="astabile">Auction status</label>
+        <select id="astabile" name="astabile">
+            <option value="" th:selected="${astabile == null}">All products</option>
+            <option value="true" th:selected="${astabile != null and astabile}">Available for auction</option>
+            <option value="false" th:selected="${astabile != null and !astabile}">Not auctionable</option>
+        </select>
+        <input type="hidden" name="size" th:value="${products.size}">
+        <button type="submit">Apply filters</button>
+        <a th:href="@{/marketplace}">Clear filters</a>
+    </form>
+    <p id="catalog-loading" class="loading-state" role="status" hidden>Loading products…</p>
+    <section aria-label="Products">
+        <p th:if="${products.content.isEmpty()}" class="empty-state">No products match these filters.</p>
+        <th:block th:unless="${products.content.isEmpty()}">
+            <p class="result-count" th:text="${products.totalElements} + ' products found'">Products found</p>
+            <div class="product-grid">
+                <th:block th:each="product : ${products.content}">
+                    <div th:replace="~{fragments/product-card :: card(${product})}"></div>
+                </th:block>
+            </div>
+        </th:block>
+    </section>
+    <nav th:if="${products.totalPages > 1}" class="pagination" aria-label="Product pages">
+        <a th:if="${products.page > 0}" th:href="@{/marketplace(query=${query},categoria=${categoria},astabile=${astabile},page=${products.page - 1},size=${products.size})}">Previous</a>
+        <span th:text="'Page ' + ${products.page + 1} + ' of ' + ${products.totalPages}">Page</span>
+        <a th:if="${products.page + 1 < products.totalPages}" th:href="@{/marketplace(query=${query},categoria=${categoria},astabile=${astabile},page=${products.page + 1},size=${products.size})}">Next</a>
+    </nav>
+</main>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+<script th:src="@{/js/catalog-loading.js}" defer></script>
+</body>
+</html>

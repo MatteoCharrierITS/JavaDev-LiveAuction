@@ -3,6 +3,9 @@ package it.esercitazione.liveauction.consumer.client;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.esercitazione.liveauction.consumer.dto.*;
+import it.esercitazione.liveauction.consumer.marketplace.CategoriaView;
+import it.esercitazione.liveauction.consumer.marketplace.ProdottoPage;
+import it.esercitazione.liveauction.consumer.marketplace.ProdottoView;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -50,6 +53,24 @@ public class ProducerClient {
     public void deleteAccount(String accessToken) {
         call(() -> { client.delete().uri("/me").header(HttpHeaders.AUTHORIZATION, bearer(accessToken))
                 .retrieve().toBodilessEntity(); return null; });
+    }
+
+    public CategoriaView[] publicCategories() {
+        return call(() -> client.get().uri("/categorie").retrieve().body(CategoriaView[].class));
+    }
+
+    public ProdottoPage publicProducts(String query, String categoria, Boolean astabile, int page, int size) {
+        return call(() -> client.get().uri(builder -> {
+            builder.path("/prodotti");
+            if (query != null && !query.isBlank()) builder.queryParam("query", query);
+            if (categoria != null && !categoria.isBlank()) builder.queryParam("categoria", categoria);
+            if (astabile != null) builder.queryParam("astabile", astabile);
+            return builder.queryParam("page", page).queryParam("size", size).build();
+        }).retrieve().body(ProdottoPage.class));
+    }
+
+    public ProdottoView publicProduct(long id) {
+        return call(() -> client.get().uri("/prodotti/{id}", id).retrieve().body(ProdottoView.class));
     }
 
     // Shared entry point for later domain clients: supply the session token, never a browser token.

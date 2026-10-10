@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(${product.nome})}"></head>
+<body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<main class="catalog-page product-detail">
+    <a th:href="@{/marketplace}">← Marketplace</a>
+    <p class="product-category" th:text="${product.categoria.nome}">Category</p>
+    <h1 th:text="${product.nome}">Product</h1>
+    <p th:if="${product.descrizione != null and !#strings.isEmpty(product.descrizione)}"
+       class="product-description" th:text="${product.descrizione}">Description</p>
+    <p th:unless="${product.descrizione != null and !#strings.isEmpty(product.descrizione)}" class="muted">No description provided.</p>
+    <p class="product-price" th:if="${product.prezzoFisso != null}">Fixed price: <strong th:text="${product.prezzoFisso}">0.00</strong> CRD</p>
+    <p class="product-price muted" th:unless="${product.prezzoFisso != null}">No fixed price</p>
+    <p th:if="${product.quantitaDisponibile == 0}" class="stock-unavailable">Currently unavailable</p>
+    <dl class="product-facts">
+        <div><dt>Available quantity</dt><dd th:text="${product.quantitaDisponibile}">0</dd></div>
+        <div><dt>Blocked quantity</dt><dd th:text="${product.quantitaBloccata}">0</dd></div>
+        <div><dt>Auction status</dt><dd th:text="${product.astabile} ? 'AVAILABLE FOR AUCTION' : 'NOT AUCTIONABLE'">Auction status</dd></div>
+        <div><dt>Scheduled or live auctions</dt><dd th:text="${product.asteProgrammate}">0</dd></div>
+    </dl>
+</main>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+</body>
+</html>

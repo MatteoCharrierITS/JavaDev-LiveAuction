@@ -11,10 +11,14 @@
             "id": "96836a2f2f7886ee",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "docs/01-requisiti.md",
+                "mode": "source",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "Nuova scheda"
+              "title": "01-requisiti"
             }
           }
         ]
@@ -95,6 +99,7 @@
             "state": {
               "type": "backlink",
               "state": {
+                "file": "docs/01-requisiti.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -113,6 +118,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
+                "file": "docs/01-requisiti.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
@@ -155,6 +161,7 @@
             "state": {
               "type": "outline",
               "state": {
+                "file": "docs/01-requisiti.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -183,16 +190,17 @@
   },
   "active": "96836a2f2f7886ee",
   "lastOpenFiles": [
-    "consumer/target/classes/it/esercitazione/liveauction/consumer/client/package-info.class",
-    "consumer/target/classes/application.properties",
-    "consumer/target/classes/application-prod.properties",
-    "consumer/target/test-classes/it/esercitazione/liveauction/consumer/AuthFlowTests$StubConfig.class",
-    "consumer/target/test-classes/it/esercitazione/liveauction/consumer/LiveAuctionConsumerApplicationTests.class",
-    "consumer/target/test-classes/it/esercitazione/liveauction/consumer/AuthFlowTests$StubHolder.class",
-    "consumer/target/test-classes/it/esercitazione/liveauction/consumer/AuthFlowTests.class",
-    "consumer/target/test-classes/it/esercitazione/liveauction/consumer",
-    "consumer/target/test-classes/it/esercitazione/liveauction",
-    "consumer/target/test-classes/it/esercitazione",
-    "consumer/target/test-classes/it"
+    "consumer/target/surefire-reports/TEST-it.esercitazione.liveauction.consumer.MarketplaceTests.xml",
+    "consumer/target/surefire-reports/it.esercitazione.liveauction.consumer.MarketplaceTests.txt",
+    "consumer/target/test-classes/it/esercitazione/liveauction/consumer/MarketplaceTests$StubHolder.class",
+    "consumer/target/test-classes/it/esercitazione/liveauction/consumer/MarketplaceTests$StubConfig.class",
+    "consumer/target/test-classes/it/esercitazione/liveauction/consumer/MarketplaceTests.class",
+    "consumer/src/test/java/it/esercitazione/liveauction/consumer/MarketplaceTests.java",
+    "consumer/target/classes/it/esercitazione/liveauction/consumer/web/PageModelAdvice.class",
+    "consumer/target/classes/it/esercitazione/liveauction/consumer/dto/RefreshRequest.class",
+    "consumer/target/classes/it/esercitazione/liveauction/consumer/config/SecurityConfig.class",
+    "consumer/target/classes/it/esercitazione/liveauction/consumer/dto/LoginRequest.class",
+    "consumer/target/classes/it/esercitazione/liveauction/consumer/dto/RegistrationResponse.class",
+    "README.md"
   ]
 }

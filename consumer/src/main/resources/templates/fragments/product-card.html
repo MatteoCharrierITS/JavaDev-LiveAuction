@@ -1,0 +1,17 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<article th:fragment="card(product)" class="product-card">
+    <p class="product-category" th:text="${product.categoria.nome}">Category</p>
+    <h2><a th:href="@{/prodotti/{id}(id=${product.id})}" th:text="${product.nome}">Product</a></h2>
+    <p th:if="${product.descrizione != null and !#strings.isEmpty(product.descrizione)}"
+       class="product-description" th:text="${product.descrizione}">Description</p>
+    <p class="product-price" th:if="${product.prezzoFisso != null}"><span th:text="${product.prezzoFisso}">0.00</span> CRD</p>
+    <p class="product-price muted" th:unless="${product.prezzoFisso != null}">No fixed price</p>
+    <p th:if="${product.quantitaDisponibile == 0}" class="stock-unavailable">Currently unavailable</p>
+    <dl class="product-facts">
+        <div><dt>Auction status</dt><dd th:text="${product.astabile} ? 'AVAILABLE FOR AUCTION' : 'NOT AUCTIONABLE'">Auction status</dd></div>
+        <div><dt>Available</dt><dd th:text="${product.quantitaDisponibile}">0</dd></div>
+        <div><dt>Scheduled or live auctions</dt><dd th:text="${product.asteProgrammate}">0</dd></div>
+    </dl>
+</article>
+</html>
