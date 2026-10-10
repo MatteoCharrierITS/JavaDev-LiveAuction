@@ -151,7 +151,7 @@ Riferimento per le pagine: [UI e flussi](05-ui-flussi.md).
   `POST /api/v1/prodotti/{id}/acquisti`, coordinando stock, portafoglio,
   ledger e inventario in una transazione.
 
-Queste responsabilità richiedono una decisione del team; la UI relativa è di Matteo.
+Queste responsabilità richiedono una decisione del team; la UI relativa è di Andrea.
 
 ## Per completare ogni attività
 
