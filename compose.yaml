@@ -47,6 +47,8 @@ services:
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       SMTP_AUTH: ${SMTP_AUTH:-true}
       SMTP_STARTTLS: ${SMTP_STARTTLS:-true}
+      SMTP_STARTTLS_REQUIRED: ${SMTP_STARTTLS_REQUIRED:-${SMTP_STARTTLS:-true}}
+      SMTP_SSL: ${SMTP_SSL:-false}
       JAVA_TOOL_OPTIONS: ${PRODUCER_JAVA_OPTS:--XX:MaxRAMPercentage=75.0}
     ports:
       - "${PRODUCER_PORT:-8081}:8081"

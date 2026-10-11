@@ -2,6 +2,13 @@
 
 8 ottobre 2026, branch `web_socket`. Modifiche locali, nessun commit.
 
+> **Nota di aggiornamento — 10 ottobre 2026:** questo report conserva lo stato
+> storico dell'8 ottobre. Le due attenzioni sotto sono state risolte: il modulo
+> portafoglio condiviso è integrato dal 9 ottobre; chiusura automatica, test
+> scheduler e fix dello snapshot sono integrati in `main` dal merge `3bcc9cc`.
+> Il risultato del merge supera 230 test Producer e 1 Consumer. Restano SMTP
+> reale, Consumer e le API indicate nel [TODO corrente](todo.md).
+
 Implementati: relay degli eventi post-commit verso i topic, comando STOMP di
 rilancio delegato a `OffertaService`, conferme/rifiuti alla sola sessione
 mittente e pulizia dei fixture dei test. Il trasporto non modifica le regole
