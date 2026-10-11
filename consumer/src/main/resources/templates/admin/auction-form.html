@@ -1,0 +1,11 @@
+<!doctype html><html lang="en" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments/head :: head('Schedule auction')}"></head><body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav><main class="catalog-page"><h1>Schedule an auction</h1><p><a th:href="@{/admin/prodotti}">Back to products</a></p>
+<p th:if="${formError}" class="alert alert-error" role="alert" th:text="${formError}"></p><section class="admin-panel">
+<p>Only auction enabled products with available stock are listed. The Producer checks stock again when you submit.</p>
+<p th:if="${eligibleProducts.isEmpty()}" class="empty-state">No products are currently eligible.</p>
+<form th:unless="${eligibleProducts.isEmpty()}" class="admin-form" th:action="@{/admin/aste}" th:object="${form}" method="post">
+<label for="prodottoId">Product</label><select id="prodottoId" th:field="*{prodottoId}" required><option value="">Choose a product</option><option th:each="p : ${eligibleProducts}" th:value="${p.id}" th:text="${p.nome} + ' (' + ${p.sku} + ', ' + ${p.quantitaDisponibile} + ' available)'"></option></select>
+<label for="inizioLocale">Local start time (Europe/Rome)</label><input id="inizioLocale" th:field="*{inizioLocale}" type="datetime-local" required>
+<label for="prezzoIniziale">Starting price (CRD)</label><input id="prezzoIniziale" th:field="*{prezzoIniziale}" type="number" min="0.01" step="0.01" required>
+<p class="muted">The room opens 3 minutes before the start. Bidding starts with 7 minutes; every accepted bid adds 20 seconds to the current end time.</p>
+<button type="submit">Schedule auction</button></form></section></main><footer th:replace="~{fragments/footer :: footer}"></footer></body></html>

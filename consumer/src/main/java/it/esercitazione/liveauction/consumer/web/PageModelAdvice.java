@@ -23,4 +23,10 @@ public class PageModelAdvice {
         return signedIn(authentication) && authentication.getAuthorities()
                 .contains(new SimpleGrantedAuthority("ROLE_USER"));
     }
+
+    @ModelAttribute("adminVisitor")
+    public boolean adminVisitor(Authentication authentication) {
+        return signedIn(authentication) && authentication.getAuthorities()
+                .contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
+    }
 }

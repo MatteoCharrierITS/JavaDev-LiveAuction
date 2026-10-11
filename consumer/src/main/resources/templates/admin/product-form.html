@@ -1,0 +1,18 @@
+<!doctype html><html lang="en" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments/head :: head('ADMIN product')}"></head><body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav><main class="catalog-page"><h1 th:text="${productId == null} ? 'Create product' : 'Edit product'"></h1><p><a th:href="@{/admin/prodotti}">Back to products</a></p>
+<p th:if="${formError}" class="alert alert-error" role="alert" th:text="${formError}"></p>
+<section th:if="${attempted}" class="admin-panel"><h2>Your attempted changes</h2>
+<dl class="product-facts"><div><dt>Category ID</dt><dd th:text="${attempted.categoriaId}"></dd></div><div><dt>SKU</dt><dd th:text="${attempted.sku}"></dd></div><div><dt>Name</dt><dd th:text="${attempted.nome}"></dd></div><div><dt>Description</dt><dd th:text="${attempted.descrizione}"></dd></div><div><dt>Fixed price</dt><dd th:text="${attempted.prezzoFisso}"></dd></div><div><dt>Auction enabled</dt><dd th:text="${attempted.astabile}"></dd></div><div><dt>Available stock</dt><dd th:text="${attempted.quantitaDisponibile}"></dd></div><div><dt>Active</dt><dd th:text="${attempted.attivo}"></dd></div></dl></section>
+<section class="admin-panel"><h2 th:text="${attempted != null} ? 'Current Producer values — review before saving' : 'Product details'"></h2>
+<form class="admin-form" th:action="${productId == null} ? @{/admin/prodotti} : @{/admin/prodotti/{id}(id=${productId})}" th:object="${form}" method="post">
+<label for="categoriaId">Category</label><select id="categoriaId" th:field="*{categoriaId}" required><option value="">Choose a category</option><option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.nome} + (${c.attiva} ? '' : ' (inactive)')"></option></select>
+<label for="sku">SKU</label><input id="sku" th:field="*{sku}" maxlength="30" required><label for="nome">Name</label><input id="nome" th:field="*{nome}" maxlength="200" required>
+<label for="descrizione">Description</label><textarea id="descrizione" th:field="*{descrizione}" maxlength="5000" rows="5"></textarea>
+<label for="prezzoFisso">Fixed price (CRD, optional)</label><input id="prezzoFisso" th:field="*{prezzoFisso}" type="number" min="0.01" step="0.01">
+<label for="astabile">Auction eligibility flag</label><select id="astabile" th:field="*{astabile}"><option value="true">Enabled</option><option value="false">Disabled</option></select>
+<label for="quantitaDisponibile">Available stock</label><input id="quantitaDisponibile" th:field="*{quantitaDisponibile}" type="number" min="0" step="1" required>
+<div th:if="${productId != null}"><label for="attivo">Product status</label><select id="attivo" th:field="*{attivo}"><option value="true">Active</option><option value="false">Inactive</option></select>
+<p>Blocked stock: <strong th:text="${product != null ? product.quantitaBloccata : '—'}"></strong> <span class="muted">(read only)</span></p></div>
+<input th:if="${productId == null}" type="hidden" th:field="*{attivo}"><input type="hidden" th:field="*{versione}">
+<p class="muted">Saving replaces all editable fields. Review the current stock before submitting.</p><button type="submit" th:text="${productId == null} ? 'Create product' : 'Save product'"></button></form></section>
+</main><footer th:replace="~{fragments/footer :: footer}"></footer></body></html>

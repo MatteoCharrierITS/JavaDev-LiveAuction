@@ -1,0 +1,9 @@
+<!doctype html><html lang="en" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments/head :: head('Edit category')}"></head><body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav><main class="catalog-page"><h1>Edit category</h1><p><a th:href="@{/admin/categorie}">Back to categories</a></p>
+<section class="admin-panel"><p th:if="${formError}" class="alert alert-error" role="alert" th:text="${formError}"></p>
+<form class="admin-form" th:action="@{/admin/categorie/{id}(id=${categoryId})}" th:object="${form}" method="post">
+<label for="nome">Name</label><input id="nome" th:field="*{nome}" maxlength="100" required>
+<label for="slug">Slug</label><input id="slug" th:field="*{slug}" maxlength="100" pattern="[a-z0-9]+(-[a-z0-9]+)*" required>
+<label for="attiva">Status</label><select id="attiva" th:field="*{attiva}"><option value="true">Active</option><option value="false">Inactive</option></select>
+<p class="muted">Inactive categories hide products from the public catalogue without changing stock or scheduled auctions.</p><button type="submit">Save category</button></form></section>
+</main><footer th:replace="~{fragments/footer :: footer}"></footer></body></html>

@@ -67,7 +67,8 @@ class AuthFlowTests {
         mvc.perform(get("/admin/prodotti").session(session("USER", false))).andExpect(status().isForbidden());
         respond("/aste/42", HttpStatus.NOT_FOUND, "{\"code\":\"RISORSA_NON_TROVATA\"}", MediaType.APPLICATION_PROBLEM_JSON);
         mvc.perform(get("/aste/42").session(session("USER", false))).andExpect(status().isNotFound());
-        mvc.perform(get("/admin/prodotti").session(session("ADMIN", false))).andExpect(status().isNotFound());
+        respond("/admin/categorie", HttpStatus.SERVICE_UNAVAILABLE, "{}", MediaType.APPLICATION_PROBLEM_JSON);
+        mvc.perform(get("/admin/prodotti").session(session("ADMIN", false))).andExpect(status().isServiceUnavailable());
         mvc.perform(post("/login").param("username", "alice").param("password", "password123"))
                 .andExpect(status().isForbidden());
         mvc.perform(post("/registrazione").param("username", "alice").param("email", "a@example.com")

@@ -76,3 +76,10 @@ button.danger { background: #9b3030; margin-top: 1rem; }
 .urgent { color: #9b3030; font-weight: 800; }
 @media (max-width: 44rem) { .room-grid { grid-template-columns: 1fr; } .room-header { flex-direction: column; } }
 @media (prefers-reduced-motion: reduce) { .auction-room * { scroll-behavior: auto; transition: none !important; animation: none !important; } }
+.admin-actions { display: flex; flex-wrap: wrap; gap: 1rem; margin: 1.5rem 0; }
+.admin-panel { background: white; border: 1px solid #dce2e6; border-radius: .7rem; padding: 1.5rem; margin: 1rem 0; }
+.admin-panel h2 { margin-top: 0; }
+.admin-form { display: grid; gap: .6rem; max-width: 36rem; }
+.admin-form label { font-weight: 600; }
+.admin-form input, .admin-form select, .admin-form textarea { width: 100%; padding: .65rem; border: 1px solid #8999a3; border-radius: .35rem; font: inherit; }
+.admin-form button { justify-self: start; }

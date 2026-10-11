@@ -1,0 +1,10 @@
+<!doctype html><html lang="en" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments/head :: head('ADMIN categories')}"></head><body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav><main class="catalog-page"><h1>Manage categories</h1><div th:replace="~{fragments/alerts :: alerts}"></div><p><a th:href="@{/admin/prodotti}">Back to products</a></p>
+<section class="admin-panel"><h2>Create category</h2><p th:if="${formError}" class="alert alert-error" role="alert" th:text="${formError}"></p>
+<form class="admin-form" th:action="@{/admin/categorie}" th:object="${form}" method="post">
+<label for="nome">Name</label><input id="nome" th:field="*{nome}" maxlength="100" required>
+<label for="slug">Slug</label><input id="slug" th:field="*{slug}" maxlength="100" pattern="[a-z0-9]+(-[a-z0-9]+)*" required>
+<label for="attiva">Status</label><select id="attiva" th:field="*{attiva}"><option value="true">Active</option><option value="false">Inactive</option></select><button type="submit">Create category</button></form></section>
+<section class="admin-panel"><h2>All categories</h2><p th:if="${#arrays.isEmpty(categories)}">No categories yet.</p><div th:unless="${#arrays.isEmpty(categories)}" class="wallet-table-wrap"><table class="wallet-table"><thead><tr><th>Name</th><th>Slug</th><th>Status</th><th>Action</th></tr></thead>
+<tbody><tr th:each="c : ${categories}"><td th:text="${c.nome}"></td><td th:text="${c.slug}"></td><td th:text="${c.attiva} ? 'Active' : 'Inactive'"></td><td><a th:href="@{/admin/categorie/{id}/modifica(id=${c.id})}">Edit</a></td></tr></tbody></table></div></section>
+</main><footer th:replace="~{fragments/footer :: footer}"></footer></body></html>

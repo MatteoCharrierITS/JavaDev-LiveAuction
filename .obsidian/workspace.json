@@ -190,17 +190,17 @@
   },
   "active": "96836a2f2f7886ee",
   "lastOpenFiles": [
-    "consumer/target/surefire-reports/TEST-it.esercitazione.liveauction.consumer.WalletTests.xml",
-    "consumer/target/surefire-reports/it.esercitazione.liveauction.consumer.WalletTests.txt",
-    "consumer/target/test-classes/it/esercitazione/liveauction/consumer/WalletTests$StubConfig.class",
-    "consumer/target/test-classes/it/esercitazione/liveauction/consumer/WalletTests$WalletStub.class",
-    "consumer/target/test-classes/it/esercitazione/liveauction/consumer/WalletTests.class",
-    "consumer/src/test/java/it/esercitazione/liveauction/consumer/WalletTests.java",
+    "consumer/target/surefire-reports/TEST-it.esercitazione.liveauction.consumer.AdminCatalogTests.xml",
+    "consumer/target/surefire-reports/it.esercitazione.liveauction.consumer.AdminCatalogTests.txt",
+    "consumer/target/test-classes/it/esercitazione/liveauction/consumer/AdminCatalogTests$AdminStub.class",
+    "consumer/target/test-classes/it/esercitazione/liveauction/consumer/AdminCatalogTests.class",
+    "consumer/target/test-classes/it/esercitazione/liveauction/consumer/AdminCatalogTests$StubConfig.class",
+    "consumer/src/test/java/it/esercitazione/liveauction/consumer/AdminCatalogTests.java",
     "consumer/target/classes/it/esercitazione/liveauction/consumer/marketplace/MarketplaceController$1.class",
-    "consumer/target/classes/templates/wallet/page.html",
-    "consumer/target/classes/templates/wallet/fragments.html",
-    "consumer/target/classes/templates/wallet/error.html",
-    "consumer/target/classes/templates/wallet",
+    "consumer/target/classes/it/esercitazione/liveauction/consumer/admin/ProductForm.class",
+    "consumer/target/classes/it/esercitazione/liveauction/consumer/admin/ProductForm$UpdateRequest.class",
+    "consumer/target/classes/it/esercitazione/liveauction/consumer/admin/ProductForm$CreateRequest.class",
+    "consumer/target/classes/it/esercitazione/liveauction/consumer/admin/CategoryForm.class",
     "README.md"
   ]
 }

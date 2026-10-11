@@ -11,6 +11,7 @@ import it.esercitazione.liveauction.consumer.auction.AuctionSnapshot;
 import it.esercitazione.liveauction.consumer.auction.RoomTicket;
 import it.esercitazione.liveauction.consumer.wallet.WalletPage;
 import it.esercitazione.liveauction.consumer.wallet.WalletBalance;
+import it.esercitazione.liveauction.consumer.admin.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -77,6 +78,49 @@ public class ProducerClient {
 
     public ProdottoView publicProduct(long id) {
         return call(() -> client.get().uri("/prodotti/{id}", id).retrieve().body(ProdottoView.class));
+    }
+
+    public AdminCategory[] adminCategories(String token) {
+        return call(() -> client.get().uri("/admin/categorie").header(HttpHeaders.AUTHORIZATION, bearer(token))
+                .retrieve().body(AdminCategory[].class));
+    }
+
+    public AdminCategory saveAdminCategory(String token, Long id, CategoryForm form) {
+        return call(() -> (id == null ? client.post().uri("/admin/categorie")
+                : client.put().uri("/admin/categorie/{id}", id))
+                .header(HttpHeaders.AUTHORIZATION, bearer(token)).contentType(MediaType.APPLICATION_JSON)
+                .body(form).retrieve().body(AdminCategory.class));
+    }
+
+    public AdminProductPage adminProducts(String token, String query, String category, Boolean auctionable,
+                                          Boolean active, int page, int size) {
+        return call(() -> client.get().uri(builder -> {
+            builder.path("/admin/prodotti");
+            if (query != null) builder.queryParam("query", query);
+            if (category != null) builder.queryParam("categoria", category);
+            if (auctionable != null) builder.queryParam("astabile", auctionable);
+            if (active != null) builder.queryParam("attivo", active);
+            return builder.queryParam("page", page).queryParam("size", size).build();
+        }).header(HttpHeaders.AUTHORIZATION, bearer(token)).retrieve().body(AdminProductPage.class));
+    }
+
+    public AdminProduct adminProduct(String token, long id) {
+        return call(() -> client.get().uri("/admin/prodotti/{id}", id)
+                .header(HttpHeaders.AUTHORIZATION, bearer(token)).retrieve().body(AdminProduct.class));
+    }
+
+    public AdminProduct saveAdminProduct(String token, Long id, ProductForm form) {
+        return call(() -> (id == null ? client.post().uri("/admin/prodotti")
+                : client.put().uri("/admin/prodotti/{id}", id))
+                .header(HttpHeaders.AUTHORIZATION, bearer(token)).contentType(MediaType.APPLICATION_JSON)
+                .body(id == null ? form.createRequest() : form.updateRequest())
+                .retrieve().body(AdminProduct.class));
+    }
+
+    public ScheduledAuction scheduleAuction(String token, AuctionForm form) {
+        return call(() -> client.post().uri("/admin/aste")
+                .header(HttpHeaders.AUTHORIZATION, bearer(token)).contentType(MediaType.APPLICATION_JSON)
+                .body(form.request()).retrieve().body(ScheduledAuction.class));
     }
 
     public AuctionPage publicAuctions(String stato, String categoria, String query, int page, int size) {

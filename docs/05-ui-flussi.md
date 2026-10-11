@@ -18,8 +18,14 @@
 | `/me/vittorie` | USER | storico personale vittorie |
 | `/impostazioni/portafoglio` | USER | saldo finto e ledger |
 | `/admin/prodotti` | ADMIN | catalogo, stock e flag astabile |
+| `/admin/prodotti/nuovo` e `/admin/prodotti/{id}/modifica` | ADMIN | creazione e modifica prodotto |
+| `/admin/categorie` e `/admin/categorie/{id}/modifica` | ADMIN | gestione categorie, anche inattive |
 | `/admin/aste/nuova` | ADMIN | programmazione asta |
-| `/admin/aste/storico` | ADMIN | storico globale e vincitori |
+
+Le scritture dei form ADMIN usano POST Consumer con CSRF; il Consumer invia
+POST o PUT al Producer con il Bearer conservato nella sessione server-side.
+Lo storico globale e l'annullamento saranno aggiunti quando i rispettivi
+endpoint Producer saranno implementati.
 
 ## Catalogo
 
@@ -27,6 +33,8 @@ Il marketplace mostra solo prodotti attivi di categorie attive. Il pannello
 ADMIN consulta anche gli elementi disattivati. Il form di modifica prodotto
 invia tutti i campi modificabili e la `versione` dell'ultima lettura; in caso di
 `409 VERSIONE_NON_AGGIORNATA` ricarica il prodotto prima di riproporre la modifica.
+La pagina mostra i valori tentati e quelli correnti, e richiede un nuovo invio
+esplicito dell'ADMIN. La versione corrente entra nel successivo PUT.
 La quantità bloccata è visualizzata ma non modificabile nel form.
 
 Ogni card indica testualmente:

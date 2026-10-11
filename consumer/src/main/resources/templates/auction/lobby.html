@@ -8,6 +8,7 @@
         <h1>Auctions</h1>
         <p>Browse public auctions. Times are shown in Rome time.</p>
     </header>
+    <div th:replace="~{fragments/alerts :: alerts}"></div>
     <form class="catalog-filters" th:action="@{/aste}" method="get" aria-label="Filter auctions">
         <label for="stato">State</label>
         <select id="stato" name="stato">

@@ -1,0 +1,25 @@
+<!doctype html><html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('ADMIN products')}"></head><body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav><main class="catalog-page">
+<h1>Manage products</h1><div th:replace="~{fragments/alerts :: alerts}"></div>
+<nav class="admin-actions"><a th:href="@{/admin/prodotti/nuovo}">Create product</a><a th:href="@{/admin/categorie}">Manage categories</a><a th:href="@{/admin/aste/nuova}">Schedule auction</a></nav>
+<form class="catalog-filters" th:action="@{/admin/prodotti}" method="get">
+<label for="query">Search</label><input id="query" name="query" type="search" th:value="${query}">
+<label for="categoria">Category</label><select id="categoria" name="categoria"><option value="">All</option><option th:each="c : ${categories}" th:value="${c.slug}" th:text="${c.nome}" th:selected="${c.slug == categoria}"></option></select>
+<label for="astabile">Auction flag</label><select id="astabile" name="astabile"><option value="">All</option><option value="true" th:selected="${astabile != null and astabile}">Enabled</option><option value="false" th:selected="${astabile != null and !astabile}">Disabled</option></select>
+<label for="attivo">Status</label><select id="attivo" name="attivo"><option value="">All</option><option value="true" th:selected="${attivo != null and attivo}">Active</option><option value="false" th:selected="${attivo != null and !attivo}">Inactive</option></select>
+<label for="size">Page size</label><input id="size" name="size" type="number" min="1" max="100" th:value="${products.size}"><button type="submit">Filter</button></form>
+<p th:if="${products.content.isEmpty()}" class="empty-state">No matching products.</p>
+<div th:unless="${products.content.isEmpty()}" class="wallet-table-wrap"><table class="wallet-table"><caption th:text="${products.totalElements} + ' products'"></caption>
+<thead><tr><th>Product</th><th>Category</th><th>Available</th><th>Blocked</th><th>Active</th><th>Auction</th><th>Actions</th></tr></thead><tbody>
+<tr th:each="p : ${products.content}"><td><strong th:text="${p.nome}"></strong><br><small th:text="${p.sku}"></small></td>
+<td th:text="${p.categoria.nome} + (${p.categoria.attiva} ? '' : ' (inactive)')"></td><td th:text="${p.quantitaDisponibile}"></td><td th:text="${p.quantitaBloccata}"></td>
+<td th:text="${p.attivo} ? 'Yes' : 'No'"></td><td th:text="${p.astabile} ? 'Enabled' : 'Disabled'"></td><td>
+<a th:href="@{/admin/prodotti/{id}/modifica(id=${p.id})}">Edit</a>
+<a th:if="${p.eligible}" th:href="@{/admin/aste/nuova(prodottoId=${p.id})}">Schedule</a>
+<span th:unless="${p.eligible}" class="muted" th:text="${!p.astabile} ? 'Auction disabled' : 'No available stock'"></span></td></tr></tbody></table></div>
+<nav class="pagination" th:if="${products.totalPages > 1}" aria-label="Product pages">
+<a th:if="${products.page > 0}" th:href="@{/admin/prodotti(query=${query},categoria=${categoria},astabile=${astabile},attivo=${attivo},page=${products.page - 1},size=${products.size})}">Previous</a>
+<span th:text="'Page ' + ${products.page + 1} + ' of ' + ${products.totalPages}"></span>
+<a th:if="${products.page + 1 < products.totalPages}" th:href="@{/admin/prodotti(query=${query},categoria=${categoria},astabile=${astabile},attivo=${attivo},page=${products.page + 1},size=${products.size})}">Next</a></nav>
+</main><footer th:replace="~{fragments/footer :: footer}"></footer></body></html>
