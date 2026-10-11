@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Auction room')}"></head>
+<body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<main id="auction-room" class="catalog-page auction-room" th:attr="data-auction-id=${auction.id},data-websocket-url=${websocketUrl},data-csrf-header=${_csrf.headerName},data-csrf-token=${_csrf.token}">
+    <header class="room-header">
+        <div><a th:href="@{/aste}">← Auctions</a><h1 th:text="${auction.prodotto.nome}">Auction</h1></div>
+        <p id="connection-state" class="auction-state" role="status" aria-live="polite">Synchronizing…</p>
+    </header>
+    <p id="room-alert" class="alert" role="alert" hidden></p>
+    <section th:replace="~{auctions/fragments :: auctionState}"></section>
+    <div class="room-grid">
+        <section th:replace="~{auctions/fragments :: bidding}"></section>
+        <section th:replace="~{auctions/fragments :: wallet}"></section>
+        <section th:replace="~{auctions/fragments :: presence}"></section>
+        <section th:replace="~{auctions/fragments :: feed}"></section>
+    </div>
+</main>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+<script type="module" th:src="@{/js/auction-room.mjs}"></script>
+</body>
+</html>

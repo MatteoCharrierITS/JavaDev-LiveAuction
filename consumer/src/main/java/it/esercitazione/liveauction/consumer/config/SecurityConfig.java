@@ -33,6 +33,14 @@ public class SecurityConfig {
 				.logout(logout -> logout.disable())
 				.httpBasic(basic -> basic.disable())
 				.exceptionHandling(errors -> errors.authenticationEntryPoint((request, response, ex) -> {
+					String path = request.getRequestURI().substring(request.getContextPath().length());
+					if (path.matches("^/aste/\\d+/(snapshot|wallet|ticket)$")) {
+						response.setStatus(401);
+						response.setContentType("application/json");
+						response.setHeader("Cache-Control", "no-store");
+						response.getWriter().write("{\"code\":\"SESSION_EXPIRED\"}");
+						return;
+					}
 						if (Boolean.TRUE.equals(request.getAttribute("producerUnavailable"))) {
 							response.sendRedirect("/login?unavailable=1");
 						} else {

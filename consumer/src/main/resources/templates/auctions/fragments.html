@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<section th:fragment="auctionState" class="room-panel room-state" aria-labelledby="state-heading">
+    <h2 id="state-heading">Auction status</h2>
+    <p><strong id="auction-state">Loading…</strong> · <span id="countdown-label">Time remaining</span>: <strong id="countdown">—</strong></p>
+    <p>Starts: <time id="starts-at">—</time> · Ends: <time id="ends-at">—</time></p>
+    <p>Starting price: <span id="starting-price">—</span> · Minimum increment: <span id="increment">—</span></p>
+    <p id="terminal-result" class="room-result" role="status" hidden></p>
+</section>
+<section th:fragment="bidding" class="room-panel" aria-labelledby="bid-heading">
+    <h2 id="bid-heading">Current bid</h2>
+    <p class="room-price" id="current-price">—</p>
+    <p>Leader: <strong id="leader">—</strong> · <span id="bid-count">0</span> bids</p>
+    <form id="bid-form">
+        <label for="bid-amount">Your bid (CRD)</label>
+        <div class="room-bid-controls"><input id="bid-amount" name="bid" type="text" inputmode="decimal" autocomplete="off" placeholder="0.00" required disabled><button id="bid-submit" type="submit" disabled>Place bid</button></div>
+        <p id="bid-status" role="status" aria-live="polite">Bidding is unavailable while the room synchronizes.</p>
+    </form>
+</section>
+<section th:fragment="wallet" class="room-panel" aria-labelledby="wallet-heading">
+    <h2 id="wallet-heading">Your wallet</h2>
+    <p>Available: <strong id="wallet-available">—</strong></p>
+    <p>Reserved: <strong id="wallet-reserved">—</strong></p>
+    <p>Total: <strong id="wallet-total">—</strong></p>
+    <p id="wallet-status" class="muted">Loading Producer balance…</p>
+</section>
+<section th:fragment="presence" class="room-panel" aria-labelledby="presence-heading">
+    <h2 id="presence-heading">In this room (<span id="participant-count">—</span>)</h2>
+    <p id="presence-status" class="muted">Waiting for room presence…</p>
+    <ul id="participants"></ul>
+</section>
+<section th:fragment="feed" class="room-panel room-feed" aria-labelledby="feed-heading">
+    <h2 id="feed-heading">Live feed</h2>
+    <p class="muted">Events received during this page session only.</p>
+    <ol id="event-feed" aria-live="polite" aria-relevant="additions"></ol>
+</section>
+</html>

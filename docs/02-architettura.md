@@ -70,8 +70,8 @@ sequenceDiagram
 
 ## Attivazione temporale
 
-Il ciclo previsto verifica gli istanti UTC; `AstaScheduler` implementa i primi
-due passaggi, mentre il terzo appartiene al modulo di chiusura ancora da sviluppare:
+Il ciclo verifica gli istanti UTC; `AstaScheduler` implementa i tre passaggi
+e richiama `ChiusuraAstaService` alla scadenza:
 
 1. a `startsAt - 3 minuti` porta l'asta in `STANZA_APERTA`;
 2. a `startsAt` la porta in `APERTA` e fissa `endsAt = startsAt + 7 minuti`;
@@ -81,8 +81,8 @@ Lo scheduler controlla le aste ogni secondo e recupera le transizioni
 arretrate all'avvio, sotto lock e nella transazione dell'asta. Gli snapshot
 REST sono letture: non modificano stato o stock. `offerteConsentite` verifica
 anche la finestra temporale, quindi è falso per un'asta scaduta ancora
-`APERTA`. I futuri comandi di offerta e chiusura dovranno ricontrollare stato
-e scadenza sotto lock, senza affidarsi ai soli aggiornamenti periodici.
+`APERTA`. I comandi di offerta e chiusura ricontrollano stato e scadenza sotto
+lock, senza affidarsi ai soli aggiornamenti periodici.
 
 Nelle API e negli eventi implementati i campi temporali si chiamano `inizioAt`
 e `fineAt`; `startsAt` ed `endsAt` nei diagrammi indicano gli stessi concetti.
@@ -102,7 +102,7 @@ sequenceDiagram
     S->>DB: riserva/libera fondi, salva offerta, endsAt +20s
     DB-->>S: commit
     S-->>W: evento dopo commit
-    W-->>B: BID_ACCEPTED + TIMER_EXTENDED
+    W-->>B: BID_ACCEPTED (fineAt aggiornato)
 ```
 
 ## Chiusura

@@ -65,6 +65,7 @@ class AuthFlowTests {
         mvc.perform(get("/aste/42")).andExpect(redirectedUrl("/login?expired=0"));
         mvc.perform(get("/admin/prodotti")).andExpect(status().is3xxRedirection());
         mvc.perform(get("/admin/prodotti").session(session("USER", false))).andExpect(status().isForbidden());
+        respond("/aste/42", HttpStatus.NOT_FOUND, "{\"code\":\"RISORSA_NON_TROVATA\"}", MediaType.APPLICATION_PROBLEM_JSON);
         mvc.perform(get("/aste/42").session(session("USER", false))).andExpect(status().isNotFound());
         mvc.perform(get("/admin/prodotti").session(session("ADMIN", false))).andExpect(status().isNotFound());
         mvc.perform(post("/login").param("username", "alice").param("password", "password123"))

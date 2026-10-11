@@ -7,6 +7,8 @@ import it.esercitazione.liveauction.consumer.marketplace.CategoriaView;
 import it.esercitazione.liveauction.consumer.marketplace.ProdottoPage;
 import it.esercitazione.liveauction.consumer.marketplace.ProdottoView;
 import it.esercitazione.liveauction.consumer.auction.AuctionPage;
+import it.esercitazione.liveauction.consumer.auction.AuctionSnapshot;
+import it.esercitazione.liveauction.consumer.auction.RoomTicket;
 import it.esercitazione.liveauction.consumer.wallet.WalletPage;
 import it.esercitazione.liveauction.consumer.wallet.WalletBalance;
 import org.springframework.beans.factory.annotation.Value;
@@ -85,6 +87,16 @@ public class ProducerClient {
             if (query != null) builder.queryParam("query", query);
             return builder.queryParam("page", page).queryParam("size", size).build();
         }).retrieve().body(AuctionPage.class));
+    }
+
+    public AuctionSnapshot auctionSnapshot(long id) {
+        return call(() -> client.get().uri("/aste/{id}", id).retrieve().body(AuctionSnapshot.class));
+    }
+
+    public RoomTicket auctionTicket(long id, String accessToken) {
+        return call(() -> client.post().uri("/aste/{id}/ticket", id)
+                .header(HttpHeaders.AUTHORIZATION, bearer(accessToken))
+                .retrieve().body(RoomTicket.class));
     }
 
     public WalletPage wallet(String accessToken, int page, int size) {

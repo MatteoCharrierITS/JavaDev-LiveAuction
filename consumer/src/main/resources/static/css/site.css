@@ -61,3 +61,18 @@ button.danger { background: #9b3030; margin-top: 1rem; }
 .wallet-table { width: 100%; border-collapse: collapse; text-align: left; }
 .wallet-table caption { text-align: left; color: #52636e; padding-bottom: .5rem; }
 .wallet-table th, .wallet-table td { padding: .65rem; border-bottom: 1px solid #dce2e6; white-space: nowrap; }
+.room-header { display: flex; justify-content: space-between; align-items: start; gap: 1rem; }
+.room-header h1 { margin: .4rem 0 1rem; }
+.room-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.room-panel { background: white; border: 1px solid #dce2e6; border-radius: .7rem; padding: 1.5rem; margin-bottom: 1rem; min-width: 0; }
+.room-panel h2 { margin-top: 0; }
+.room-price { font-size: 2rem; font-weight: 700; margin: .3rem 0; }
+.room-bid-controls { display: flex; gap: .5rem; margin-top: .5rem; }
+.room-bid-controls input { width: min(100%, 12rem); padding: .65rem; border: 1px solid #8999a3; border-radius: .35rem; }
+.room-bid-controls button:disabled { opacity: .5; cursor: not-allowed; }
+.room-result { background: #eaf7ed; color: #17552c; padding: 1rem; border-radius: .4rem; font-weight: 700; }
+.room-feed ol { margin: 0; padding-left: 1.5rem; max-height: 22rem; overflow-y: auto; }
+.room-feed li { padding: .45rem 0; border-bottom: 1px solid #e6ecef; }
+.urgent { color: #9b3030; font-weight: 800; }
+@media (max-width: 44rem) { .room-grid { grid-template-columns: 1fr; } .room-header { flex-direction: column; } }
+@media (prefers-reduced-motion: reduce) { .auction-room * { scroll-behavior: auto; transition: none !important; animation: none !important; } }

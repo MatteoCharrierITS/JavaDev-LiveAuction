@@ -11,6 +11,9 @@
 | `/prodotti/{id}` | pubblico | dettaglio, stock e astabilità |
 | `/aste` | pubblico | lobby |
 | `/aste/{id}` | USER | stanza LiveAuction |
+| `GET /aste/{id}/snapshot` | USER | snapshot Producer per la sincronizzazione browser, senza cache |
+| `GET /aste/{id}/wallet` | USER | soli saldi del portafoglio reale tramite token nella sessione Consumer |
+| `POST /aste/{id}/ticket` | USER + CSRF | solo ticket STOMP monouso al browser |
 | `/inventario` | USER | prodotti posseduti |
 | `/me/vittorie` | USER | storico personale vittorie |
 | `/impostazioni/portafoglio` | USER | saldo finto e ledger |
@@ -84,6 +87,19 @@ offerte”.
 Stati connessione: `LIVE`, `RICONNESSIONE…`, `SINCRONIZZAZIONE…`. Dopo la
 riconnessione il form resta disabilitato finché non arriva uno snapshot valido.
 Gli ultimi venti secondi sono evidenziati rispettando `prefers-reduced-motion`.
+
+Il browser usa `LIVEAUCTION_PRODUCER_WS_URL` (default `ws://localhost:8081/ws`)
+per collegarsi direttamente al Producer; l'URL deve essere raggiungibile dal
+browser, non soltanto dal container Consumer. Il token Bearer resta nella
+sessione server-side della Consumer. Il feed mostra solo gli eventi ricevuti
+durante la sessione della pagina: il Producer non espone ancora un endpoint GET
+per ricostruire lo storico dei rilanci dopo il reload.
+
+Per un deployment su un'origine diversa da `http://localhost:8082`, il Producer
+deve configurare esplicitamente la nuova origine WebSocket consentita; in
+produzione HTTPS, configurare un URL `wss://`. Questa modifica richiede il
+coordinamento con il modulo Producer senza ampliare indiscriminatamente le
+origini ammesse.
 
 ## Flussi principali
 
