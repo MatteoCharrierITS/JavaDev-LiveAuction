@@ -7,12 +7,12 @@
   },
   "item": [
     {
-      "name": "Il mio inventario",
+      "name": "FUTURO Il mio inventario",
       "request": {
         "method": "GET",
         "header": [],
         "url": "{{baseUrl}}/me/inventario",
-        "description": "Previsto dal contratto docs/04-api-rest.md; l'endpoint non è ancora implementato.",
+        "description": "Contratto previsto, non implementato in main. Il settlement assegna già i prodotti vinti, ma manca la lettura REST. DTO e paginazione da definire.",
         "auth": {
           "type": "bearer",
           "bearer": [

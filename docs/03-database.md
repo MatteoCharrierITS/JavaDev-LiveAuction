@@ -27,6 +27,7 @@ erDiagram
     UTENTI ||--o{ OFFERTE : effettua
     UTENTI ||--o{ ASTE : vince
     UTENTI ||--o{ AUTH_SESSIONS : apre
+    ASTE ||--o| NOTIFICHE_EMAIL : notifica
 ```
 
 ## Tabelle delle aste
@@ -54,6 +55,11 @@ effimero gestito dal WebSocket. Gli storici si ricavano da `aste.vincitore_id` e
 dalle relative `offerte`.
 
 ## DDL di riferimento
+
+La fonte eseguibile è `producer/src/main/resources/db/migration/` (V1–V11).
+Il DDL sotto riassume le tabelle iniziali; V9 crea `auth_sessions`, V10 aggiunge
+lo stato operativo delle offerte e V11 la coda email. Non applicare questo
+riepilogo manualmente in alternativa a Flyway.
 
 ### Coda email (V11, integrata in main)
 
@@ -207,5 +213,8 @@ quantita_disponibile + quantita_bloccata + unità assegnate agli inventari
 `datetime-local` viene interpretato esplicitamente in `Europe/Rome` e convertito
 in UTC prima della persistenza. Le API restituiscono date ISO 8601 con offset UTC.
 
-Le migrazioni Flyway creano soltanto le tabelle e gli indici, una tabella per
-file. Utenti, prodotti e aste vanno creati esplicitamente dopo l'avvio.
+Le migrazioni che creano tabelle usano una tabella per file e non inseriscono
+dati demo. V10 è un'evoluzione della tabella `offerte`: aggiunge colonne e
+indici e ricostruisce il leader per le offerte già presenti. Le nuove
+evoluzioni richiedono migrazioni versionate, senza riscrivere quelle applicate.
+Utenti, prodotti e aste vanno creati esplicitamente dopo l'avvio.

@@ -144,6 +144,10 @@ Le aste già concluse mantengono vincitore e offerte storiche.
 
 ## Email al vincitore
 
+Il modulo email è già implementato e viene mantenuto. L'attivazione di un
+server SMTP esterno e la consegna effettiva in inbox sono fuori scope per la
+consegna; le regole sotto descrivono il comportamento del codice presente.
+
 Dopo il commit viene richiesto l'invio di una email contenente almeno prodotto,
 identificativo asta, importo vincente e data di conclusione. L'invio è
 asincrono/best effort: un errore del provider viene registrato e ritentato, ma
@@ -155,7 +159,8 @@ non annulla la vittoria già conclusa.
 - Snapshot ed eventi contengono `serverTime`, `startsAt` ed `endsAt` in UTC ISO
   8601.
 - Il client recupera uno snapshot dopo riconnessione o gap di `sequence`.
-- Ogni evento stanza ha una `sequence` crescente per asta.
+- Gli eventi persistiti di stato e offerte hanno una `sequence` crescente per
+  asta. Gli eventi di presenza sono temporanei e non contengono `sequence`.
 - Password hashate con BCrypt o Argon2.
 - Token e password mai nei log.
 - Paginazione massima 100 elementi.

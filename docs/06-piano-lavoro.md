@@ -1,6 +1,16 @@
 # Roadmap e criteri di accettazione
 
-## Stato del branch Prodotti — 7 ottobre 2026
+## Stato corrente — 12 ottobre 2026
+
+Identità, catalogo, portafoglio, programmazione, rilanci, chiusura automatica,
+STOMP e coda email sono integrati in `main` (`4b82f1e`). Restano Consumer,
+annullamento, storici, API inventario e acquisti fissi. L'attivazione SMTP
+esterna è fuori scope per la consegna.
+Le fasi sotto sono la roadmap di accettazione, non un elenco di attività tutte
+ancora aperte. Persone e prossimi passi sono nel [TODO](todo.md).
+Il [report documentale](11-verifica-documentazione.md) registra la verifica corrente.
+
+## Verifica storica del branch Prodotti — 7 ottobre 2026
 
 - Implementati catalogo pubblico, ricerca, filtri, paginazione, categorie e
   creazione/modifica ADMIN di prodotti e categorie, con DTO e Problem Details.
@@ -12,9 +22,8 @@
 - Acquisto fisso ancora previsto, non implementato: integrazione transazionale
   di prodotto, portafoglio, ledger e inventario da coordinare tra i moduli.
   La responsabilità di questa integrazione resta da concordare dal team.
-- WebSocket e monitoring presenti su `main`, non nel branch Prodotti: al merge
-  conservare in SecurityConfig i permessi già presenti su `main` e aggiungere
-  quello pubblico per `GET /api/v1/categorie`.
+- All'epoca WebSocket e monitoring erano solo su `main`; il catalogo è ora
+  integrato e `GET /api/v1/categorie` è già pubblico in `SecurityConfig`.
 
 Verifica con un database di prova:
 
@@ -36,7 +45,8 @@ la collection non è stata eseguita tramite il runner Postman.
 ## Fase 1 — Identità, catalogo e portafoglio
 
 - Security, registrazione, login e ruoli USER/ADMIN.
-- Entity utenti, prodotti, inventario, wallet e ledger.
+- Persistenza utenti, prodotti, inventario, portafoglio e ledger:
+  JPA o JDBC secondo il modulo, senza obbligo di entity per ogni tabella.
 - Campi prodotto `astabile`, `quantitaDisponibile` e `quantitaBloccata`.
 - Migrazioni Flyway, una per tabella, senza dati iniziali.
 - Catalogo e pannello amministrativo.
@@ -51,7 +61,8 @@ la collection non è stata eseguita tramite il runner Postman.
 - Offerta con lock, idempotenza e riserva fondi.
 - Estensione esatta di venti secondi.
 - Chiusura e assegnazione idempotente al vincitore.
-- Test di concorrenza con PostgreSQL/Testcontainers.
+- Test di concorrenza con PostgreSQL reale; le suite attuali usano `DB_URL`
+  verso un database dedicato, non container avviati automaticamente dai test.
 
 ## Fase 3 — REST e Consumer
 

@@ -1,5 +1,12 @@
 # Interfaccia e flussi utente
 
+Questo documento descrive la UI da realizzare, assegnata ad Andrea. Al
+12 ottobre 2026 nessuna delle pagine applicative sotto è implementata in `main`.
+Auth, catalogo, lobby, snapshot, ticket e portafoglio hanno già API utilizzabili;
+inventario, vittorie, acquisti fissi, annullamento e storico ADMIN attendono
+le rispettive API. Il trasferimento del prodotto vinto all'inventario è già
+eseguito dal settlement, ma manca l'API per consultarlo.
+
 ## Rotte Consumer
 
 | Rotta | Accesso | Pagina |
@@ -49,7 +56,9 @@ Dopo la conferma, una unità risulta bloccata e l'asta appare nella lobby.
 
 ## Lobby
 
-Filtri: stato, categoria, testo, “in partenza” e “a cui partecipo”. Ogni card
+Filtri disponibili nella REST: stato, categoria e testo, con paginazione.
+“In partenza” e “a cui partecipo” sono proposte di UI senza filtri REST dedicati:
+il loro comportamento va concordato prima di mostrarli come disponibili. Ogni card
 mostra prezzo iniziale o corrente, numero offerte e uno di questi countdown:
 
 - `La stanza apre tra…` per `PROGRAMMATA`;

@@ -12,34 +12,44 @@
 
 ## REST
 
-| Metodo | Endpoint | Accesso | Scopo |
-| --- | --- | --- | --- |
-| `POST` | `/auth/register` | pubblico | registra utente e wallet |
-| `POST` | `/auth/login` | pubblico | apre una sessione e restituisce i token |
-| `POST` | `/auth/refresh` | pubblico | rinnova i token usando il refresh token |
-| `POST` | `/auth/logout` | Bearer | revoca la sessione corrente |
-| `DELETE` | `/me` | Bearer | disattiva e anonimizza il proprio account |
-| `GET` | `/categorie` | pubblico | categorie attive |
-| `GET` | `/admin/categorie` | ADMIN | tutte le categorie |
-| `POST` | `/admin/categorie` | ADMIN | crea categoria |
-| `PUT` | `/admin/categorie/{id}` | ADMIN | modifica categoria |
-| `GET` | `/admin/prodotti` | ADMIN | catalogo completo con filtri |
-| `GET` | `/admin/prodotti/{id}` | ADMIN | dettaglio anche non pubblico |
-| `POST` | `/admin/prodotti` | ADMIN | crea prodotto |
-| `GET` | `/prodotti` | pubblico | catalogo paginato |
-| `GET` | `/prodotti/{id}` | pubblico | dettaglio, stock e `astabile` |
-| `POST` | `/prodotti/{id}/acquisti` | USER | acquisto fisso |
-| `GET` | `/me/inventario` | USER | prodotti posseduti |
-| `GET` | `/me/portafoglio` | USER | saldo e movimenti |
-| `PUT` | `/me/portafoglio/impostazioni` | USER | imposta saldo finto |
-| `GET` | `/me/vittorie` | USER | storico personale vittorie |
-| `GET` | `/aste` | pubblico | lobby filtrabile |
-| `GET` | `/aste/{id}` | pubblico | snapshot autorevole |
-| `POST` | `/aste/{id}/ticket` | USER | ticket WebSocket breve |
-| `POST` | `/admin/aste` | ADMIN | programma asta e blocca stock |
-| `POST` | `/admin/aste/{id}/annullamento` | ADMIN | annulla quando consentito |
-| `GET` | `/admin/aste/storico` | ADMIN | storico globale e vincitori |
-| `PUT` | `/admin/prodotti/{id}` | ADMIN | modifica prodotto, stock e flag |
+Stato verificato nel codice di `main`, base `4b82f1e`, il 12 ottobre 2026.
+**Previsto** indica un contratto da implementare, non un endpoint disponibile.
+
+| Metodo | Endpoint | Accesso | Scopo | Stato |
+| --- | --- | --- | --- | --- |
+| `POST` | `/auth/register` | pubblico | registra utente e wallet | Implementato |
+| `POST` | `/auth/login` | pubblico | apre una sessione e restituisce i token | Implementato |
+| `POST` | `/auth/refresh` | pubblico | rinnova i token usando il refresh token | Implementato |
+| `POST` | `/auth/logout` | Bearer | revoca la sessione corrente | Implementato |
+| `DELETE` | `/me` | Bearer | disattiva e anonimizza il proprio account | Implementato |
+| `GET` | `/categorie` | pubblico | categorie attive | Implementato |
+| `GET` | `/admin/categorie` | ADMIN | tutte le categorie | Implementato |
+| `POST` | `/admin/categorie` | ADMIN | crea categoria | Implementato |
+| `PUT` | `/admin/categorie/{id}` | ADMIN | modifica categoria | Implementato |
+| `GET` | `/admin/prodotti` | ADMIN | catalogo completo con filtri | Implementato |
+| `GET` | `/admin/prodotti/{id}` | ADMIN | dettaglio anche non pubblico | Implementato |
+| `POST` | `/admin/prodotti` | ADMIN | crea prodotto | Implementato |
+| `GET` | `/prodotti` | pubblico | catalogo paginato | Implementato |
+| `GET` | `/prodotti/{id}` | pubblico | dettaglio, stock e `astabile` | Implementato |
+| `POST` | `/prodotti/{id}/acquisti` | USER | acquisto fisso | Previsto |
+| `GET` | `/me/inventario` | USER | prodotti posseduti | Previsto |
+| `GET` | `/me/portafoglio` | USER | saldo e movimenti | Implementato |
+| `PUT` | `/me/portafoglio/impostazioni` | USER | imposta saldo finto | Implementato |
+| `GET` | `/me/vittorie` | USER | storico personale vittorie | Previsto |
+| `GET` | `/aste` | pubblico | lobby filtrabile | Implementato |
+| `GET` | `/aste/{id}` | pubblico | snapshot autorevole | Implementato |
+| `POST` | `/aste/{id}/ticket` | USER | ticket WebSocket breve | Implementato |
+| `POST` | `/admin/aste` | ADMIN | programma asta e blocca stock | Implementato |
+| `POST` | `/admin/aste/{id}/annullamento` | ADMIN | annulla quando consentito | Previsto |
+| `GET` | `/admin/aste/storico` | ADMIN | storico globale e vincitori | Previsto |
+| `PUT` | `/admin/prodotti/{id}` | ADMIN | modifica prodotto, stock e flag | Implementato |
+
+## Monitoring
+
+`GET /api/v1/health` e `GET /api/v1/ready` sono pubblici e implementati:
+la prima verifica la liveness, la seconda anche database e readiness
+applicativa. Restituiscono `200` quando disponibili e `503` altrimenti.
+Sono distinti dalle probe Actuator sotto `/actuator/health/**`.
 
 ## Autenticazione
 
@@ -52,7 +62,8 @@ rispettivamente le autorità Spring `ROLE_USER` e `ROLE_ADMIN`. Perciò
 `hasRole('ADMIN')` verifica `ROLE_ADMIN`, senza affidarsi a un ruolo nel JWT.
 
 Le regole HTTP di `SecurityConfig` rendono pubblici solo registrazione, login,
-refresh, health, `GET /categorie` e i `GET` sotto `/prodotti/**` e `/aste/**`. `/admin/**`
+refresh, health/readiness, OpenAPI/Swagger, handshake `/ws`, `GET /categorie`
+e i `GET` sotto `/prodotti/**` e `/aste/**`. `/admin/**`
 richiede `ADMIN`, `/me/**` richiede `USER`; `DELETE /me` richiede un utente
 autenticato. Gli altri percorsi richiedono almeno l'autenticazione. Una nuova
 operazione riservata sotto un percorso pubblico, anche se è un `GET`, deve avere
@@ -100,8 +111,8 @@ possono essere registrati nuovamente.
 
 ## Catalogo
 
-Gli endpoint catalogo e gestione categorie/prodotti sono implementati nel
-branch Prodotti. `POST /prodotti/{id}/acquisti` resta un contratto futuro:
+Gli endpoint catalogo e gestione categorie/prodotti sono integrati in `main`.
+`POST /prodotti/{id}/acquisti` resta un contratto futuro:
 richiede l'integrazione atomica con portafoglio, ledger e inventario e non ha
 ancora un controller. Non fa parte della gestione catalogo completata qui.
 
@@ -471,7 +482,28 @@ server; non attivano aste e non modificano stock. Le transizioni restano
 responsabilità dello scheduler. Il ticket WebSocket è implementato nel modulo
 auth; annullamento e storici restano previsti dal contratto e non implementati.
 
-## Storici
+## Annullamento (previsto)
+
+`POST /api/v1/admin/aste/{id}/annullamento` non ha ancora un controller o
+servizio. Prima dell'implementazione definire stati ammessi, gestione delle
+offerte già ricevute, ripetizione del comando, DTO ed errori. La regola già
+stabilita richiede il rilascio dello stock se l'asta è annullata senza offerte;
+le eventuali riserve e gli eventi devono restare coerenti nella transazione.
+Non viene qui introdotta una nuova regola per annullare aste con offerte.
+
+## Inventario e acquisti fissi (previsti)
+
+`GET /api/v1/me/inventario` e `POST /api/v1/prodotti/{id}/acquisti` non sono
+implementati. DTO, paginazione, errori e regole dell'acquisto vanno completati
+prima di svilupparli. Il body Postman `{ "quantita": 1 }` è provvisorio.
+L'acquisto dovrà coordinare stock, portafoglio, ledger e inventario in una
+transazione; l'assegnazione dei prodotti vinti è già presente nel settlement.
+Il referente delle due API resta da decidere nel team.
+
+## Storici (previsti)
+
+Le due API sotto non hanno ancora controller. DTO, limiti di paginazione,
+ordinamento e parametri dei filtri devono essere definiti prima dello sviluppo.
 
 `GET /api/v1/me/vittorie` mostra esclusivamente le aste vinte dall'utente
 autenticato, con prodotto, importo e data. `GET /api/v1/admin/aste/storico`
@@ -653,7 +685,8 @@ in [Notifiche email](10-notifiche-email.md).
 incrementa nella stessa transazione che modifica lo stato dell'asta e pubblica
 l'evento soltanto dopo il commit. Hanno una `sequence` crescente gli eventi di
 stato `ROOM_OPENED`, `AUCTION_STARTED`, `BID_ACCEPTED`, `AUCTION_CLOSED` e
-`AUCTION_CANCELLED` e lo snapshot di ritiro `AUCTION_SNAPSHOT`. Il client
+lo snapshot di ritiro `AUCTION_SNAPSHOT`. `AUCTION_CANCELLED` è previsto per
+l'annullamento non ancora implementato e dovrà seguire la stessa regola. Il client
 confronta questi numeri con la propria ultima
 `sequence`: applica il successivo, ignora i duplicati o gli eventi più vecchi e,
 se rileva un salto, recupera `GET /api/v1/aste/{id}` prima di riprendere gli

@@ -85,3 +85,42 @@ Per `portafoglio.json`, effettuare il login USER: il GET verifica saldi e pagina
 dei movimenti; il PUT imposta il saldo virtuale assoluto (esempio: 10000 CRD).
 Ripetere il GET dopo il PUT mostra il movimento `IMPOSTAZIONE_SALDO`. Un PUT
 identico non aggiunge movimenti. Le due API non sono accessibili agli ADMIN.
+
+## Verifica del catalogo e uso del runner
+
+Allineamento documentale del 12 ottobre 2026, base `main` `4b82f1e`:
+metodi, URL, token ADMIN, body di creazione/modifica, versione e variabili della
+collection `prodotti.json` corrispondono a controller, DTO e servizi del catalogo.
+Le richieste 01–10 verificano ora status, struttura dei DTO, paginazione,
+visibilità pubblica e valori delle scritture. Le risposte 05, 09 e 10 aggiornano
+il body completo del PUT. La quantità bloccata resta esclusa dall'input.
+Le variabili generate del catalogo sono dichiarate anche nell'ambiente esportato.
+
+Nel runner selezionare **solo 01–10** di `prodotti.json` su un database di prova.
+La richiesta `FUTURO Acquisto fisso` non è implementata ed è da deselezionare.
+Lo stesso vale per le tre richieste `FUTURO` di `aste.json` e l'intera collection
+`inventario.json`. Importare una collection non implica che tutte le sue API
+siano disponibili. La collection aste richiede inoltre ID validi: programmare
+prima un'asta; il ticket richiede una stanza già accessibile e non è un test
+eseguibile subito sull'asta programmata per domani.
+
+Verifiche manuali aggiuntive del catalogo, dopo la sequenza 01–10:
+
+1. Impostare `attiva=false` nel body della richiesta 04 e inviarla. La 06 deve
+   nascondere il prodotto, la 07 rispondere `404`, mentre 03, 08 e 09 continuano
+   a mostrarlo. In questa prova il controllo standard `200` della 07 fallisce
+   intenzionalmente: confrontare `404 RISORSA_NON_TROVATA` e Problem Details.
+2. Riportare `attiva=true` nella 04: 06 e 07 devono mostrare nuovamente il
+   prodotto senza variazioni dello stock.
+3. Salvare una copia di `prodottoModifica`, cambiare un campo (per esempio nome)
+   ed eseguire la 10. Reinviare la copia con la precedente versione: attendere
+   `409 VERSIONE_NON_AGGIORNATA`, poi rileggere con la 09 e riapplicare la modifica.
+   Un PUT identico potrebbe non cambiare versione: modificare realmente un campo.
+4. Provare una lettura ADMIN con il token USER (`403`) e senza token (`401`).
+   Provare `size=101` nel catalogo (`400`); verificare Problem Details sugli
+   errori di validazione/catalogo. Sono casi negativi, da eseguire separatamente
+   dalle richieste standard che attendono risposte di successo.
+
+La revisione ha controllato JSON, sintassi JavaScript, sostituzione dei body e
+corrispondenza con il codice. **Il runner Postman non è stato eseguito** e non
+sono stati creati dati tramite le collection in questa revisione.

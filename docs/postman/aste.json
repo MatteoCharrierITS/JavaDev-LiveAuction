@@ -149,12 +149,12 @@
       ]
     },
     {
-      "name": "Annulla asta ADMIN",
+      "name": "FUTURO Annulla asta ADMIN",
       "request": {
         "method": "POST",
         "header": [],
         "url": "{{baseUrl}}/admin/aste/{{astaId}}/annullamento",
-        "description": "Previsto dal contratto docs/04-api-rest.md; l'endpoint non è ancora implementato. Modifica lo stato dell'asta: usare solo su un'asta di prova.",
+        "description": "Contratto previsto, non implementato in main. DTO, errori e paginazione/filtri ove applicabili sono da definire. Escludere dal runner delle API disponibili.",
         "auth": {
           "type": "bearer",
           "bearer": [
@@ -168,12 +168,12 @@
       }
     },
     {
-      "name": "Le mie vittorie",
+      "name": "FUTURO Le mie vittorie",
       "request": {
         "method": "GET",
         "header": [],
         "url": "{{baseUrl}}/me/vittorie",
-        "description": "Previsto dal contratto docs/04-api-rest.md; l'endpoint non è ancora implementato.",
+        "description": "Contratto previsto, non implementato in main. DTO, errori e paginazione/filtri ove applicabili sono da definire. Escludere dal runner delle API disponibili.",
         "auth": {
           "type": "bearer",
           "bearer": [
@@ -187,12 +187,12 @@
       }
     },
     {
-      "name": "Storico aste ADMIN",
+      "name": "FUTURO Storico aste ADMIN",
       "request": {
         "method": "GET",
         "header": [],
         "url": "{{baseUrl}}/admin/aste/storico",
-        "description": "Previsto dal contratto docs/04-api-rest.md; l'endpoint non è ancora implementato. Filtri previsti: prodotto, vincitore e intervallo temporale.",
+        "description": "Contratto previsto, non implementato in main. DTO, errori e paginazione/filtri ove applicabili sono da definire. Escludere dal runner delle API disponibili.",
         "auth": {
           "type": "bearer",
           "bearer": [

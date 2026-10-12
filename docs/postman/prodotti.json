@@ -2,7 +2,7 @@
   "info": {
     "name": "LiveAuction • Prodotti",
     "_postman_id": "30d10e9b-c2fe-47c0-a65e-3fe7ebe3c137",
-    "description": "Catalogo e gestione ADMIN implementati. Eseguire 01–10 dopo il login ADMIN. Acquisti fissi futuri.",
+    "description": "Catalogo e gestione ADMIN integrati in main. Selezionare solo 01–10 nel runner, dopo il login ADMIN. Ogni richiesta verifica status e DTO; le scritture salvano ID e versione. FUTURO Acquisto fisso è un contratto provvisorio non implementato, da escludere dal runner.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -16,7 +16,19 @@
           "type": "noauth"
         },
         "description": "Solo categorie attive."
-      }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 secondo il contratto catalogo', () => pm.response.to.have.status(200));",
+              "if (pm.response.code === 200) pm.test('DTO categorie', () => { const data = pm.response.json(); pm.expect(data).to.be.an('array'); data.forEach(c => { pm.expect(Object.keys(c)).to.have.members(['id','nome','slug','attiva']); pm.expect(c.attiva).to.equal(true); }); });"
+            ]
+          }
+        }
+      ]
     },
     {
       "name": "02 Crea categoria ADMIN",
@@ -65,6 +77,8 @@
           "script": {
             "type": "text/javascript",
             "exec": [
+              "pm.test('201 secondo il contratto catalogo', () => pm.response.to.have.status(201));",
+              "if (pm.response.code === 201) pm.test('Categoria coerente con il body', () => { const c = pm.response.json(); const input = JSON.parse(pm.variables.replaceIn(pm.request.body.raw)); pm.expect(Object.keys(c)).to.have.members(['id','nome','slug','attiva']); pm.expect(c.nome).to.equal(input.nome.trim()); pm.expect(c.slug).to.equal(input.slug); if (input.attiva !== undefined) pm.expect(c.attiva).to.equal(input.attiva); });",
               "if (pm.response.code === 201) pm.environment.set('categoriaId', pm.response.json().id);"
             ]
           }
@@ -88,7 +102,19 @@
           ]
         },
         "description": "Include categorie inattive."
-      }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 secondo il contratto catalogo', () => pm.response.to.have.status(200));",
+              "if (pm.response.code === 200) pm.test('DTO categorie', () => { const data = pm.response.json(); pm.expect(data).to.be.an('array'); data.forEach(c => { pm.expect(Object.keys(c)).to.have.members(['id','nome','slug','attiva']);  }); });"
+            ]
+          }
+        }
+      ]
     },
     {
       "name": "04 Modifica categoria ADMIN",
@@ -121,7 +147,19 @@
             }
           }
         }
-      }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 secondo il contratto catalogo', () => pm.response.to.have.status(200));",
+              "if (pm.response.code === 200) pm.test('Categoria coerente con il body', () => { const c = pm.response.json(); const input = JSON.parse(pm.variables.replaceIn(pm.request.body.raw)); pm.expect(Object.keys(c)).to.have.members(['id','nome','slug','attiva']); pm.expect(c.nome).to.equal(input.nome.trim()); pm.expect(c.slug).to.equal(input.slug); if (input.attiva !== undefined) pm.expect(c.attiva).to.equal(input.attiva); });"
+            ]
+          }
+        }
+      ]
     },
     {
       "name": "05 Crea prodotto ADMIN",
@@ -170,6 +208,8 @@
           "script": {
             "type": "text/javascript",
             "exec": [
+              "pm.test('201 secondo il contratto catalogo', () => pm.response.to.have.status(201));",
+              "if (pm.response.code === 201) pm.test('DTO e valori prodotto', () => { const p = pm.response.json(); const keys = ['id','sku','nome','descrizione','prezzoFisso','astabile','quantitaDisponibile','quantitaBloccata','asteProgrammate','attivo','categoria','versione','dataCreazione']; pm.expect(Object.keys(p)).to.have.members(keys); pm.expect(p.quantitaDisponibile).to.be.at.least(0); pm.expect(p.quantitaBloccata).to.be.at.least(0); pm.expect(p.asteProgrammate).to.be.at.least(0); pm.expect(p.versione).to.be.at.least(0); pm.expect(p.dataCreazione).to.match(/Z$/); pm.expect(Object.keys(p.categoria)).to.have.members(['id','nome','slug','attiva']);pm.expect(p.quantitaBloccata).to.equal(0); pm.expect(p.versione).to.equal(0); const input = JSON.parse(pm.variables.replaceIn(pm.request.body.raw)); pm.expect(p.sku).to.equal(input.sku.trim().toUpperCase()); pm.expect(p.nome).to.equal(input.nome.trim()); pm.expect(p.astabile).to.equal(input.astabile); pm.expect(p.quantitaDisponibile).to.equal(input.quantitaDisponibile); });",
               "if ([200, 201].includes(pm.response.code)) {",
               "  const p = pm.response.json();",
               "  pm.environment.set('prodottoId', p.id);",
@@ -192,7 +232,19 @@
           "type": "noauth"
         },
         "description": "Solo prodotti attivi di categorie attive."
-      }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 secondo il contratto catalogo', () => pm.response.to.have.status(200));",
+              "if (pm.response.code === 200) pm.test('Pagina e DTO prodotti', () => { const data = pm.response.json(); pm.expect(data.content).to.be.an('array'); pm.expect(data.page).to.equal(0); pm.expect(data.size).to.equal(12); pm.expect(data.content.length).to.be.at.most(12); pm.expect(data.totalElements).to.be.at.least(data.content.length); pm.expect(data.totalPages).to.equal(Math.ceil(data.totalElements / data.size)); data.content.forEach(p => { const keys = ['id','sku','nome','descrizione','prezzoFisso','astabile','quantitaDisponibile','quantitaBloccata','asteProgrammate','attivo','categoria','versione','dataCreazione']; pm.expect(Object.keys(p)).to.have.members(keys); pm.expect(p.quantitaDisponibile).to.be.at.least(0); pm.expect(p.quantitaBloccata).to.be.at.least(0); pm.expect(p.asteProgrammate).to.be.at.least(0); pm.expect(p.versione).to.be.at.least(0); pm.expect(p.dataCreazione).to.match(/Z$/); pm.expect(Object.keys(p.categoria)).to.have.members(['id','nome','slug','attiva']);pm.expect(p.attivo).to.equal(true); pm.expect(p.categoria.attiva).to.equal(true); pm.expect(p.astabile).to.equal(true); }); });"
+            ]
+          }
+        }
+      ]
     },
     {
       "name": "07 Dettaglio pubblico",
@@ -204,7 +256,19 @@
           "type": "noauth"
         },
         "description": "404 se prodotto o categoria sono inattivi."
-      }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 secondo il contratto catalogo', () => pm.response.to.have.status(200));",
+              "if (pm.response.code === 200) pm.test('DTO e valori prodotto', () => { const p = pm.response.json(); const keys = ['id','sku','nome','descrizione','prezzoFisso','astabile','quantitaDisponibile','quantitaBloccata','asteProgrammate','attivo','categoria','versione','dataCreazione']; pm.expect(Object.keys(p)).to.have.members(keys); pm.expect(p.quantitaDisponibile).to.be.at.least(0); pm.expect(p.quantitaBloccata).to.be.at.least(0); pm.expect(p.asteProgrammate).to.be.at.least(0); pm.expect(p.versione).to.be.at.least(0); pm.expect(p.dataCreazione).to.match(/Z$/); pm.expect(Object.keys(p.categoria)).to.have.members(['id','nome','slug','attiva']);pm.expect(p.id).to.equal(Number(pm.environment.get('prodottoId'))); pm.expect(p.attivo).to.equal(true); pm.expect(p.categoria.attiva).to.equal(true); });"
+            ]
+          }
+        }
+      ]
     },
     {
       "name": "08 Catalogo ADMIN",
@@ -223,7 +287,19 @@
           ]
         },
         "description": "Include prodotti inattivi; aggiungere attivo=false per filtrarli."
-      }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 secondo il contratto catalogo', () => pm.response.to.have.status(200));",
+              "if (pm.response.code === 200) pm.test('Pagina e DTO prodotti', () => { const data = pm.response.json(); pm.expect(data.content).to.be.an('array'); pm.expect(data.page).to.equal(0); pm.expect(data.size).to.equal(12); pm.expect(data.content.length).to.be.at.most(12); pm.expect(data.totalElements).to.be.at.least(data.content.length); pm.expect(data.totalPages).to.equal(Math.ceil(data.totalElements / data.size)); data.content.forEach(p => { const keys = ['id','sku','nome','descrizione','prezzoFisso','astabile','quantitaDisponibile','quantitaBloccata','asteProgrammate','attivo','categoria','versione','dataCreazione']; pm.expect(Object.keys(p)).to.have.members(keys); pm.expect(p.quantitaDisponibile).to.be.at.least(0); pm.expect(p.quantitaBloccata).to.be.at.least(0); pm.expect(p.asteProgrammate).to.be.at.least(0); pm.expect(p.versione).to.be.at.least(0); pm.expect(p.dataCreazione).to.match(/Z$/); pm.expect(Object.keys(p.categoria)).to.have.members(['id','nome','slug','attiva']); }); });"
+            ]
+          }
+        }
+      ]
     },
     {
       "name": "09 Rileggi prodotto ADMIN",
@@ -249,6 +325,8 @@
           "script": {
             "type": "text/javascript",
             "exec": [
+              "pm.test('200 secondo il contratto catalogo', () => pm.response.to.have.status(200));",
+              "if (pm.response.code === 200) pm.test('DTO e valori prodotto', () => { const p = pm.response.json(); const keys = ['id','sku','nome','descrizione','prezzoFisso','astabile','quantitaDisponibile','quantitaBloccata','asteProgrammate','attivo','categoria','versione','dataCreazione']; pm.expect(Object.keys(p)).to.have.members(keys); pm.expect(p.quantitaDisponibile).to.be.at.least(0); pm.expect(p.quantitaBloccata).to.be.at.least(0); pm.expect(p.asteProgrammate).to.be.at.least(0); pm.expect(p.versione).to.be.at.least(0); pm.expect(p.dataCreazione).to.match(/Z$/); pm.expect(Object.keys(p.categoria)).to.have.members(['id','nome','slug','attiva']);pm.expect(p.id).to.equal(Number(pm.environment.get('prodottoId'))); });",
               "if ([200, 201].includes(pm.response.code)) {",
               "  const p = pm.response.json();",
               "  pm.environment.set('prodottoId', p.id);",
@@ -299,6 +377,8 @@
           "script": {
             "type": "text/javascript",
             "exec": [
+              "pm.test('200 secondo il contratto catalogo', () => pm.response.to.have.status(200));",
+              "if (pm.response.code === 200) pm.test('DTO e valori prodotto', () => { const p = pm.response.json(); const keys = ['id','sku','nome','descrizione','prezzoFisso','astabile','quantitaDisponibile','quantitaBloccata','asteProgrammate','attivo','categoria','versione','dataCreazione']; pm.expect(Object.keys(p)).to.have.members(keys); pm.expect(p.quantitaDisponibile).to.be.at.least(0); pm.expect(p.quantitaBloccata).to.be.at.least(0); pm.expect(p.asteProgrammate).to.be.at.least(0); pm.expect(p.versione).to.be.at.least(0); pm.expect(p.dataCreazione).to.match(/Z$/); pm.expect(Object.keys(p.categoria)).to.have.members(['id','nome','slug','attiva']);pm.expect(p.id).to.equal(Number(pm.environment.get('prodottoId'))); const input = JSON.parse(pm.variables.replaceIn(pm.request.body.raw)); pm.expect(p.sku).to.equal(input.sku.trim().toUpperCase()); pm.expect(p.nome).to.equal(input.nome.trim()); pm.expect(p.astabile).to.equal(input.astabile); pm.expect(p.quantitaDisponibile).to.equal(input.quantitaDisponibile); });",
               "if ([200, 201].includes(pm.response.code)) {",
               "  const p = pm.response.json();",
               "  pm.environment.set('prodottoId', p.id);",
@@ -332,7 +412,7 @@
             }
           ]
         },
-        "description": "NON IMPLEMENTATO. Integrazione con portafoglio, ledger e inventario; escluso dalla sequenza catalogo.",
+        "description": "CONTRATTO FUTURO, non implementato. Body provvisorio: quantita deve essere definita nel DTO del modulo acquisti. Escludere dal runner catalogo; non interpretare un 404 come una verifica del catalogo.",
         "body": {
           "mode": "raw",
           "raw": "{\n  \"quantita\": 1\n}",
