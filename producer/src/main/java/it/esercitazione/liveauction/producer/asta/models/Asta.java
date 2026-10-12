@@ -57,6 +57,9 @@ public class Asta {
     @Column(name = "chiusa_at")
     private Instant chiusaAt;
 
+    @Column(name = "annullata_at")
+    private Instant annullataAt;
+
     @Column(name = "sequence", nullable = false)
     private long sequence = 0;
 

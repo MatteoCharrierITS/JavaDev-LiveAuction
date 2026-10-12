@@ -15,6 +15,7 @@ Questa è la specifica corrente di **LiveAuction**.
 9. [Portafoglio e ledger](09-portafoglio.md)
 10. [Notifiche email al vincitore](10-notifiche-email.md)
 11. [Verifica e allineamento della documentazione](11-verifica-documentazione.md)
+12. [Consegna di Marco: annullamento e storici](12-annullamento-storici.md)
 
 **[DA FARE — attività e prossimi passi del team](todo.md)**
 
@@ -42,8 +43,10 @@ In `main`, verificato il 12 ottobre 2026 sulla base `4b82f1e`, sono implementati
   invio SMTP disabilitato per default. Template di configurazione, controlli
   STARTTLS/TLS implicito e test SMTP locale sono già integrati in `main`.
 
-Annullamento, storici, API inventario e acquisti a prezzo fisso restano da
-completare. L'attivazione SMTP esterna è fuori scope per la consegna. La chiusura automatica e la correzione dello
+Nelle modifiche locali di Marco del 12 ottobre 2026 sono implementati anche
+annullamento ADMIN (senza offerte), evento AUCTION_CANCELLED, vittorie USER
+e storico ADMIN con filtri e paginazione. V12 conserva la data di annullamento.
+API inventario e acquisti a prezzo fisso restano da completare. L'attivazione SMTP esterna è fuori scope per la consegna. La chiusura automatica e la correzione dello
 snapshot dopo il ritiro delle offerte sono integrate in `main`.
 Le API del portafoglio sono integrate in `main`: saldo e movimenti
 paginati, impostazione del saldo virtuale e operazioni JDBC condivise con le aste.
@@ -60,6 +63,9 @@ Il report WebSocket sopra indicato conserva lo stato storico dell'8 ottobre.
 La verifica locale del 12 ottobre supera 96 test Producer e 1 Consumer, con
 104 test di integrazione saltati; non sostituisce la suite PostgreSQL/WebSocket.
 Vedere il [report di allineamento](11-verifica-documentazione.md).
+La verifica delle modifiche di Marco supera **268 test Producer e 1 Consumer**,
+nessuno saltato, con PostgreSQL, WebSocket e SMTP locale. Entrambe le build
+`verify` sono riuscite; dettagli nel [report di consegna](12-annullamento-storici.md).
 
 ## Decisioni chiave
 
@@ -82,7 +88,7 @@ automatica è collegata in `main` dal merge `3bcc9cc`.
 | Prodotto | campo `astabile` esplicito e stock disponibile/bloccato |
 | Catalogo pubblico | prodotto e categoria entrambi attivi; ADMIN consulta anche i disattivati |
 | Modifica prodotto | PUT completo con `versione`; stock bloccato gestito dalle aste |
-| Vincita | assegnazione persistita; API e pagine degli storici ancora da realizzare |
+| Vincita | assegnazione persistita; API storici implementate, pagine Consumer da realizzare |
 | Live | WebSocket/STOMP più snapshot REST |
 | Persistenza | PostgreSQL + Flyway |
 

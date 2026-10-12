@@ -4,7 +4,7 @@ Questo documento descrive il motore completo previsto. Programmazione,
 attivazione temporale, lobby, snapshot, servizi di rilancio/settlement e trasporto
 WebSocket sono implementati. La chiusura automatica è integrata in `main`
 dal merge `3bcc9cc` del 10 ottobre 2026, nello scheduler e nel recupero dopo
-un riavvio. Restano da completare annullamento, storici e UI. Il modulo email
+un riavvio. Annullamento e storici sono completati nelle modifiche locali di Marco del 12 ottobre; resta la UI. Il modulo email
 con coda e retry è già integrato; l'attivazione SMTP esterna è fuori scope. Vedere lo
 [stato del modulo aste](README.md#stato-del-modulo-aste).
 I nomi `startsAt` e `endsAt` usati nei diagrammi corrispondono ai campi
@@ -175,7 +175,10 @@ Se il client possiede `sequence=7` e riceve `9`, passa a
 Gli eventi di presenza `USER_JOINED`, `USER_LEFT` e `PRESENCE_SNAPSHOT` non
 hanno `sequence` e non partecipano al recupero dei gap. `BID_ACCEPTED` include
 già il timer esteso: non viene emesso un evento separato `TIMER_EXTENDED`.
-`AUCTION_CANCELLED` resta previsto insieme all'annullamento, non implementato.
+`AUCTION_CANCELLED` usa AstaTransizioneEvent e il relay già presente: viene
+emesso solo dopo commit dell'annullamento, con sequence incrementata una volta.
+Il retry non ripubblica. Stato, orari e formato sono in [Contratto REST/STOMP](04-api-rest.md#annullamento-admin).
+L'annullamento è consentito solo prima della scadenza e senza offerte mai ricevute.
 
 ## Sicurezza
 
@@ -192,7 +195,7 @@ già il timer esteso: non viene emesso un evento separato `TIMER_EXTENDED`.
 ## Demo
 
 Questo è il percorso di accettazione finale, non una demo già disponibile nel
-browser: mancano Consumer e API degli storici e dell'inventario.
+browser: mancano Consumer e API inventario/acquisti fissi.
 L'attivazione SMTP esterna non rientra nella consegna.
 
 1. L'ADMIN abilita un prodotto con tre unità e programma un'asta scegliendo

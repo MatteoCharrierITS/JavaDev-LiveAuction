@@ -1,6 +1,7 @@
 # Attività del team
 
-Stato del lavoro integrato in `main` al 12 ottobre 2026. La colonna **Fatto**
+Stato della base `main` al 12 ottobre 2026 e delle attività di Marco
+completate nella copia locale (non ancora pubblicate). La colonna **Fatto**
 contiene una spunta per le attività completate; una cella vuota indica lavoro
 ancora da terminare. Ogni responsabile cura anche test, documentazione e
 collection Postman della propria porzione. Inventario e acquisti fissi restano
@@ -33,18 +34,18 @@ esterno è fuori scope e non è prevista per la consegna.
 | Marco | **Programmazione:** creazione ADMIN con input Europe/Rome, conversione UTC e prenotazione atomica dello stock. | ✓ |
 | Marco | **Ciclo di vita:** apertura della stanza e dell'asta, recupero al riavvio e collegamento della chiusura automatica. | ✓ |
 | Marco | **Letture:** lobby filtrabile/paginata e snapshot pubblico con timer e sequence. | ✓ |
-| Marco | **Annullamento — contratto:** definire stati ammessi, comportamento con offerte, ripetizione del comando, DTO ed errori di `POST /admin/aste/{id}/annullamento`. | &nbsp; |
-| Marco | **Annullamento — servizio:** implementare transazione e lock, rilascio dello stock ed eventuali fondi secondo le regole concordate. | &nbsp; |
-| Marco | **Annullamento — API:** aggiungere controller e validazione, con autorizzazione ADMIN anche sul servizio. | &nbsp; |
-| Marco | **Annullamento — evento:** incrementare sequence e pubblicare AUCTION_CANCELLED dopo il commit, concordando il payload con Maikol. | &nbsp; |
-| Marco | **Annullamento — test:** verificare stati non ammessi, accessi, ripetizione, rollback e concorrenza con offerte/chiusura, senza doppi rilasci. | &nbsp; |
-| Marco | **Vittorie personali — contratto:** definire DTO, paginazione e ordinamento di `GET /me/vittorie`, con prodotto, prezzo finale e data. | &nbsp; |
-| Marco | **Vittorie personali — API:** implementare lettura e controller USER, limitando i risultati all'utente del token. | &nbsp; |
-| Marco | **Vittorie personali — test:** verificare isolamento tra utenti, lista vuota, paginazione ed esclusione delle aste senza vincitore. | &nbsp; |
-| Marco | **Storico ADMIN — contratto:** definire DTO, stati inclusi, paginazione, ordinamento e filtri per prodotto, vincitore e intervallo temporale. | &nbsp; |
-| Marco | **Storico ADMIN — API:** implementare `GET /admin/aste/storico`, con autorizzazione ADMIN anche nel servizio. | &nbsp; |
-| Marco | **Storico ADMIN — test:** verificare filtri combinati, estremi delle date, aste senza vincitore, paginazione e accessi non autorizzati. | &nbsp; |
-| Marco | **Documentazione e Postman:** aggiornare contratto, esempi e collection per annullamento e storici quando le API sono implementate. | &nbsp; |
+| Marco | **Annullamento — contratto:** definire stati ammessi, comportamento con offerte, ripetizione del comando, DTO ed errori di `POST /admin/aste/{id}/annullamento`. | ✓ |
+| Marco | **Annullamento — servizio:** implementare transazione e lock, rilascio dello stock ed eventuali fondi secondo le regole concordate. | ✓ |
+| Marco | **Annullamento — API:** aggiungere controller e validazione, con autorizzazione ADMIN anche sul servizio. | ✓ |
+| Marco | **Annullamento — evento:** incrementare sequence e pubblicare AUCTION_CANCELLED dopo il commit, usando il payload delle transizioni già gestito dal relay di Maikol. | ✓ |
+| Marco | **Annullamento — test:** verificare stati non ammessi, accessi, ripetizione, rollback e concorrenza con offerte/chiusura, senza doppi rilasci. | ✓ |
+| Marco | **Vittorie personali — contratto:** definire DTO, paginazione e ordinamento di `GET /me/vittorie`, con prodotto, prezzo finale e data. | ✓ |
+| Marco | **Vittorie personali — API:** implementare lettura e controller USER, limitando i risultati all'utente del token. | ✓ |
+| Marco | **Vittorie personali — test:** verificare isolamento tra utenti, lista vuota, paginazione ed esclusione delle aste senza vincitore. | ✓ |
+| Marco | **Storico ADMIN — contratto:** definire DTO, stati inclusi, paginazione, ordinamento e filtri per prodotto, vincitore e intervallo temporale. | ✓ |
+| Marco | **Storico ADMIN — API:** implementare `GET /admin/aste/storico`, con autorizzazione ADMIN anche nel servizio. | ✓ |
+| Marco | **Storico ADMIN — test:** verificare filtri combinati, estremi delle date, aste senza vincitore, paginazione e accessi non autorizzati. | ✓ |
+| Marco | **Documentazione e Postman:** aggiornare contratto, esempi e collection per annullamento e storici quando le API sono implementate. | ✓ |
 | Maikol | **Accesso live:** ticket monouso, handshake STOMP e autorizzazione per comando. | ✓ |
 | Maikol | **Presenza:** join, disconnessioni, utenti distinti tra più schede e nomi mascherati. | ✓ |
 | Maikol | **Rilanci:** comando STOMP delegato al servizio di Tommi, conferme/rifiuti alla sessione mittente. | ✓ |
@@ -82,3 +83,14 @@ esterno è fuori scope e non è prevista per la consegna.
 | Da assegnare | **Acquisti fissi — test e documentazione:** verificare ultima unità concorrente, saldo insufficiente, prodotto non acquistabile, rollback e retry; aggiornare contratto e Postman. | &nbsp; |
 | Team | **Integrazione finale:** verificare il flusso ADMIN programma → USER partecipa/rilancia → chiusura → saldo, inventario e storici, includendo annullamento e acquisto fisso. | &nbsp; |
 | Team | **Avvio e consegna:** verificare Producer/Consumer indipendenti e stack Docker healthy; integrare le porzioni completate e aggiornare le relative righe del TODO. | &nbsp; |
+
+## Consegna locale di Marco — 12 ottobre 2026
+
+Tutte le attività di Marco sono completate nella copia di lavoro: annullamento
+ADMIN senza offerte, evento post-commit, vittorie personali e storico ADMIN,
+con sicurezza, filtri/pagine, test, documentazione e Postman.
+Verifica: 268 test Producer e 1 Consumer superati, nessun test saltato.
+Dettagli e integrazione per Maikol/Andrea nel
+[report di consegna](12-annullamento-storici.md). Le righe degli altri
+responsabili restano a loro cura; il relay esistente già trasporta il nuovo
+evento e il payload è documentato per la loro verifica.

@@ -12,7 +12,8 @@ controller STOMP, trasporto eventi ed email. Questo modulo non aggiunge
 endpoint REST, controller STOMP o pagine Consumer. Il settlement è collegato
 allo scheduler condiviso di Marco, anche al riavvio, e integrato in `main`
 con il merge `3bcc9cc` del 10 ottobre 2026. Annullamento e storici
-di `aste.json` restano previsti. Dall'8 ottobre 2026 il modulo WebSocket richiama
+sono completati nelle modifiche locali di Marco del 12 ottobre, mantenendo
+i lock e le interfacce economiche di questo modulo. Dall'8 ottobre 2026 il modulo WebSocket richiama
 `OffertaService` tramite `/app/aste/{id}/offerte` e trasporta gli eventi Spring
 sui topic delle stanze. Il flusso web richiede ancora il Consumer.
 L'attivazione SMTP esterna è fuori scope per la consegna. L'email è integrata

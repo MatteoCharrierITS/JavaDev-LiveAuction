@@ -93,6 +93,16 @@ endsAt = endsAt + 20 secondi
 L'estensione si somma sempre alla scadenza corrente, non a venti secondi dal
 momento del rilancio.
 
+## Annullamento
+
+Solo ADMIN può annullare un'asta in PROGRAMMATA, STANZA_APERTA o APERTA,
+prima della scadenza e prima che abbia ricevuto qualsiasi offerta, anche
+successivamente ritirata. La presenza di offerte impedisce il comando;
+nessun fondo viene quindi rilasciato dall'annullamento. Stock e stato cambiano
+nella stessa transazione, con lock asta → prodotto e incremento di sequence.
+Ripetere l'annullamento non duplica effetti o eventi. Un'asta CHIUSA o scaduta
+non è annullabile. AUCTION_CANCELLED raggiunge la stanza soltanto dopo commit.
+
 ## Regole di offerta
 
 1. L'asta deve essere `APERTA` e non scaduta secondo il tempo del server.

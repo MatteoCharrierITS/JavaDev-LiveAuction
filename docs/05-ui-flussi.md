@@ -3,8 +3,8 @@
 Questo documento descrive la UI da realizzare, assegnata ad Andrea. Al
 12 ottobre 2026 nessuna delle pagine applicative sotto è implementata in `main`.
 Auth, catalogo, lobby, snapshot, ticket e portafoglio hanno già API utilizzabili;
-inventario, vittorie, acquisti fissi, annullamento e storico ADMIN attendono
-le rispettive API. Il trasferimento del prodotto vinto all'inventario è già
+Vittorie, annullamento e storico ADMIN hanno API disponibili nelle modifiche
+locali di Marco del 12 ottobre; inventario e acquisti fissi attendono le API. Il trasferimento del prodotto vinto all'inventario è già
 eseguito dal settlement, ma manca l'API per consultarlo.
 
 ## Rotte Consumer

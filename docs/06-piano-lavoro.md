@@ -3,8 +3,9 @@
 ## Stato corrente — 12 ottobre 2026
 
 Identità, catalogo, portafoglio, programmazione, rilanci, chiusura automatica,
-STOMP e coda email sono integrati in `main` (`4b82f1e`). Restano Consumer,
-annullamento, storici, API inventario e acquisti fissi. L'attivazione SMTP
+STOMP e coda email sono integrati in `main` (`4b82f1e`). Le modifiche locali di
+Marco del 12 ottobre completano annullamento e storici. Restano Consumer,
+API inventario e acquisti fissi. L'attivazione SMTP
 esterna è fuori scope per la consegna.
 Le fasi sotto sono la roadmap di accettazione, non un elenco di attività tutte
 ancora aperte. Persone e prossimi passi sono nel [TODO](todo.md).

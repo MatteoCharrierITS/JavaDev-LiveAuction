@@ -43,7 +43,8 @@ Il sistema è composto da due applicazioni indipendenti:
 > stock, apertura automatica, lobby e snapshot pubblici. I servizi di offerte e
 > settlement e notifiche email con coda persistente e retry sono implementati;
 > la chiusura automatica è integrata nello scheduler, anche nel recupero
-> dopo un riavvio. Mancano annullamento, storici, API inventario e acquisti a
+> dopo un riavvio. Nelle modifiche locali di Marco del 12 ottobre sono completati annullamento,
+> vittorie personali e storico ADMIN; restano API inventario e acquisti a
 > prezzo fisso. L'attivazione SMTP esterna è fuori scope per la consegna. Le API del portafoglio (saldo, movimenti
 > e impostazione del saldo virtuale) sono integrate in `main`. La
 > Consumer è ancora uno scheletro senza pagine applicative: il flusso completo
@@ -58,6 +59,11 @@ Verifica locale del 12 ottobre: build Producer/Consumer riuscita, 96 test
 Producer e 1 Consumer superati, 104 test di integrazione saltati. PostgreSQL,
 WebSocket e SMTP non sono stati rieseguiti in questa verifica. Dettagli e
 controlli documentali in [Allineamento documentazione](docs/11-verifica-documentazione.md).
+
+Verifica delle modifiche locali di Marco del 12 ottobre: **268 test Producer e
+1 Consumer superati**, nessun test saltato, con PostgreSQL, WebSocket ed SMTP
+locale di prova. Entrambe le build `verify` hanno prodotto il JAR.
+[Consegna annullamento e storici](docs/12-annullamento-storici.md).
 
 ## La feature distintiva: LiveAuction
 
@@ -163,7 +169,7 @@ applicativa. Rispondono `200` se disponibili, `503` altrimenti.
 Base REST: `http://localhost:8081/api/v1`
 
 La tabella seguente include anche contratti futuri. Non sono implementati
-acquisti fissi, inventario, vittorie e storico ADMIN; lo stato di ogni rotta è
+acquisti fissi e API inventario; lo stato di ogni rotta è
 indicato nella [tabella REST](docs/04-api-rest.md#rest).
 
 | Metodo | Endpoint | Scopo |

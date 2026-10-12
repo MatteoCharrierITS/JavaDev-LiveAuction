@@ -10,7 +10,7 @@ Importare `local.postman_environment.json` e selezionare l'ambiente
 | `prodotti.json` | Categorie, catalogo e gestione ADMIN | Implementato; acquisti fissi futuri |
 | `inventario.json` | Inventario personale | API prevista |
 | `portafoglio.json` | Saldo, movimenti paginati e impostazioni | Implementato |
-| `aste.json` | Lobby, ticket, programmazione e storici | Programmazione ADMIN, lobby, snapshot e ticket implementati; altre API previste |
+| `aste.json` | Lobby, ticket, programmazione e storici | Programmazione, lobby, snapshot, ticket, annullamento e storici implementati |
 
 L'ambiente usa `http://localhost:8081/api/v1` come `baseUrl`. Modificarlo se
 il Producer è esposto su un'altra porta. Le migrazioni non creano account demo:
@@ -59,8 +59,12 @@ provare i filtri aggiungere `stato`, `categoria` (slug) e `query` alla URL.
 **Snapshot asta** è pubblico e usa `astaId` per verificare stato, timer,
 conteggio e sequence. Gli username di offerente e vincitore sono mascherati.
 Il ticket è implementato e richiede un USER e una stanza accessibile da tre
-minuti prima dell'inizio. Annullamento e storici restano previsti e possono
-rispondere `404` fino all'implementazione.
+minuti prima dell'inizio. **Annulla asta ADMIN** non richiede body, libera lo
+stock una sola volta e può essere ripetuta sullo stesso astaId. Con offerte
+ricevute risponde 409 ASTA_CON_OFFERTE; chiusa/scaduta risponde 409
+ASTA_NON_ANNULLABILE. **Le mie vittorie** e **Storico aste ADMIN** verificano
+DTO e pagine (size default 20); aggiungere alla seconda prodottoId,
+vincitoreId, stato CHIUSA/ANNULLATA, da/a UTC per i filtri combinati.
 
 Lo snapshot espone il leader operativo, escludendo le offerte ritirate; il
 conteggio delle offerte resta storico. Dopo la cancellazione del leader,
@@ -98,8 +102,8 @@ Le variabili generate del catalogo sono dichiarate anche nell'ambiente esportato
 
 Nel runner selezionare **solo 01–10** di `prodotti.json` su un database di prova.
 La richiesta `FUTURO Acquisto fisso` non è implementata ed è da deselezionare.
-Lo stesso vale per le tre richieste `FUTURO` di `aste.json` e l'intera collection
-`inventario.json`. Importare una collection non implica che tutte le sue API
+L’intera collection `inventario.json` resta prevista. Le tre API di Marco in
+`aste.json` sono implementate. Importare una collection non implica che tutte le sue API
 siano disponibili. La collection aste richiede inoltre ID validi: programmare
 prima un'asta; il ticket richiede una stanza già accessibile e non è un test
 eseguibile subito sull'asta programmata per domani.

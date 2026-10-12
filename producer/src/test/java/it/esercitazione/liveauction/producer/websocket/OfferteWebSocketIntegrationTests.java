@@ -85,6 +85,7 @@ class OfferteWebSocketIntegrationTests {
     @Autowired JdbcTemplate jdbc;
     @Autowired AstaLifecycleService lifecycle;
     @Autowired ChiusuraAstaService chiusura;
+    @Autowired it.esercitazione.liveauction.producer.asta.services.AnnullamentoAstaService annullamento;
     @Autowired AstaRepository aste;
     @Autowired EmailDeliveryService delivery;
     @Autowired JavaMailSenderImpl mail;
@@ -138,6 +139,42 @@ class OfferteWebSocketIntegrationTests {
         } finally {
             if (data != null) data.close();
         }
+    }
+
+    @Test
+    void cancellationReachesRoomOnlyAfterCommitAndRetryDoesNotRepublish() throws Exception {
+        Connection first = connect(primo);
+        clearRooms();
+        var jwt = org.springframework.security.oauth2.jwt.Jwt.withTokenValue("test")
+                .header("alg", "HS256").subject(Long.toString(admin.id())).build();
+        var context = org.springframework.security.core.context.SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(new org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken(
+                jwt, List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))));
+        org.springframework.security.core.context.SecurityContextHolder.setContext(context);
+        try {
+            new TransactionTemplate(transactions).executeWithoutResult(status -> {
+                annullamento.annulla(data.auctionId);
+                status.setRollbackOnly();
+            });
+        } finally {
+            org.springframework.security.core.context.SecurityContextHolder.clearContext();
+        }
+        assertThat(first.room().poll(500, TimeUnit.MILLISECONDS)).isNull();
+        assertThat(jdbc.queryForObject("SELECT stato FROM aste WHERE id=?", String.class, data.auctionId)).isEqualTo("APERTA");
+        mvc.perform(post("/api/v1/admin/aste/{id}/annullamento", data.auctionId)
+                        .header("Authorization", admin.bearer())).andExpect(status().isOk());
+        Map<?, ?> cancelled = receive(first.room(), "AUCTION_CANCELLED");
+        assertThat(cancelled.get("stato")).isEqualTo("ANNULLATA");
+        assertThat(cancelled.get("sequence")).isEqualTo(1);
+        assertThat(cancelled.keySet().stream().map(Object::toString).toList())
+                .containsExactlyInAnyOrder("type", "auctionId", "sequence", "serverTime", "stato",
+                        "aperturaStanzaAt", "inizioAt", "fineAt");
+        assertThat(jdbc.queryForObject("SELECT sequence FROM aste WHERE id=?", Long.class, data.auctionId)).isEqualTo(1);
+        mvc.perform(post("/api/v1/admin/aste/{id}/annullamento", data.auctionId)
+                        .header("Authorization", admin.bearer())).andExpect(status().isOk());
+        assertThat(first.room().poll(500, TimeUnit.MILLISECONDS)).isNull();
+        assertThat(jdbc.queryForObject("SELECT quantita_disponibile FROM prodotti WHERE id=?", Integer.class, data.productId)).isEqualTo(1);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM notifiche_email WHERE asta_id=?", Integer.class, data.auctionId)).isZero();
     }
 
     @Test
