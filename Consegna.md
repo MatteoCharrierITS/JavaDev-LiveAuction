@@ -1,6 +1,14 @@
 # Esercitazione — LiveAuction
 
+Questa è la consegna e descrive il risultato richiesto, incluse funzionalità
+ancora da sviluppare. Per lo stato implementato consultare il
+[README](README.md) e il [TODO del team](docs/todo.md).
+
 ## Obiettivo
+
+Per la consegna corrente l'attivazione SMTP esterna e la ricezione dell'email
+in inbox sono escluse dallo scope. Il modulo notifiche già implementato resta
+nel progetto e può essere verificato localmente senza un provider esterno.
 
 Realizzare un marketplace con due applicazioni Spring Boot indipendenti.
 L'ADMIN gestisce il catalogo e programma aste di prodotti disponibili; gli

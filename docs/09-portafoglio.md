@@ -81,5 +81,6 @@ La JVM locale era Java 25: l'agente esplicito evita il problema di aggancio
 Mockito riscontrato in questo ambiente. Il progetto resta configurato per Java 21.
 Le fixture del modulo portafoglio vengono rimosse dopo ogni test. Il container
 dedicato è stato rimosso al termine; il database di sviluppo non è stato usato.
-Il modulo non collega la chiusura automatica né implementa inventario o acquisti
-fissi, che restano attività separate.
+La chiusura automatica è ora collegata nello scheduler del modulo aste.
+Il portafoglio non espone le API inventario o acquisti fissi, che restano
+attività separate e da assegnare nel team.

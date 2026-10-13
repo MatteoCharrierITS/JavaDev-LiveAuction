@@ -2,7 +2,7 @@
   "info": {
     "name": "LiveAuction • Aste",
     "_postman_id": "833135da-ce7e-4249-8eb7-4ed4cea808d1",
-    "description": "Programmazione ADMIN, lobby pubblica, snapshot e ticket WebSocket implementati secondo docs/04-api-rest.md; annullamento e storici sono ancora previsti. Lo snapshot usa il leader operativo non ritirato, non la massima offerta storica. In main, dal merge 3bcc9cc, la chiusura è automatica anche al riavvio: verificarla via snapshot, senza endpoint di settlement. La connessione STOMP /ws richiede un client WebSocket e non è rappresentata in Collection v2.1.",
+    "description": "Programmazione ADMIN, lobby, snapshot, ticket, annullamento senza offerte, vittorie USER e storico ADMIN implementati. Contratti e filtri in docs/04-api-rest.md. Gli eventi, incluso AUCTION_CANCELLED, sono post-commit. STOMP richiede un client WebSocket; la chiusura automatica è interna al Producer.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -154,7 +154,7 @@
         "method": "POST",
         "header": [],
         "url": "{{baseUrl}}/admin/aste/{{astaId}}/annullamento",
-        "description": "Previsto dal contratto docs/04-api-rest.md; l'endpoint non è ancora implementato. Modifica lo stato dell'asta: usare solo su un'asta di prova.",
+        "description": "ADMIN, nessun body. Consentito in PROGRAMMATA/STANZA_APERTA/APERTA prima di fineAt e senza offerte mai ricevute. Restituisce 200 e rilascia una unità; retry identico senza nuovi effetti. Errori: 409 ASTA_CON_OFFERTE o ASTA_NON_ANNULLABILE; 404 ID inesistente.",
         "auth": {
           "type": "bearer",
           "bearer": [
@@ -165,15 +165,62 @@
             }
           ]
         }
-      }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "if (pm.response.code === 200) {",
+              "  const body = pm.response.json();",
+              "  pm.test('Annullata con sequence e data UTC', () => { pm.expect(body.id).to.equal(Number(pm.environment.get('astaId'))); pm.expect(body.stato).to.equal('ANNULLATA'); pm.expect(body.sequence).to.be.at.least(1); pm.expect(body.annullataAt).to.match(/Z$/); });",
+              "  pm.environment.set('annullamentoEsito', JSON.stringify(body));",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ripeti annullamento ADMIN (idempotenza)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": "{{baseUrl}}/admin/aste/{{astaId}}/annullamento",
+        "description": "Eseguire dopo Annulla asta ADMIN sullo stesso astaId: identico risultato persistito e nessun nuovo evento.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{adminToken}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "if (pm.response.code === 200) { pm.test('Retry identico', () => pm.expect(pm.response.json()).to.deep.equal(JSON.parse(pm.environment.get('annullamentoEsito')))); }"
+            ]
+          }
+        }
+      ]
     },
     {
       "name": "Le mie vittorie",
       "request": {
         "method": "GET",
         "header": [],
-        "url": "{{baseUrl}}/me/vittorie",
-        "description": "Previsto dal contratto docs/04-api-rest.md; l'endpoint non è ancora implementato.",
+        "url": "{{baseUrl}}/me/vittorie?page=0&size=20",
+        "description": "USER, identità dal token. Solo aste CHIUSA vinte; ordine chiusaAt DESC, id DESC. DTO id/prodotto/prezzoFinale/chiusaAt. Pagina vuota: 200. size 1..100.",
         "auth": {
           "type": "bearer",
           "bearer": [
@@ -184,15 +231,34 @@
             }
           ]
         }
-      }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "if (pm.response.code === 200) {",
+              "  const body = pm.response.json();",
+              "  pm.test('Pagina degli storici', () => { pm.expect(body.content).to.be.an('array'); pm.expect(body.page).to.equal(0); pm.expect(body.size).to.equal(20); pm.expect(body.content.length).to.be.at.most(body.size); pm.expect(body.totalElements).to.be.at.least(body.content.length); pm.expect(body.totalPages).to.equal(Math.ceil(body.totalElements / body.size)); });",
+              "  pm.test('Nessuna cache', () => pm.expect(pm.response.headers.get('Cache-Control')).to.include('no-store'));",
+              "  pm.test('Prodotto e privacy', () => body.content.forEach(asta => { pm.expect(Object.keys(asta.prodotto)).to.have.members(['id', 'nome']); ['password', 'passwordHash', 'email', 'username', 'admin'].forEach(key => pm.expect(asta).not.to.have.property(key)); }));",
+              "  pm.test('Vittorie con prezzo e data', () => body.content.forEach(asta => { pm.expect(asta.prezzoFinale).to.be.above(0); pm.expect(asta.chiusaAt).to.match(/Z$/); pm.expect(asta).not.to.have.property('vincitoreId'); }));",
+              "  pm.test('Ordine stabile decrescente', () => { for (let i=1; i<body.content.length; i++) { const p=body.content[i-1], a=body.content[i]; pm.expect(Date.parse(p.chiusaAt)).to.be.at.least(Date.parse(a.chiusaAt)); if (p.chiusaAt===a.chiusaAt) pm.expect(p.id).to.be.above(a.id); } });",
+              "}"
+            ]
+          }
+        }
+      ]
     },
     {
       "name": "Storico aste ADMIN",
       "request": {
         "method": "GET",
         "header": [],
-        "url": "{{baseUrl}}/admin/aste/storico",
-        "description": "Previsto dal contratto docs/04-api-rest.md; l'endpoint non è ancora implementato. Filtri previsti: prodotto, vincitore e intervallo temporale.",
+        "url": "{{baseUrl}}/admin/aste/storico?page=0&size=20",
+        "description": "ADMIN. Aste CHIUSA e ANNULLATA, anche senza vincitore. Filtri AND opzionali: prodottoId/vincitoreId positivi, stato CHIUSA/ANNULLATA, da/a ISO con offset inclusivi. Ordine conclusaAt DESC, id DESC; size 1..100.",
         "auth": {
           "type": "bearer",
           "bearer": [
@@ -203,7 +269,26 @@
             }
           ]
         }
-      }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "if (pm.response.code === 200) {",
+              "  const body = pm.response.json();",
+              "  pm.test('Pagina degli storici', () => { pm.expect(body.content).to.be.an('array'); pm.expect(body.page).to.equal(0); pm.expect(body.size).to.equal(20); pm.expect(body.content.length).to.be.at.most(body.size); pm.expect(body.totalElements).to.be.at.least(body.content.length); pm.expect(body.totalPages).to.equal(Math.ceil(body.totalElements / body.size)); });",
+              "  pm.test('Nessuna cache', () => pm.expect(pm.response.headers.get('Cache-Control')).to.include('no-store'));",
+              "  pm.test('Prodotto e privacy', () => body.content.forEach(asta => { pm.expect(Object.keys(asta.prodotto)).to.have.members(['id', 'nome']); ['password', 'passwordHash', 'email', 'username', 'admin'].forEach(key => pm.expect(asta).not.to.have.property(key)); }));",
+              "  pm.test('Stati terminali e data UTC', () => body.content.forEach(asta => { pm.expect(['CHIUSA', 'ANNULLATA']).to.include(asta.stato); pm.expect(asta.conclusaAt).to.match(/Z$/); if (asta.vincitoreId == null) pm.expect(asta.prezzoFinale).to.equal(null); }));",
+              "  pm.test('Ordine stabile decrescente', () => { for (let i=1; i<body.content.length; i++) { const p=body.content[i-1], a=body.content[i]; pm.expect(Date.parse(p.conclusaAt)).to.be.at.least(Date.parse(a.conclusaAt)); if (p.conclusaAt===a.conclusaAt) pm.expect(p.id).to.be.above(a.id); } });",
+              "}"
+            ]
+          }
+        }
+      ]
     }
   ]
 }

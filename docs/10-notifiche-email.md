@@ -1,12 +1,14 @@
 # Email al vincitore — modulo Maikol
 
 Modulo integrato in `main` nel commit `c9e2a11`; stato aggiornato al
-10 ottobre 2026. Il modulo non chiude aste né modifica saldi,
+12 ottobre 2026, sulla base `4b82f1e`. Il modulo non chiude aste né modifica saldi,
 ledger o inventario. Non aggiunge endpoint REST/STOMP.
 
-Nel branch `web_socket`, dal 10 ottobre 2026, sono aggiunti template SMTP,
-controlli di configurazione e test end-to-end con SMTP locale via TCP reale.
-Queste ultime modifiche devono ancora essere integrate in `main`.
+Template SMTP, controlli di configurazione e test end-to-end con SMTP locale
+via TCP sono integrati in `main` nel commit `4b82f1e` del 10 ottobre 2026.
+L'attivazione di un provider SMTP esterno e la consegna in inbox sono fuori
+scope e non verranno incluse nella consegna. Il codice già presente e le
+istruzioni tecniche sotto restano documentati; non sono attività da completare.
 
 ## Flusso e dipendenze
 
@@ -68,6 +70,9 @@ del modulo. Per una prova usare un destinatario/server di test, non utenti reali
 
 ### Attivazione nell'ambiente concordato
 
+Procedura tecnica di riferimento per un eventuale utilizzo futuro, fuori scope
+per la consegna corrente; non è un'attività assegnata a Maikol o al team.
+
 1. Copiare `.env.example` in `.env` (ignorato da Git) e configurare host,
    mittente e credenziali del provider scelto dal team. Lasciare
    `EMAIL_ENABLED=false` durante la preparazione.
@@ -96,15 +101,19 @@ server in loopback su porta casuale, che non inoltra alcuna email all'esterno.
 ## Cosa manca fuori dal modulo
 
 La chiusura automatica è collegata allo scheduler e integrata in `main`
-dal merge `3bcc9cc`. Il modulo email è già
-collegato al servizio di chiusura ed è testabile senza SMTP reale. Il provider
-SMTP e le sue credenziali devono essere configurati dal team, poi va verificato
-il flusso completo dopo la chiusura automatica. Il frontend è di Andrea.
+dal merge `3bcc9cc`. Il modulo email è già collegato al servizio di chiusura
+ed è testabile senza SMTP esterno. Nessuna attivazione del provider o verifica
+della consegna in inbox è prevista per questa consegna. Il frontend è di Andrea.
 
 La configurazione e i test locali non costituiscono l'attivazione del provider
 del team: host, porta, mittente e credenziali reali restano una scelta esterna.
 
 ## Verifiche
+
+Il 12 ottobre 2026 è stata verificata la presenza del codice SMTP e dei test
+in `main`; la build locale è riuscita. I test PostgreSQL/WebSocket/SMTP non sono
+stati rieseguiti. I conteggi sotto sono risultati storici, non nuovi risultati
+di questa revisione. Vedere [il report corrente](11-verifica-documentazione.md).
 
 Test con PostgreSQL di prova e SMTP simulato: contenuto del riepilogo,
 configurazione, accodamento post-commit, rollback senza notifica, idempotenza,
@@ -113,7 +122,7 @@ utente disattivato, concorrenza e comportamento del job.
 I fixture vengono rimossi dopo ogni test. Nessuna email è stata inviata a
 provider o destinatari esterni.
 
-La suite WebSocket del branch `web_socket` usa un `JavaMailSender` reale e un
+La suite WebSocket, ora presente in `main`, usa un `JavaMailSender` reale e un
 server SMTP locale via TCP, senza mock del client email. Copre comando STOMP,
 rilancio, chiusura tramite `AstaScheduler`, evento pubblico, ledger/inventario,
 accodamento post-commit e ricezione del messaggio MIME con destinatario,
@@ -123,7 +132,8 @@ quando STARTTLS è obbligatorio. Scheduler e worker sono invocati esplicitamente
 per non dipendere da attese temporali o interferire con fixture di altre suite.
 Non verifica il provider esterno, i suoi certificati TLS o la consegna in inbox.
 
-Verifica del branch `web_socket` del 10 ottobre 2026: **235 test Producer e
+Verifica storica riportata sul branch `web_socket` del 10 ottobre 2026
+(prima dell'integrazione delle modifiche in `main`): **235 test Producer e
 1 test Consumer superati**, senza fallimenti, errori o test saltati, con
 `RUN_DB_TESTS=true`, `RUN_WS_TESTS=true`, `ASTE_SCHEDULER_ENABLED=false` e
 PostgreSQL 16 dedicato. Il server SMTP di test ascolta soltanto in loopback.

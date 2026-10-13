@@ -12,34 +12,44 @@
 
 ## REST
 
-| Metodo | Endpoint | Accesso | Scopo |
-| --- | --- | --- | --- |
-| `POST` | `/auth/register` | pubblico | registra utente e wallet |
-| `POST` | `/auth/login` | pubblico | apre una sessione e restituisce i token |
-| `POST` | `/auth/refresh` | pubblico | rinnova i token usando il refresh token |
-| `POST` | `/auth/logout` | Bearer | revoca la sessione corrente |
-| `DELETE` | `/me` | Bearer | disattiva e anonimizza il proprio account |
-| `GET` | `/categorie` | pubblico | categorie attive |
-| `GET` | `/admin/categorie` | ADMIN | tutte le categorie |
-| `POST` | `/admin/categorie` | ADMIN | crea categoria |
-| `PUT` | `/admin/categorie/{id}` | ADMIN | modifica categoria |
-| `GET` | `/admin/prodotti` | ADMIN | catalogo completo con filtri |
-| `GET` | `/admin/prodotti/{id}` | ADMIN | dettaglio anche non pubblico |
-| `POST` | `/admin/prodotti` | ADMIN | crea prodotto |
-| `GET` | `/prodotti` | pubblico | catalogo paginato |
-| `GET` | `/prodotti/{id}` | pubblico | dettaglio, stock e `astabile` |
-| `POST` | `/prodotti/{id}/acquisti` | USER | acquisto fisso |
-| `GET` | `/me/inventario` | USER | prodotti posseduti |
-| `GET` | `/me/portafoglio` | USER | saldo e movimenti |
-| `PUT` | `/me/portafoglio/impostazioni` | USER | imposta saldo finto |
-| `GET` | `/me/vittorie` | USER | storico personale vittorie |
-| `GET` | `/aste` | pubblico | lobby filtrabile |
-| `GET` | `/aste/{id}` | pubblico | snapshot autorevole |
-| `POST` | `/aste/{id}/ticket` | USER | ticket WebSocket breve |
-| `POST` | `/admin/aste` | ADMIN | programma asta e blocca stock |
-| `POST` | `/admin/aste/{id}/annullamento` | ADMIN | annulla quando consentito |
-| `GET` | `/admin/aste/storico` | ADMIN | storico globale e vincitori |
-| `PUT` | `/admin/prodotti/{id}` | ADMIN | modifica prodotto, stock e flag |
+Stato della base `main` `4b82f1e` e delle modifiche locali di Marco del 12 ottobre 2026.
+**Previsto** indica un contratto da implementare, non un endpoint disponibile.
+
+| Metodo | Endpoint | Accesso | Scopo | Stato |
+| --- | --- | --- | --- | --- |
+| `POST` | `/auth/register` | pubblico | registra utente e wallet | Implementato |
+| `POST` | `/auth/login` | pubblico | apre una sessione e restituisce i token | Implementato |
+| `POST` | `/auth/refresh` | pubblico | rinnova i token usando il refresh token | Implementato |
+| `POST` | `/auth/logout` | Bearer | revoca la sessione corrente | Implementato |
+| `DELETE` | `/me` | Bearer | disattiva e anonimizza il proprio account | Implementato |
+| `GET` | `/categorie` | pubblico | categorie attive | Implementato |
+| `GET` | `/admin/categorie` | ADMIN | tutte le categorie | Implementato |
+| `POST` | `/admin/categorie` | ADMIN | crea categoria | Implementato |
+| `PUT` | `/admin/categorie/{id}` | ADMIN | modifica categoria | Implementato |
+| `GET` | `/admin/prodotti` | ADMIN | catalogo completo con filtri | Implementato |
+| `GET` | `/admin/prodotti/{id}` | ADMIN | dettaglio anche non pubblico | Implementato |
+| `POST` | `/admin/prodotti` | ADMIN | crea prodotto | Implementato |
+| `GET` | `/prodotti` | pubblico | catalogo paginato | Implementato |
+| `GET` | `/prodotti/{id}` | pubblico | dettaglio, stock e `astabile` | Implementato |
+| `POST` | `/prodotti/{id}/acquisti` | USER | acquisto fisso | Previsto |
+| `GET` | `/me/inventario` | USER | prodotti posseduti | Previsto |
+| `GET` | `/me/portafoglio` | USER | saldo e movimenti | Implementato |
+| `PUT` | `/me/portafoglio/impostazioni` | USER | imposta saldo finto | Implementato |
+| `GET` | `/me/vittorie` | USER | storico personale vittorie | Implementato |
+| `GET` | `/aste` | pubblico | lobby filtrabile | Implementato |
+| `GET` | `/aste/{id}` | pubblico | snapshot autorevole | Implementato |
+| `POST` | `/aste/{id}/ticket` | USER | ticket WebSocket breve | Implementato |
+| `POST` | `/admin/aste` | ADMIN | programma asta e blocca stock | Implementato |
+| `POST` | `/admin/aste/{id}/annullamento` | ADMIN | annulla quando consentito | Implementato |
+| `GET` | `/admin/aste/storico` | ADMIN | storico globale e vincitori | Implementato |
+| `PUT` | `/admin/prodotti/{id}` | ADMIN | modifica prodotto, stock e flag | Implementato |
+
+## Monitoring
+
+`GET /api/v1/health` e `GET /api/v1/ready` sono pubblici e implementati:
+la prima verifica la liveness, la seconda anche database e readiness
+applicativa. Restituiscono `200` quando disponibili e `503` altrimenti.
+Sono distinti dalle probe Actuator sotto `/actuator/health/**`.
 
 ## Autenticazione
 
@@ -52,7 +62,8 @@ rispettivamente le autorità Spring `ROLE_USER` e `ROLE_ADMIN`. Perciò
 `hasRole('ADMIN')` verifica `ROLE_ADMIN`, senza affidarsi a un ruolo nel JWT.
 
 Le regole HTTP di `SecurityConfig` rendono pubblici solo registrazione, login,
-refresh, health, `GET /categorie` e i `GET` sotto `/prodotti/**` e `/aste/**`. `/admin/**`
+refresh, health/readiness, OpenAPI/Swagger, handshake `/ws`, `GET /categorie`
+e i `GET` sotto `/prodotti/**` e `/aste/**`. `/admin/**`
 richiede `ADMIN`, `/me/**` richiede `USER`; `DELETE /me` richiede un utente
 autenticato. Gli altri percorsi richiedono almeno l'autenticazione. Una nuova
 operazione riservata sotto un percorso pubblico, anche se è un `GET`, deve avere
@@ -100,8 +111,8 @@ possono essere registrati nuovamente.
 
 ## Catalogo
 
-Gli endpoint catalogo e gestione categorie/prodotti sono implementati nel
-branch Prodotti. `POST /prodotti/{id}/acquisti` resta un contratto futuro:
+Gli endpoint catalogo e gestione categorie/prodotti sono integrati in `main`.
+`POST /prodotti/{id}/acquisti` resta un contratto futuro:
 richiede l'integrazione atomica con portafoglio, ledger e inventario e non ha
 ancora un controller. Non fa parte della gestione catalogo completata qui.
 
@@ -469,14 +480,138 @@ Il timer conserva eventuali estensioni già persistite.
 Entrambe le letture restituiscono `Cache-Control: no-store`, orari UTC e tempo
 server; non attivano aste e non modificano stock. Le transizioni restano
 responsabilità dello scheduler. Il ticket WebSocket è implementato nel modulo
-auth; annullamento e storici restano previsti dal contratto e non implementati.
+auth; annullamento e storici sono implementati come descritto sotto.
 
-## Storici
+## Annullamento ADMIN
 
-`GET /api/v1/me/vittorie` mostra esclusivamente le aste vinte dall'utente
-autenticato, con prodotto, importo e data. `GET /api/v1/admin/aste/storico`
-restituisce tutte le aste concluse e permette filtri per prodotto, vincitore e
-intervallo temporale.
+`POST /api/v1/admin/aste/{id}/annullamento` richiede Bearer ADMIN anche nel
+servizio; qualsiasi ADMIN può annullare un'asta. ID strettamente positivo,
+nessun body richiesto. Sono ammessi `PROGRAMMATA`, `STANZA_APERTA` e `APERTA`
+solo prima di `fineAt` secondo il tempo server e solo se non esiste alcuna
+offerta ricevuta, incluse quelle ritirate. Non si introduce l'annullamento di
+aste con offerte: le riserve e il ledger rimangono invariati.
+
+Il comando blocca prima l'asta, poi il prodotto, usando lo stesso ordine della
+chiusura. Nella stessa transazione restituisce una unità allo stock disponibile,
+decrementa quella bloccata, incrementa le versioni di prodotto/asta e la
+`sequence`, salva `annullata_at` (V12) e lo stato `ANNULLATA`. Non trasferisce
+crediti o inventario e non accoda email. L'orario viene letto dopo entrambi i
+lock. Lo scheduler non riapre né chiude un'asta annullata.
+
+Risposta `200`, `Cache-Control: no-store`:
+
+```json
+{
+  "id": 18,
+  "stato": "ANNULLATA",
+  "annullataAt": "2026-10-12T12:00:00Z",
+  "sequence": 3
+}
+```
+
+Ripetere il comando su `ANNULLATA` restituisce lo stesso risultato persistito,
+senza incrementare versioni/sequence, sbloccare altre unità o pubblicare eventi.
+Per righe legacy annullate prima della V12, `annullataAt` può essere null.
+Un rollback non pubblica eventi e ripristina anche stock e versioni.
+
+| Status | Codice | Caso |
+| --- | --- | --- |
+| 400 | Problem Details di validazione | ID non positivo o non numerico |
+| 401 | Problem Details di sicurezza | token mancante, scaduto o sessione revocata |
+| 403 | Problem Details di sicurezza | ruolo diverso da ADMIN |
+| 404 | `RISORSA_NON_TROVATA` | asta inesistente |
+| 409 | `ASTA_NON_ANNULLABILE` | asta CHIUSA o tempo server >= fineAt |
+| 409 | `ASTA_CON_OFFERTE` | almeno un'offerta ricevuta, anche ritirata |
+
+L'evento `AUCTION_CANCELLED` viene pubblicato solo dopo commit, tramite
+`AstaTransizioneEvent` e il relay esistente verso `/topic/aste/{id}`. Il retry
+non lo ripubblica. Il payload compatibile con l’interfaccia delle transizioni
+non contiene dati utente o contabili:
+
+```json
+{
+  "type": "AUCTION_CANCELLED",
+  "auctionId": 18,
+  "sequence": 3,
+  "serverTime": "2026-10-12T12:00:00Z",
+  "stato": "ANNULLATA",
+  "aperturaStanzaAt": "2026-10-12T12:27:00Z",
+  "inizioAt": "2026-10-12T12:30:00Z",
+  "fineAt": "2026-10-12T12:37:00Z"
+}
+```
+
+La consegna è best effort: un errore del trasporto dopo commit non annulla la
+transazione. Il client recupera lo snapshot REST per riallinearsi, disabilita
+i rilanci e mostra lo stato annullato. I nuovi ticket sono rifiutati.
+
+## Inventario e acquisti fissi (previsti)
+
+`GET /api/v1/me/inventario` e `POST /api/v1/prodotti/{id}/acquisti` non sono
+implementati. DTO, paginazione, errori e regole dell'acquisto vanno completati
+prima di svilupparli. Il body Postman `{ "quantita": 1 }` è provvisorio.
+L'acquisto dovrà coordinare stock, portafoglio, ledger e inventario in una
+transazione; l'assegnazione dei prodotti vinti è già presente nel settlement.
+Il referente delle due API resta da decidere nel team.
+
+## Vittorie personali e storico ADMIN
+
+Entrambe le letture restituiscono `200`, `Cache-Control: no-store` e una pagina
+con `content`, `page`, `size`, `totalElements`, `totalPages`. `page` parte da 0
+(default 0); `size` è fra 1 e 100 (default 20). Lista vuota e pagina oltre il
+totale restituiscono `content: []`; una lista vuota ha `totalPages: 0`.
+Ordinamento fisso: data di conclusione decrescente, poi ID asta decrescente,
+anche in presenza di date uguali. Conteggio e pagina sono letti nella stessa
+transazione PostgreSQL `REPEATABLE_READ`.
+
+`GET /api/v1/me/vittorie?page=0&size=20` richiede USER, anche nel servizio,
+e filtra per `sub` del token, senza accettare un ID utente da query/body.
+Include soltanto aste `CHIUSA` con vincitore uguale all'utente autenticato;
+non include aste senza vincitore, annullate o ancora aperte.
+
+```json
+{
+  "content": [{
+    "id": 18,
+    "prodotto": { "id": 3, "nome": "Tastiera meccanica" },
+    "prezzoFinale": 75.00,
+    "chiusaAt": "2026-10-12T12:37:20Z"
+  }],
+  "page": 0,
+  "size": 20,
+  "totalElements": 1,
+  "totalPages": 1
+}
+```
+
+`GET /api/v1/admin/aste/storico` richiede ADMIN sia via HTTP sia nel servizio.
+Include le aste terminali `CHIUSA` e `ANNULLATA` di tutti gli amministratori,
+anche senza vincitore. Ogni elemento contiene `id`, `stato`, `prodotto`
+(`id`, `nome`), `vincitoreId`, `prezzoFinale`, `inizioAt`, `fineAt`, `conclusaAt`.
+`vincitoreId` e `prezzoFinale` sono null per annullate e chiuse senza vincitore;
+non vengono esposti username, email, password o entity JPA.
+
+Filtri opzionali combinati con AND:
+
+- `prodottoId`, `vincitoreId`: ID positivi; un ID sconosciuto produce lista vuota.
+- `stato`: solo `CHIUSA` o `ANNULLATA`; omesso include entrambi.
+- `da`, `a`: istanti ISO 8601 con offset (esempio `2026-10-12T00:00:00Z`),
+  estremi inclusivi applicati a `conclusaAt`; possono essere usati singolarmente.
+  Una data senza offset o un intervallo `da > a` non è valido.
+
+Esempio: `/admin/aste/storico?prodottoId=3&stato=CHIUSA&da=2026-10-12T00:00:00Z&a=2026-10-12T23:59:59Z&page=0&size=20`.
+
+`conclusaAt` corrisponde a `chiusa_at` per la chiusura e `annullata_at` per
+l'annullamento. Per righe terminali legacy prive di entrambi si usa
+`data_creazione`, senza inventare un istante di settlement. Le API continuano
+a mostrare prodotti/categorie disattivati e vincitori anonimizzati, usando
+l'ID storico conservato. Il nome prodotto è quello corrente del catalogo.
+
+Errori: `401` senza autenticazione valida, `403` per ruolo errato;
+`400` in Problem Details per paginazione, tipi o date non validi. Validazioni
+di dominio (stato non terminale, ID non positivo o intervallo invertito)
+usano `PARAMETRI_NON_VALIDI`; le validazioni Jakarta/conversioni HTTP seguono
+il Problem Details standard di Spring.
 
 ## WebSocket/STOMP
 
@@ -635,7 +770,7 @@ chiudere la connessione prima di arrivare al controller.
 
 Il relay ascolta con `@EventListener` gli eventi già post-commit e inoltra
 `ROOM_OPENED`, `AUCTION_STARTED`, `BID_ACCEPTED`, `AUCTION_CLOSED` e
-`AUCTION_SNAPSHOT` al topic dell'asta. Gli eventi economici hanno campi piatti
+`AUCTION_SNAPSHOT` e `AUCTION_CANCELLED` al topic dell'asta. Gli eventi economici hanno campi piatti
 come nell'esempio `BID_ACCEPTED`; lo snapshot di ritiro include lo stato e il
 leader aggiornati, la chiusura include `vincitoreDisplay` mascherato (null
 senza vincitore). Non espone `migliorOfferenteId`, `vincitoreId` o l'UUID del
@@ -653,7 +788,8 @@ in [Notifiche email](10-notifiche-email.md).
 incrementa nella stessa transazione che modifica lo stato dell'asta e pubblica
 l'evento soltanto dopo il commit. Hanno una `sequence` crescente gli eventi di
 stato `ROOM_OPENED`, `AUCTION_STARTED`, `BID_ACCEPTED`, `AUCTION_CLOSED` e
-`AUCTION_CANCELLED` e lo snapshot di ritiro `AUCTION_SNAPSHOT`. Il client
+lo snapshot di ritiro `AUCTION_SNAPSHOT` e `AUCTION_CANCELLED`. L’annullamento
+incrementa la sequence una sola volta e il retry non produce nuovi eventi. Il client
 confronta questi numeri con la propria ultima
 `sequence`: applica il successivo, ignora i duplicati o gli eventi più vecchi e,
 se rileva un salto, recupera `GET /api/v1/aste/{id}` prima di riprendere gli

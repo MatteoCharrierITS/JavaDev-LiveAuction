@@ -35,7 +35,7 @@ Il sistema è composto da due applicazioni indipendenti:
 - **consumer** (`:8082`): interfaccia Thymeleaf che usa esclusivamente i
   contratti esposti dal Producer.
 
-> **Stato di main al 10 ottobre 2026:** include l'infrastruttura Spring Boot/Docker, lo schema Flyway,
+> **Stato verificato di main al 12 ottobre 2026 (base `4b82f1e`):** include l'infrastruttura Spring Boot/Docker, lo schema Flyway,
 > l'autenticazione, il WebSocket con ticket, presenza, comando di rilancio e
 > trasporto degli eventi post-commit, il
 > catalogo REST (categorie, prodotti, gestione ADMIN di stock, filtri e
@@ -43,16 +43,27 @@ Il sistema è composto da due applicazioni indipendenti:
 > stock, apertura automatica, lobby e snapshot pubblici. I servizi di offerte e
 > settlement e notifiche email con coda persistente e retry sono implementati;
 > la chiusura automatica è integrata nello scheduler, anche nel recupero
-> dopo un riavvio. Mancano l'attivazione SMTP dell'email,
-> annullamento, storici, API inventario e acquisti a prezzo fisso. Le API del portafoglio (saldo, movimenti
+> dopo un riavvio. Nelle modifiche locali di Marco del 12 ottobre sono completati annullamento,
+> vittorie personali e storico ADMIN; restano API inventario e acquisti a
+> prezzo fisso. L'attivazione SMTP esterna è fuori scope per la consegna. Le API del portafoglio (saldo, movimenti
 > e impostazione del saldo virtuale) sono integrate in `main`. La
 > Consumer è ancora uno scheletro senza pagine applicative: il flusso completo
 > LiveAuction non è ancora disponibile. Stato dettagliato in
 > [attività del team](docs/todo.md) e [stato del modulo aste](docs/README.md#stato-del-modulo-aste).
 
-Verifica dopo il merge `3bcc9cc`: **230 test Producer e 1 test Consumer
+Verifica storica riportata dopo il merge `3bcc9cc`: **230 test Producer e 1 test Consumer
 superati**, senza fallimenti, errori o test saltati, con PostgreSQL di prova,
 WebSocket ed email con SMTP simulato. Nessuna email reale inviata.
+
+Verifica locale del 12 ottobre: build Producer/Consumer riuscita, 96 test
+Producer e 1 Consumer superati, 104 test di integrazione saltati. PostgreSQL,
+WebSocket e SMTP non sono stati rieseguiti in questa verifica. Dettagli e
+controlli documentali in [Allineamento documentazione](docs/11-verifica-documentazione.md).
+
+Verifica delle modifiche locali di Marco del 12 ottobre: **268 test Producer e
+1 Consumer superati**, nessun test saltato, con PostgreSQL, WebSocket ed SMTP
+locale di prova. Entrambe le build `verify` hanno prodotto il JAR.
+[Consegna annullamento e storici](docs/12-annullamento-storici.md).
 
 ## La feature distintiva: LiveAuction
 
@@ -60,11 +71,11 @@ Integrati in `main` (commit `c9e2a11`): email al vincitore,
 coda persistente e retry; invio disabilitato per default, nessun invio reale
 durante i test. Configurazione e limiti in [Notifiche email](docs/10-notifiche-email.md).
 
-Nel branch `web_socket` sono disponibili anche il template SMTP in
+In `main` (commit `4b82f1e`) sono disponibili anche il template SMTP in
 `.env.example`, STARTTLS obbligatorio/TLS implicito e test del flusso completo
 WebSocket → chiusura via scheduler → email su SMTP locale via TCP. L'attivazione
-del provider esterno richiede i parametri concordati dal team; nessuna
-credenziale viene salvata nel repository. Dettagli e procedura nel documento
+del provider esterno è fuori scope e non verrà inclusa nella consegna.
+La configurazione presente resta disponibile come riferimento tecnico in
 [Notifiche email](docs/10-notifiche-email.md#attivazione-nellambiente-concordato).
 
 L'ADMIN decide se un prodotto è astabile e, per ogni asta, imposta prodotto,
@@ -142,7 +153,7 @@ Producer usando un ticket monouso e a breve scadenza.
 - assegnazione del prodotto al vincitore;
 - storico personale delle vittorie per l'utente;
 - storico globale di aste e vincitori per l'ADMIN;
-- email riepilogativa al vincitore dopo la chiusura;
+- modulo email riepilogativa dopo la chiusura, già presente; invio SMTP esterno fuori scope;
 - chiusura automatica e recupero dopo un riavvio.
 
 ## Contratti principali
@@ -156,6 +167,10 @@ Probe pubbliche nel package `monitoring`: `GET /api/v1/health` verifica la liven
 applicativa. Rispondono `200` se disponibili, `503` altrimenti.
 
 Base REST: `http://localhost:8081/api/v1`
+
+La tabella seguente include anche contratti futuri. Non sono implementati
+acquisti fissi e API inventario; lo stato di ogni rotta è
+indicato nella [tabella REST](docs/04-api-rest.md#rest).
 
 | Metodo | Endpoint | Scopo |
 | --- | --- | --- |
@@ -234,7 +249,7 @@ Dalla radice del repository, per verificare Producer e Consumer.
 Windows:
 
 ```powershell
-.\producer\mvnw.cmd -f producer/pom.xml test
+.\producer\mvnw.cmd -f pom.xml test
 ```
 
 macOS/Linux:

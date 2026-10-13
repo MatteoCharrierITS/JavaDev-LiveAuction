@@ -93,6 +93,16 @@ endsAt = endsAt + 20 secondi
 L'estensione si somma sempre alla scadenza corrente, non a venti secondi dal
 momento del rilancio.
 
+## Annullamento
+
+Solo ADMIN può annullare un'asta in PROGRAMMATA, STANZA_APERTA o APERTA,
+prima della scadenza e prima che abbia ricevuto qualsiasi offerta, anche
+successivamente ritirata. La presenza di offerte impedisce il comando;
+nessun fondo viene quindi rilasciato dall'annullamento. Stock e stato cambiano
+nella stessa transazione, con lock asta → prodotto e incremento di sequence.
+Ripetere l'annullamento non duplica effetti o eventi. Un'asta CHIUSA o scaduta
+non è annullabile. AUCTION_CANCELLED raggiunge la stanza soltanto dopo commit.
+
 ## Regole di offerta
 
 1. L'asta deve essere `APERTA` e non scaduta secondo il tempo del server.
@@ -144,6 +154,10 @@ Le aste già concluse mantengono vincitore e offerte storiche.
 
 ## Email al vincitore
 
+Il modulo email è già implementato e viene mantenuto. L'attivazione di un
+server SMTP esterno e la consegna effettiva in inbox sono fuori scope per la
+consegna; le regole sotto descrivono il comportamento del codice presente.
+
 Dopo il commit viene richiesto l'invio di una email contenente almeno prodotto,
 identificativo asta, importo vincente e data di conclusione. L'invio è
 asincrono/best effort: un errore del provider viene registrato e ritentato, ma
@@ -155,7 +169,8 @@ non annulla la vittoria già conclusa.
 - Snapshot ed eventi contengono `serverTime`, `startsAt` ed `endsAt` in UTC ISO
   8601.
 - Il client recupera uno snapshot dopo riconnessione o gap di `sequence`.
-- Ogni evento stanza ha una `sequence` crescente per asta.
+- Gli eventi persistiti di stato e offerte hanno una `sequence` crescente per
+  asta. Gli eventi di presenza sono temporanei e non contengono `sequence`.
 - Password hashate con BCrypt o Argon2.
 - Token e password mai nei log.
 - Paginazione massima 100 elementi.

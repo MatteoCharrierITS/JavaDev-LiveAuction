@@ -1,13 +1,16 @@
 # Report breve — integrazione WebSocket
 
-8 ottobre 2026, branch `web_socket`. Modifiche locali, nessun commit.
+Report storico dell'8 ottobre 2026, redatto sul branch `web_socket` prima
+del commit delle modifiche. Non rappresenta il backlog corrente; vedere
+[la verifica del 12 ottobre](11-verifica-documentazione.md) e il [TODO](todo.md).
 
 > **Nota di aggiornamento — 10 ottobre 2026:** questo report conserva lo stato
 > storico dell'8 ottobre. Le due attenzioni sotto sono state risolte: il modulo
 > portafoglio condiviso è integrato dal 9 ottobre; chiusura automatica, test
 > scheduler e fix dello snapshot sono integrati in `main` dal merge `3bcc9cc`.
-> Il risultato del merge supera 230 test Producer e 1 Consumer. Restano SMTP
-> reale, Consumer e le API indicate nel [TODO corrente](todo.md).
+> Il risultato del merge supera 230 test Producer e 1 Consumer. Restano
+> Consumer e le API indicate nel [TODO corrente](todo.md). L'attivazione SMTP
+> esterna è stata esclusa dalla consegna con la decisione del 12 ottobre.
 
 Implementati: relay degli eventi post-commit verso i topic, comando STOMP di
 rilancio delegato a `OffertaService`, conferme/rifiuti alla sola sessione

@@ -17,6 +17,7 @@ public record AstaTransizioneEvent(
 ) {
     public enum Tipo {
         ROOM_OPENED,
-        AUCTION_STARTED
+        AUCTION_STARTED,
+        AUCTION_CANCELLED
     }
 }

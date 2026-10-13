@@ -4,9 +4,8 @@ Questo documento descrive il motore completo previsto. Programmazione,
 attivazione temporale, lobby, snapshot, servizi di rilancio/settlement e trasporto
 WebSocket sono implementati. La chiusura automatica è integrata in `main`
 dal merge `3bcc9cc` del 10 ottobre 2026, nello scheduler e nel recupero dopo
-un riavvio. Restano da completare l'attivazione
-SMTP dell'email (modulo integrato in `main` con coda e retry), annullamento,
-storici e UI. Vedere lo
+un riavvio. Annullamento e storici sono completati nelle modifiche locali di Marco del 12 ottobre; resta la UI. Il modulo email
+con coda e retry è già integrato; l'attivazione SMTP esterna è fuori scope. Vedere lo
 [stato del modulo aste](README.md#stato-del-modulo-aste).
 I nomi `startsAt` e `endsAt` usati nei diagrammi corrispondono ai campi
 `inizioAt` e `fineAt` delle API implementate.
@@ -109,9 +108,12 @@ Non si usa “venti secondi da adesso”: si estende sempre la scadenza corrente
 
 ```text
 BEGIN
+  lock utente richiedente e verifica identità/ruolo
   lock asta
+  se clientBidId già accettato con gli stessi dati: restituisci esito senza modifiche
+  se clientBidId già usato con dati diversi: conflitto
   se non APERTA o scaduta: rifiuta
-  valida utente, importo e clientBidId
+  valida importo e sequenza
   lock wallet nuovo offerente e precedente leader in ordine di id
   verifica saldo disponibile
   riserva nuovo importo
@@ -122,8 +124,11 @@ COMMIT
 pubblica BID_ACCEPTED
 ```
 
-Ordinare i lock dei portafogli per id riduce i deadlock. In caso di conflitto,
-la transazione può essere ritentata un numero limitato di volte.
+Ordinare i lock dei portafogli per ID riduce i deadlock. Il comando di offerta
+non applica un retry transazionale automatico: il retry dello stesso
+`clientBidId` è idempotente. Lo scheduler ritenta le chiusure fallite al ciclo
+successivo. Dettagli e ordine completo dei lock in
+[Offerte e chiusura](08-offerte-chiusura.md).
 
 ## Settlement
 
@@ -153,7 +158,7 @@ rollback non produce eventi. Il modulo WebSocket li ascolta con
 Si tratta di notifiche in memoria: il client dovrà
 recuperare lo snapshot in caso di disconnessione o gap di `sequence`.
 
-Ogni evento pubblico contiene almeno:
+Gli eventi pubblici persistiti di stato e offerte contengono almeno:
 
 ```json
 {
@@ -166,6 +171,14 @@ Ogni evento pubblico contiene almeno:
 
 Se il client possiede `sequence=7` e riceve `9`, passa a
 `SINCRONIZZAZIONE…` e recupera lo snapshot REST.
+
+Gli eventi di presenza `USER_JOINED`, `USER_LEFT` e `PRESENCE_SNAPSHOT` non
+hanno `sequence` e non partecipano al recupero dei gap. `BID_ACCEPTED` include
+già il timer esteso: non viene emesso un evento separato `TIMER_EXTENDED`.
+`AUCTION_CANCELLED` usa AstaTransizioneEvent e il relay già presente: viene
+emesso solo dopo commit dell'annullamento, con sequence incrementata una volta.
+Il retry non ripubblica. Stato, orari e formato sono in [Contratto REST/STOMP](04-api-rest.md#annullamento-admin).
+L'annullamento è consentito solo prima della scadenza e senza offerte mai ricevute.
 
 ## Sicurezza
 
@@ -180,6 +193,10 @@ Se il client possiede `sequence=7` e riceve `9`, passa a
 - Username mascherato negli eventi pubblici.
 
 ## Demo
+
+Questo è il percorso di accettazione finale, non una demo già disponibile nel
+browser: mancano Consumer e API inventario/acquisti fissi.
+L'attivazione SMTP esterna non rientra nella consegna.
 
 1. L'ADMIN abilita un prodotto con tre unità e programma un'asta scegliendo
    prezzo iniziale e data/ora.
