@@ -324,7 +324,8 @@ export class AuctionRoom {
             this.state.prezzoFinale = event.offertaCorrente;
             this.refreshWallet();
         }
-        if (event.type === 'AUCTION_SNAPSHOT') this.refreshWallet();
+        // Another bidder can release this user's reserve, including in another tab.
+        if (event.type === 'BID_ACCEPTED' || event.type === 'AUCTION_SNAPSHOT') this.refreshWallet();
         this.render();
         if (this.terminal()) this.stomp?.close();
     }

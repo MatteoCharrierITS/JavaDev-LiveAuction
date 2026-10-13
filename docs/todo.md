@@ -1,14 +1,26 @@
 # Attività del team
 
-Stato della base `main` al 12 ottobre 2026, delle attività di Marco completate
-nella copia locale e della UI Consumer presente il 13 ottobre. La colonna **Fatto**
-contiene una spunta per le attività completate; una cella vuota indica lavoro
-ancora da terminare. Ogni responsabile cura anche test, documentazione e
-collection Postman della propria porzione. Inventario e acquisti fissi restano
-da assegnare nel team; il Consumer è di Andrea. L'attivazione di un server SMTP
-esterno è fuori scope e non è prevista per la consegna.
+Stato di `main` al **13 ottobre 2026**, dopo le consegne di Marco
+(`4138bd5`) e Andrea (`c864b2f`) e la revisione delle loro modifiche.
+Annullamento, vittorie, storico e UI Consumer sono integrati: non sono più
+soltanto modifiche locali o lavoro su branch separati.
 
-## TODO
+Una spunta indica una funzionalità implementata. Le verifiche complete dal
+browser restano attività distinte anche quando esistono test automatici.
+Ogni responsabile cura codice, test, documentazione e Postman della propria
+area. Le verifiche residue sono ripartite secondo le assegnazioni del README;
+API inventario e acquisti fissi restano **da assegnare con decisione del team**.
+L'attivazione SMTP esterna è fuori scope per la consegna.
+
+## Priorità e dipendenze
+
+1. Il team assegna API inventario e acquisti fissi e definisce le regole mancanti.
+2. I referenti completano contratti, API, test e Postman; Andrea integra le pagine.
+3. Nel frattempo ogni responsabile collabora al collaudo dei flussi già disponibili.
+4. Il team verifica il sistema completo e lo stack Docker nell'ambiente di consegna.
+5. Si aggiornano stato, risultati delle verifiche e istruzioni della demo sul commit finale.
+
+## Funzionalità implementate
 
 | Chi | Che cosa | Fatto |
 | :--- | :--- | :---: |
@@ -18,7 +30,6 @@ esterno è fuori scope e non è prevista per la consegna.
 | Matteo | **Portafoglio:** API del saldo e dei movimenti personali paginati. | ✓ |
 | Matteo | **Portafoglio:** impostazione del saldo virtuale, validazioni e registrazione del movimento. | ✓ |
 | Matteo | **Operazioni economiche:** repository condiviso per saldo, riserve e ledger, integrato con offerte e chiusura. | ✓ |
-| Matteo | **Sicurezza delle nuove API:** supportare i responsabili nella verifica di ruoli, identità del token e regole HTTP; controllare accessi anonimi, ruolo errato e dati di altri utenti. | &nbsp; |
 | Cristian | **Catalogo pubblico:** categorie e prodotti, ricerca, filtri, ordinamento e paginazione. | ✓ |
 | Cristian | **Gestione ADMIN:** creazione, modifica e lettura di categorie e prodotti, compresi quelli inattivi. | ✓ |
 | Cristian | **Visibilità:** prodotti e categorie attivi, disattivazione e riattivazione senza alterare lo stock. | ✓ |
@@ -51,8 +62,6 @@ esterno è fuori scope e non è prevista per la consegna.
 | Maikol | **Rilanci:** comando STOMP delegato al servizio di Tommi, conferme/rifiuti alla sessione mittente. | ✓ |
 | Maikol | **Eventi:** relay di apertura, offerte, snapshot e chiusura dopo il commit. | ✓ |
 | Maikol | **Notifiche:** email riepilogativa, coda persistente, recupero e retry, con verifiche locali. | ✓ |
-| Maikol | **Annullamento live:** collegare AUCTION_CANCELLED al topic della stanza quando Marco consegna evento e payload; verificare sequence e assenza di pubblicazione in caso di rollback. | &nbsp; |
-| Maikol | **Contratto WebSocket:** aggiornare payload ed esempi dell'evento di annullamento quando viene integrato. | &nbsp; |
 | Andrea | **Consumer:** scheletro Spring Boot e configurazione di base su porta 8082. | ✓ |
 | Andrea | **Client REST:** configurare comunicazione con il Producer, DTO, Bearer token e gestione di Problem Details, timeout e Producer non disponibile. | ✓ |
 | Andrea | **Registrazione e login:** realizzare pagine e flussi web, conservando access/refresh token nella sessione server-side. | ✓ |
@@ -66,31 +75,139 @@ esterno è fuori scope e non è prevista per la consegna.
 | Andrea | **Stanza — rilanci:** realizzare form, clientBidId e knownSequence; gestire BID_CONFIRMED/BID_REJECTED e retry senza duplicare il comando. | ✓ |
 | Andrea | **Stanza — aggiornamenti:** sincronizzare countdown, prezzo, leader, feed e scadenza; mostrare vincitore/importo o chiusura senza offerte. | ✓ |
 | Andrea | **Stanza — riconnessione:** richiedere nuovo ticket e snapshot, recuperare gap di sequence e ignorare eventi vecchi/duplicati; disabilitare il form durante il riallineamento. | ✓ |
-| Andrea | **Inventario:** realizzare la pagina dei prodotti posseduti dopo la disponibilità di `GET /me/inventario`. | &nbsp; |
 | Andrea | **Vittorie e storico:** realizzare pagine USER e ADMIN dopo le API di Marco, con filtri/paginazione concordati. | ✓ |
 | Andrea | **Annullamento:** aggiungere il comando ADMIN e gestire l'esito nella stanza dopo l'integrazione di API ed evento. | ✓ |
-| Andrea | **Acquisto fisso:** realizzare acquisto e aggiornamento di saldo, disponibilità e inventario dopo la disponibilità dell'API. | &nbsp; |
-| Andrea | **Verifiche web:** provare ruoli, validazioni, sessione scaduta, Producer indisponibile, due utenti/più schede, saldo insufficiente e riconnessione. | &nbsp; |
 | Andrea | **Documentazione Consumer:** aggiornare rotte, flussi e istruzioni di avvio/demo delle pagine effettivamente integrate. | ✓ |
-| Team | **Inventario — assegnazione:** decidere il responsabile dell'API; la pagina Consumer resta ad Andrea. | &nbsp; |
-| Da assegnare | **Inventario — contratto:** definire DTO, paginazione e ordinamento di `GET /me/inventario`. | &nbsp; |
-| Da assegnare | **Inventario — API:** leggere quantità e prodotti personali dalle tabelle esistenti, usando l'identità del token e autorizzazione USER. | &nbsp; |
-| Da assegnare | **Inventario — test e documentazione:** verificare privacy, lista vuota, quantità dopo una vittoria e paginazione; aggiornare contratto e Postman. | &nbsp; |
-| Team | **Acquisti fissi — assegnazione e regole:** decidere il responsabile e concordare quantità, prodotto acquistabile, destinatario dei crediti e comportamento dei retry. | &nbsp; |
-| Da assegnare | **Acquisti fissi — contratto:** definire DTO ed errori di `POST /prodotti/{id}/acquisti`, accesso USER ed effetti su stock, saldo, ledger e inventario. | &nbsp; |
-| Da assegnare | **Acquisti fissi — servizio:** implementare lock e transazione sulle quattro aree, riusando PortafoglioRepository e aggiornando le versioni. | &nbsp; |
-| Da assegnare | **Acquisti fissi — API:** aggiungere controller, validazioni e autorizzazione USER anche sul servizio. | &nbsp; |
-| Da assegnare | **Acquisti fissi — test e documentazione:** verificare ultima unità concorrente, saldo insufficiente, prodotto non acquistabile, rollback e retry; aggiornare contratto e Postman. | &nbsp; |
-| Team | **Integrazione finale:** verificare il flusso ADMIN programma → USER partecipa/rilancia → chiusura → saldo, inventario e storici, includendo annullamento e acquisto fisso. | &nbsp; |
-| Team | **Avvio e consegna:** verificare Producer/Consumer indipendenti e stack Docker healthy; integrare le porzioni completate e aggiornare le relative righe del TODO. | &nbsp; |
+| Maikol | **Annullamento live:** il relay inoltra AUCTION_CANCELLED; payload documentato e test WebSocket di commit, rollback e retry presenti. | ✓ |
+| Andrea | **Saldi nella stanza:** rilettura del portafoglio dopo BID_ACCEPTED, anche quando un altro utente libera la riserva del precedente leader; test di regressione. | ✓ |
 
-## Consegna locale di Marco — 12 ottobre 2026
+## Attività residue
 
-Tutte le attività di Marco sono completate nella copia di lavoro: annullamento
-ADMIN senza offerte, evento post-commit, vittorie personali e storico ADMIN,
-con sicurezza, filtri/pagine, test, documentazione e Postman.
-Verifica: 268 test Producer e 1 Consumer superati, nessun test saltato.
-Dettagli e integrazione per Maikol/Andrea nel
-[report di consegna](12-annullamento-storici.md). Le righe degli altri
-responsabili restano a loro cura; il relay esistente già trasporta il nuovo
-evento e il payload è documentato per la loro verifica.
+Le righe seguenti non sono ancora concluse; alcune sono verifiche di funzionalità
+già implementate, altre dipendono dalle due API mancanti.
+
+### Matteo — sicurezza, account e portafoglio
+
+| Chi | Che cosa | Fatto |
+| :--- | :--- | :---: |
+| Matteo | **Flusso auth reale:** registrazione dalla UI e portafoglio a zero; login, refresh, logout, revoca e sessione scaduta con Producer reale. | &nbsp; |
+| Matteo | **Refresh concorrente:** verificare richieste simultanee e più schede durante la rotazione dei token, anche dalla stanza. | &nbsp; |
+| Matteo | **Autorizzazioni:** verificare anonimi, ruolo errato e isolamento dei dati sulle nuove rotte; Bearer/refresh token solo nella sessione server-side, CSRF sulle scritture Consumer. | &nbsp; |
+| Matteo | **Account:** provare eliminazione dal browser, revoca delle sessioni, ritiro offerte, aggiornamento del leader e conservazione degli storici con Tommi. | &nbsp; |
+| Matteo | **Portafoglio:** verificare saldi e ledger dal browser, impostazione del totale con fondi riservati e messaggio di conflitto. | &nbsp; |
+| Matteo | **Nuove API:** supportare i referenti di inventario/acquisti per identità del token, ruoli e operazioni condivise su saldo/ledger; nessuna nuova assegnazione implicita. | &nbsp; |
+
+### Cristian — catalogo e stock
+
+| Chi | Che cosa | Fatto |
+| :--- | :--- | :---: |
+| Cristian | **Pannello reale:** provare creazione/modifica categorie e prodotti, disattivazione/riattivazione e visibilità nel catalogo pubblico con Andrea. | &nbsp; |
+| Cristian | **Catalogo:** verificare ricerca, filtri, paginazione, dettaglio e liste vuote con Producer reale. | &nbsp; |
+| Cristian | **Versioni:** provare modifiche concorrenti e 409; la UI rilegge il prodotto, mostra i valori tentati/correnti e richiede un nuovo invio. | &nbsp; |
+| Cristian | **Stock:** verificare disponibile/bloccato dopo programmazione, annullamento e chiusura; quantità bloccata non modificabile dal form. | &nbsp; |
+| Cristian | **Acquisti fissi:** coordinare acquistabilità, stock e versioni con il referente ancora da decidere; aggiornare contratto/Postman se cambiano le API del catalogo. | &nbsp; |
+
+### Tommi — offerte e settlement
+
+| Chi | Che cosa | Fatto |
+| :--- | :--- | :---: |
+| Tommi | **Rilanci reali:** due utenti, incremento minimo, prima offerta, saldo insufficiente, offerte simultanee e limite di scadenza. | &nbsp; |
+| Tommi | **Riserve:** verificare riserva del leader e rilascio del precedente, ledger e saldi mostrati nelle diverse schede con Andrea. | &nbsp; |
+| Tommi | **Idempotenza:** reinviare lo stesso clientBidId senza nuove offerte, riserve o estensioni; verificare risposta privata e UI. | &nbsp; |
+| Tommi | **Chiusura:** controllare addebito, incasso ADMIN, ledger e prodotto assegnato una sola volta; senza offerte verificare rilascio dello stock. | &nbsp; |
+| Tommi | **Ritiro:** provare eliminazione account del leader e ripristino del precedente offerente con fondi sufficienti, insieme a Matteo. | &nbsp; |
+| Tommi | **Concorrenza e ripartenza:** verificare offerta/chiusura e retry dello scheduler con Marco; controllare la compatibilità economica degli acquisti fissi col futuro referente. | &nbsp; |
+
+### Marco — programmazione, annullamento e storici
+
+| Chi | Che cosa | Fatto |
+| :--- | :--- | :---: |
+| Marco | **Programmazione dalla UI:** input Europe/Rome, conversione UTC, validazioni, prenotazione stock e comparsa nella lobby. | &nbsp; |
+| Marco | **Transizioni reali:** stanza a -3 minuti, apertura e durata iniziale di 7 minuti; countdown coerenti con il tempo del Producer. | &nbsp; |
+| Marco | **Annullamento dalla UI:** consentito senza offerte; rifiutato con offerte anche ritirate, asta chiusa/scaduta; retry senza doppi rilasci. | &nbsp; |
+| Marco | **Concorrenza:** provare annullamento/offerta/chiusura con Tommi e verificare stock, stato e sequence. | &nbsp; |
+| Marco | **Storici dalle pagine:** vittorie del solo utente; storico ADMIN, filtri combinati, estremi delle date, paginazione, aste annullate e chiuse senza vincitore. | &nbsp; |
+| Marco | **Riavvio:** provare recupero delle transizioni scadute, chiusura idempotente e retry dopo errore, con Tommi. | &nbsp; |
+| Marco | **Documentazione di dominio:** riallineare i documenti correnti che descrivono ancora il lavoro come locale; preservare i report storici come tali. | &nbsp; |
+
+### Maikol — trasporto live e notifiche
+
+| Chi | Che cosa | Fatto |
+| :--- | :--- | :---: |
+| Maikol | **Annullamento integrato:** verificare dal comando ADMIN alla stanza browser AUCTION_CANCELLED, sequence e disabilitazione rilanci. Relay e test sono già implementati. | &nbsp; |
+| Maikol | **Accesso:** provare ticket monouso/scaduto, handshake, sottoscrizioni e comandi non autorizzati con il Consumer reale. | &nbsp; |
+| Maikol | **Presenza:** provare due utenti e più schede dello stesso utente; disconnessione di una scheda e uscita definitiva. | &nbsp; |
+| Maikol | **Eventi:** conferme/rifiuti privati, aggiornamenti pubblici e ordine delle sequence; verificare con Andrea duplicati, gap e riconnessione con nuovo ticket/snapshot. | &nbsp; |
+| Maikol | **Ambiente live:** controllare URL raggiungibile dal browser e origine consentita; coordinare con Andrea eventuali host/porte diversi e HTTPS/wss. | &nbsp; |
+| Maikol | **Email locale:** provare chiusura con vincitore, coda post-commit, errore/retry e recupero; nessuna email per annullamento o asta senza vincitore. Provider SMTP esterno escluso. | &nbsp; |
+
+### Andrea — Consumer e verifiche web
+
+| Chi | Che cosa | Fatto |
+| :--- | :--- | :---: |
+| Andrea | **Inventario:** dopo il contratto/API, aggiungere client e DTO, pagina /inventario, navigazione, quantità, paginazione, lista vuota e gestione errori. | &nbsp; |
+| Andrea | **Acquisto:** dopo il contratto/API, aggiungere azione nel dettaglio, quantità/conferma concordate, errori e rilettura di saldo, stock e inventario; gestire retry secondo il contratto. | &nbsp; |
+| Andrea | **Flussi reali:** provare login, registrazione, account, portafoglio, catalogo e pannello ADMIN con Producer/PostgreSQL reali; i test MVC attuali simulano il Producer. | &nbsp; |
+| Andrea | **Sessione/errori:** provare refresh, scadenza, logout, CSRF, ruolo errato, timeout e Producer indisponibile; controllare messaggi e pagine 400/403/404/500. | &nbsp; |
+| Andrea | **Stanza reale:** pre-live, join, due utenti/più schede, rilanci, saldi, chiusura e annullamento; perdita rete, nuovo ticket e snapshot prima di riabilitare il form. | &nbsp; |
+| Andrea | **Interfaccia:** verificare filtri mantenuti, paginazione, liste vuote, validazioni e conflitti di versione, leggibilità su schermi diversi. | &nbsp; |
+| Andrea | **Consegna:** verificare sessioni/cookie e URL WebSocket nell’ambiente scelto, coordinandosi con Matteo e Maikol; aggiornare test e flussi dopo le pagine mancanti/fix. | &nbsp; |
+
+### Inventario — API da assegnare
+
+| Chi | Che cosa | Fatto |
+| :--- | :--- | :---: |
+| Team | **Referente e contratto:** assegnare l’API; concordare campi prodotto/quantità, paginazione, ordinamento e visibilità dei prodotti posseduti divenuti inattivi con Andrea. | &nbsp; |
+| Da assegnare | **Lettura:** implementare GET /api/v1/me/inventario sulle tabelle esistenti. Il settlement già assegna i prodotti vinti; non duplicare questa operazione. | &nbsp; |
+| Da assegnare | **Sicurezza e DTO:** identità dal token, accesso USER e isolamento degli inventari; DTO senza dati privati di altri utenti. | &nbsp; |
+| Da assegnare | **Test:** lista vuota, parametri invalidi, paginazione/ordinamento stabile, anonimo/ruolo errato, isolamento e quantità dopo più vittorie dello stesso prodotto. | &nbsp; |
+| Da assegnare | **Contratto/Postman:** completare esempi ed errori, aggiornare stato implementato e collection; verificare la pagina con Andrea. | &nbsp; |
+
+### Acquisti fissi — API e regole da assegnare
+
+| Chi | Che cosa | Fatto |
+| :--- | :--- | :---: |
+| Team | **Referente e regole:** decidere quantità acquistabile, prodotto/categoria attivi e prezzo fisso, destinatario dei crediti e meccanismo di retry/idempotenza. Il body Postman quantita=1 è provvisorio. | &nbsp; |
+| Da assegnare | **Contratto:** definire POST /api/v1/prodotti/{id}/acquisti, DTO, validazioni, risposta, status e codici di errore; coordinarsi con Andrea. | &nbsp; |
+| Da assegnare | **Transazione:** stock disponibile, saldo, ledger e inventario atomici; BigDecimal, operazioni condivise, lock e versioni compatibili con aste. Lo stock bloccato non è acquistabile. | &nbsp; |
+| Da assegnare | **API protetta:** controller e servizio USER, identità dal token, nessun effetto parziale e retry secondo la regola concordata. | &nbsp; |
+| Da assegnare | **Test funzionali:** quantità invalidi, prezzo assente/prodotto non acquistabile, stock esaurito, saldo insufficiente, destinatario crediti, ledger e inventario. | &nbsp; |
+| Da assegnare | **Test transazionali:** ultima unità concorrente, acquisto/programmazione asta, rollback e retry senza doppi addebiti o assegnazioni. | &nbsp; |
+| Da assegnare | **Documentazione/Postman:** completare contratto e collection e verificare acquisto/aggiornamento dati con Andrea; coinvolgere Cristian, Matteo e Tommi nelle interfacce condivise. | &nbsp; |
+
+### Team — accettazione e consegna
+
+| Chi | Che cosa | Fatto |
+| :--- | :--- | :---: |
+| Team | **Suite finale:** ripetere verify Producer/Consumer con Java 21, PostgreSQL dedicato e RUN_DB_TESTS/RUN_WS_TESTS; eseguire anche i test JavaScript e registrare commit/esiti. | &nbsp; |
+| Team | **Demo aste:** ADMIN crea prodotto e programma; due USER partecipano/rilanciano; chiusura con saldo, ledger, prodotto persistito e storici coerenti. | &nbsp; |
+| Team | **Scenari alternativi:** senza offerte, annullamento, saldo insufficiente, ritiro leader, riconnessione e riavvio; ogni responsabile risolve i problemi del proprio dominio. | &nbsp; |
+| Team | **Nuove funzioni:** dopo le API completate includere consultazione inventario e acquisto fisso nel collaudo. | &nbsp; |
+| Team | **Postman:** eseguire le collection sugli endpoint implementati e verificare variabili, body, errori e controlli delle risposte. | &nbsp; |
+| Team | **Avvio/Docker:** verificare applicazioni indipendenti e compose prod healthy nell’ambiente concordato; proteggere i dati esistenti. | &nbsp; |
+| Team | **Configurazione:** Java 21, JWT da ambiente, sessioni coerenti con HTTP/HTTPS (cookie Secure nel profilo prod), URL WebSocket accessibile dal browser e origine autorizzata. | &nbsp; |
+| Team | **Procedura demo:** documentare creazione account/ADMIN, crediti, categorie/prodotti e aste ripetibili; nessun dato demo nelle migrazioni. | &nbsp; |
+| Team | **Allineamento:** README, TODO, documenti di stato e istruzioni devono descrivere il main finale; distinguere verifiche correnti e report storici. | &nbsp; |
+
+## Proposte e limiti da decidere separatamente
+
+Questi punti non diventano automaticamente obblighi di consegna. Il team decide
+se implementarli oppure conservarli come limiti documentati.
+
+| Punto | Stato | Coinvolgimento se approvato |
+| :--- | :--- | :--- |
+| Lobby “In partenza” / “a cui partecipo” | Comportamento e filtri REST dedicati da concordare. | Marco e Andrea; altri domini secondo il filtro. |
+| Vincitore/importo nella card lobby | Disponibili nella stanza e negli storici, assenti nella card. | Marco e Andrea. |
+| Feed ricostruibile dopo reload | Eventi mostrati durante la sessione della pagina; manca GET dedicato. | Contratto da concordare fra Tommi, Marco, Maikol e Andrea. |
+
+## Verifica della revisione
+
+La revisione di `3dfeec2..c864b2f` ha controllato contratti, ruoli, isolamento,
+transazioni, stock, relay post-commit, sessione Consumer e stanza STOMP.
+Corretto il mancato aggiornamento dei saldi dopo il rilancio di un altro utente,
+con una prova di regressione JavaScript.
+
+Gli esiti della verifica corrente sono nel README. Le prove automatiche non
+sostituiscono il collaudo completo del browser o l'avvio dello stack Docker
+`prod`, che restano nelle attività residue. I report del 7–12 ottobre conservano
+le verifiche storiche precedenti al Consumer attuale.

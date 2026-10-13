@@ -171,6 +171,7 @@ test('private confirmation recognizes duplicate retry without inventing a public
 test('accepted public bid updates price, leader, timer and real event feed', () => {
     const root = fakeRoot();
     const room = new AuctionRoom(root, { clock: () => 0 });
+    room.refreshWallet = () => {};
     room.applySnapshot(snapshot()); room.synced = true;
     room.handlePublic({ type: 'BID_ACCEPTED', auctionId: 42, sequence: 4,
         serverTime: '2026-10-11T17:01:00Z', stato: 'APERTA', importo: 61,
@@ -181,6 +182,32 @@ test('accepted public bid updates price, leader, timer and real event feed', () 
     assert.match(root.node('current-price').textContent, /61,00 CRD/);
     assert.equal(root.node('countdown').textContent, '6m 20s');
     assert.equal(root.node('event-feed').children.length, 1);
+    room.stop();
+});
+
+test('being outbid reloads released wallet funds without a private reply', async () => {
+    const root = fakeRoot();
+    let walletCalls = 0;
+    const room = new AuctionRoom(root, { clock: () => 0,
+        fetch: async path => {
+            assert.equal(path, '/aste/42/wallet');
+            walletCalls++;
+            return { ok: true, json: async () => ({ saldoTotale: 100,
+                saldoRiservato: 0, saldoDisponibile: 100 }) };
+        } });
+    room.applySnapshot(snapshot()); room.synced = true;
+    root.node('wallet-reserved').textContent = '60,00 CRD';
+    root.node('wallet-available').textContent = '40,00 CRD';
+    const outbid = { type: 'BID_ACCEPTED', auctionId: 42, sequence: 4,
+        serverTime: '2026-10-11T17:01:00Z', stato: 'APERTA',
+        offertaCorrente: 61, offerenteDisplay: 'b***b', numeroOfferte: 2 };
+    room.handlePublic(outbid);
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(walletCalls, 1);
+    assert.equal(root.node('wallet-reserved').textContent, '0,00 CRD');
+    assert.equal(root.node('wallet-available').textContent, '100,00 CRD');
+    room.handlePublic(outbid);
+    assert.equal(walletCalls, 1);
     room.stop();
 });
 

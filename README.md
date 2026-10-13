@@ -35,38 +35,56 @@ Il sistema è composto da due applicazioni indipendenti:
 - **consumer** (`:8082`): interfaccia Thymeleaf che usa esclusivamente i
   contratti esposti dal Producer.
 
-> **Stato Producer verificato al 12 ottobre 2026 (base `4b82f1e`) e stato Consumer della copia di lavoro al 13 ottobre:** include l'infrastruttura Spring Boot/Docker, lo schema Flyway,
-> l'autenticazione, il WebSocket con ticket, presenza, comando di rilancio e
-> trasporto degli eventi post-commit, il
-> catalogo REST (categorie, prodotti, gestione ADMIN di stock, filtri e
-> paginazione) e la programmazione ADMIN delle aste con blocco atomico dello
-> stock, apertura automatica, lobby e snapshot pubblici. I servizi di offerte e
-> settlement e notifiche email con coda persistente e retry sono implementati;
-> la chiusura automatica è integrata nello scheduler, anche nel recupero
-> dopo un riavvio. Nelle modifiche locali di Marco del 12 ottobre sono completati annullamento,
-> vittorie personali e storico ADMIN; restano API inventario e acquisti a
-> prezzo fisso. L'attivazione SMTP esterna è fuori scope per la consegna. Le API del portafoglio (saldo, movimenti
-> e impostazione del saldo virtuale) sono integrate in `main`. La
-> Consumer include autenticazione, marketplace, portafoglio, lobby, stanza live,
-> gestione ADMIN, vittorie e storico. Inventario e acquisti fissi non hanno
-> ancora API o pagine. Stato dettagliato in
-> [attività del team](docs/todo.md) e [stato del modulo aste](docs/README.md#stato-del-modulo-aste).
+> **Stato di main al 13 ottobre 2026 (base `c864b2f`, con revisione delle consegne):**
+> Producer e Consumer includono il flusso delle aste: autenticazione e sessione
+> web, catalogo, portafoglio, programmazione ADMIN, lobby, stanza STOMP,
+> rilanci, riserve, chiusura automatica e recupero dopo riavvio. Sono integrati
+> annullamento ADMIN senza offerte, evento AUCTION_CANCELLED, vittorie personali,
+> storico ADMIN e relative pagine. Email con coda persistente e retry disponibili;
+> SMTP esterno fuori scope. **Mancano API e pagine inventario e acquisti a prezzo
+> fisso**; i referenti delle API devono essere decisi dal team, le pagine sono
+> di Andrea. Il settlement già assegna il prodotto vinto nell'inventario.
 
-Verifica storica riportata dopo il merge `3bcc9cc`: **230 test Producer e 1 test Consumer
-superati**, senza fallimenti, errori o test saltati, con PostgreSQL di prova,
-WebSocket ed email con SMTP simulato. Nessuna email reale inviata.
+La revisione delle modifiche `3dfeec2..c864b2f` ha verificato contratti,
+autorizzazioni, isolamento delle vittorie, transazioni, stock, eventi post-commit,
+sessione Consumer e trasporto STOMP. Corretto un problema della stanza: dopo
+il rilancio di un altro utente il portafoglio viene riletto, così il precedente
+leader vede la riserva liberata. Aggiunto un test JavaScript di regressione.
 
-Verifica locale del 12 ottobre: build Producer/Consumer riuscita, 96 test
-Producer e 1 Consumer superati, 104 test di integrazione saltati. PostgreSQL,
-WebSocket e SMTP non sono stati rieseguiti in questa verifica. Dettagli e
-controlli documentali in [Allineamento documentazione](docs/11-verifica-documentazione.md).
+**Verifica del 13 ottobre:** `verify` Producer e Consumer riusciti, entrambi i
+JAR prodotti; **268 test Producer, 45 test Java Consumer e 11 test JavaScript**
+superati, zero fallimenti, errori o test saltati. PostgreSQL 16 in un container
+temporaneo senza volumi del progetto, WebSocket reali e SMTP locale di test;
+nessuna email reale inviata. Esecuzione host con Temurin 25.0.4, compilazione
+`release 21` e Mockito caricato come agente esplicito per evitare il limite di
+self-attach dell'ambiente. La conferma sul JDK 21 previsto resta nel collaudo finale.
 
-Verifica delle modifiche locali di Marco del 12 ottobre: **268 test Producer e
-1 Consumer superati**, nessun test saltato, con PostgreSQL, WebSocket ed SMTP
-locale di prova. Entrambe le build `verify` hanno prodotto il JAR.
-[Consegna annullamento e storici](docs/12-annullamento-storici.md).
-Questi conteggi sono verifiche storiche anteriori alle pagine Consumer attuali;
-non descrivono la copertura corrente della UI.
+I test Consumer simulano le risposte REST del Producer; i test JavaScript
+simulano il browser/trasporto. Questa verifica non certifica il percorso completo
+con due browser e lo stack Docker `prod`: sono attività aperte nel
+[TODO dettagliato per persona](docs/todo.md). Le priorità sono assegnare e
+completare le due API mancanti, integrare le pagine e collaudare il sistema finale.
+
+Per ripetere la suite usare un database PostgreSQL **dedicato ai test**:
+
+```sh
+RUN_DB_TESTS=true RUN_WS_TESTS=true ASTE_SCHEDULER_ENABLED=false \
+DB_URL=jdbc:postgresql://localhost:55432/liveauction_test \
+DB_USERNAME=postgres DB_PASSWORD='<password-del-db-di-prova>' \
+./producer/mvnw -f pom.xml verify
+
+node --test consumer/src/test/js/auction-lobby.test.cjs consumer/src/test/js/auction-room.test.mjs
+```
+
+Le suite configurano o richiamano lo scheduler secondo lo scenario da verificare.
+Se l'ambiente impedisce il self-attach di Mockito, aggiungere all'invocazione
+Maven `-DargLine=-javaagent:/percorso/alla/cache/mockito-core-5.17.0.jar`.
+
+Le verifiche precedenti sono conservate nei report storici:
+[allineamento documentazione del 12 ottobre](docs/11-verifica-documentazione.md),
+[consegna annullamento e storici](docs/12-annullamento-storici.md) e
+[integrazione offerte/chiusura](docs/08-offerte-chiusura.md#test).
+Non sostituiscono il collaudo del Consumer attuale.
 
 ## La feature distintiva: LiveAuction
 
