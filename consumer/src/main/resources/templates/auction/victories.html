@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Your victories')}"></head>
+<body><nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<main class="catalog-page">
+    <h1>Your victories</h1>
+    <p>Auctions you won. Times are shown in UTC.</p>
+    <p th:if="${victories.content.isEmpty()}" class="empty-state">No victories on this page.</p>
+    <section th:unless="${victories.content.isEmpty()}" aria-label="Victories">
+        <p th:text="${victories.totalElements} + ' victories'">Victories</p>
+        <div class="product-grid">
+            <article class="product-card" th:each="v : ${victories.content}">
+                <h2 th:text="${v.prodotto.nome}">Product</h2>
+                <p>Product #<span th:text="${v.prodotto.id}">1</span> · Auction #<span th:text="${v.id}">1</span></p>
+                <p>Final price: <strong th:text="${v.prezzoFinale}">0.00</strong> CRD</p>
+                <p>Closed: <time th:attr="datetime=${v.chiusaAt}" th:text="${v.chiusaAt}">Time</time></p>
+            </article>
+        </div>
+    </section>
+    <nav th:if="${victories.totalPages > 1}" class="pagination" aria-label="Victory pages">
+        <a th:if="${victories.page > 0}" th:href="@{/me/vittorie(page=${victories.page - 1},size=${victories.size})}">Previous</a>
+        <span th:text="'Page ' + ${victories.page + 1} + ' of ' + ${victories.totalPages}">Page</span>
+        <a th:if="${victories.page + 1 < victories.totalPages}" th:href="@{/me/vittorie(page=${victories.page + 1},size=${victories.size})}">Next</a>
+    </nav>
+</main><footer th:replace="~{fragments/footer :: footer}"></footer></body></html>

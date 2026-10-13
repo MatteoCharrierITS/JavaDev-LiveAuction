@@ -190,17 +190,17 @@
   },
   "active": "96836a2f2f7886ee",
   "lastOpenFiles": [
-    "consumer/target/surefire-reports/TEST-it.esercitazione.liveauction.consumer.AdminCatalogTests.xml",
-    "consumer/target/surefire-reports/it.esercitazione.liveauction.consumer.AdminCatalogTests.txt",
-    "consumer/target/test-classes/it/esercitazione/liveauction/consumer/AdminCatalogTests$AdminStub.class",
-    "consumer/target/test-classes/it/esercitazione/liveauction/consumer/AdminCatalogTests.class",
-    "consumer/target/test-classes/it/esercitazione/liveauction/consumer/AdminCatalogTests$StubConfig.class",
-    "consumer/src/test/java/it/esercitazione/liveauction/consumer/AdminCatalogTests.java",
+    "consumer/target/task7-focused.log",
+    "consumer/target/task7-full-test.log",
+    "consumer/target/surefire-reports/TEST-it.esercitazione.liveauction.consumer.AuctionHistoryConsumerTests.xml",
+    "consumer/target/surefire-reports/it.esercitazione.liveauction.consumer.AuctionHistoryConsumerTests.txt",
+    "consumer/target/task7-test.log",
+    "consumer/target/test-classes/it/esercitazione/liveauction/consumer/AuctionHistoryConsumerTests.class",
+    "consumer/target/test-classes/it/esercitazione/liveauction/consumer/AuctionHistoryConsumerTests$StubConfig.class",
+    "consumer/target/test-classes/it/esercitazione/liveauction/consumer/AuctionHistoryConsumerTests$HistoryStub.class",
+    "consumer/src/test/java/it/esercitazione/liveauction/consumer/AuctionHistoryConsumerTests.java",
     "consumer/target/classes/it/esercitazione/liveauction/consumer/marketplace/MarketplaceController$1.class",
-    "consumer/target/classes/it/esercitazione/liveauction/consumer/admin/ProductForm.class",
-    "consumer/target/classes/it/esercitazione/liveauction/consumer/admin/ProductForm$UpdateRequest.class",
-    "consumer/target/classes/it/esercitazione/liveauction/consumer/admin/ProductForm$CreateRequest.class",
-    "consumer/target/classes/it/esercitazione/liveauction/consumer/admin/CategoryForm.class",
+    "consumer/target/classes/it/esercitazione/liveauction/consumer/admin/AdminController$1.class",
     "README.md"
   ]
 }

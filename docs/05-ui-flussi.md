@@ -1,11 +1,10 @@
 # Interfaccia e flussi utente
 
-Questo documento descrive la UI da realizzare, assegnata ad Andrea. Al
-12 ottobre 2026 nessuna delle pagine applicative sotto è implementata in `main`.
-Auth, catalogo, lobby, snapshot, ticket e portafoglio hanno già API utilizzabili;
-Vittorie, annullamento e storico ADMIN hanno API disponibili nelle modifiche
-locali di Marco del 12 ottobre; inventario e acquisti fissi attendono le API. Il trasferimento del prodotto vinto all'inventario è già
-eseguito dal settlement, ma manca l'API per consultarlo.
+Questo documento descrive la UI Consumer. Auth, catalogo, lobby, snapshot,
+ticket, portafoglio, vittorie personali, annullamento e storico ADMIN hanno API
+Producer utilizzabili. Inventario e acquisti fissi attendono ancora le
+rispettive API e i contratti completi. Il trasferimento del prodotto vinto
+all'inventario è eseguito dal settlement, ma manca l'API per consultarlo.
 
 ## Rotte Consumer
 
@@ -21,18 +20,24 @@ eseguito dal settlement, ma manca l'API per consultarlo.
 | `GET /aste/{id}/snapshot` | USER | snapshot Producer per la sincronizzazione browser, senza cache |
 | `GET /aste/{id}/wallet` | USER | soli saldi del portafoglio reale tramite token nella sessione Consumer |
 | `POST /aste/{id}/ticket` | USER + CSRF | solo ticket STOMP monouso al browser |
-| `/inventario` | USER | prodotti posseduti |
+| `/inventario` | USER | prevista; attende `GET /me/inventario` e relativo DTO |
 | `/me/vittorie` | USER | storico personale vittorie |
 | `/impostazioni/portafoglio` | USER | saldo finto e ledger |
 | `/admin/prodotti` | ADMIN | catalogo, stock e flag astabile |
 | `/admin/prodotti/nuovo` e `/admin/prodotti/{id}/modifica` | ADMIN | creazione e modifica prodotto |
 | `/admin/categorie` e `/admin/categorie/{id}/modifica` | ADMIN | gestione categorie, anche inattive |
 | `/admin/aste/nuova` | ADMIN | programmazione asta |
+| `/admin/aste/storico` | ADMIN | storico globale, filtri e paginazione |
+| `POST /admin/aste/{id}/annullamento` | ADMIN + CSRF | annullamento dalla lobby; verifica finale del Producer |
+
+Vittorie personali, storico ADMIN e annullamento sono implementati nel Consumer
+usando le API Producer. La lobby mostra l'annullamento agli ADMIN per aste attive
+senza offerte visibili; il Producer ricontrolla stato, scadenza e ogni offerta
+ricevuta, incluse quelle ritirate. Inventario e acquisti fissi attendono API e
+contratti completi, quindi non mostrano pagine o azioni disponibili.
 
 Le scritture dei form ADMIN usano POST Consumer con CSRF; il Consumer invia
 POST o PUT al Producer con il Bearer conservato nella sessione server-side.
-Lo storico globale e l'annullamento saranno aggiunti quando i rispettivi
-endpoint Producer saranno implementati.
 
 ## Catalogo
 

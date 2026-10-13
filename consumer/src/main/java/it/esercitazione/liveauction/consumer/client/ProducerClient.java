@@ -9,6 +9,7 @@ import it.esercitazione.liveauction.consumer.marketplace.ProdottoView;
 import it.esercitazione.liveauction.consumer.auction.AuctionPage;
 import it.esercitazione.liveauction.consumer.auction.AuctionSnapshot;
 import it.esercitazione.liveauction.consumer.auction.RoomTicket;
+import it.esercitazione.liveauction.consumer.auction.VictoryPage;
 import it.esercitazione.liveauction.consumer.wallet.WalletPage;
 import it.esercitazione.liveauction.consumer.wallet.WalletBalance;
 import it.esercitazione.liveauction.consumer.admin.*;
@@ -26,6 +27,7 @@ import org.springframework.web.client.ResourceAccessException;
 
 import java.time.Duration;
 import java.math.BigDecimal;
+import java.time.Instant;
 
 @Component
 public class ProducerClient {
@@ -121,6 +123,30 @@ public class ProducerClient {
         return call(() -> client.post().uri("/admin/aste")
                 .header(HttpHeaders.AUTHORIZATION, bearer(token)).contentType(MediaType.APPLICATION_JSON)
                 .body(form.request()).retrieve().body(ScheduledAuction.class));
+    }
+
+    public VictoryPage victories(String token, int page, int size) {
+        return call(() -> client.get().uri(builder -> builder.path("/me/vittorie")
+                .queryParam("page", page).queryParam("size", size).build())
+                .header(HttpHeaders.AUTHORIZATION, bearer(token)).retrieve().body(VictoryPage.class));
+    }
+
+    public AuctionHistoryPage auctionHistory(String token, Long productId, Long winnerId,
+            String state, Instant from, Instant to, int page, int size) {
+        return call(() -> client.get().uri(builder -> {
+            builder.path("/admin/aste/storico");
+            if (productId != null) builder.queryParam("prodottoId", productId);
+            if (winnerId != null) builder.queryParam("vincitoreId", winnerId);
+            if (state != null) builder.queryParam("stato", state);
+            if (from != null) builder.queryParam("da", from.toString());
+            if (to != null) builder.queryParam("a", to.toString());
+            return builder.queryParam("page", page).queryParam("size", size).build();
+        }).header(HttpHeaders.AUTHORIZATION, bearer(token)).retrieve().body(AuctionHistoryPage.class));
+    }
+
+    public CancellationResult cancelAuction(String token, long id) {
+        return call(() -> client.post().uri("/admin/aste/{id}/annullamento", id)
+                .header(HttpHeaders.AUTHORIZATION, bearer(token)).retrieve().body(CancellationResult.class));
     }
 
     public AuctionPage publicAuctions(String stato, String categoria, String query, int page, int size) {
