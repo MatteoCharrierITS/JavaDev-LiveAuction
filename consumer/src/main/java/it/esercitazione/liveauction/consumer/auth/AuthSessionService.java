@@ -2,6 +2,7 @@ package it.esercitazione.liveauction.consumer.auth;
 
 import it.esercitazione.liveauction.consumer.client.ProducerClient;
 import it.esercitazione.liveauction.consumer.client.ProducerException;
+import it.esercitazione.liveauction.consumer.client.ProducerUnavailableException;
 import it.esercitazione.liveauction.consumer.dto.LoginRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,12 @@ public class AuthSessionService {
     }
 
     public SessionAuth login(HttpSession session, String username, String password) {
-        SessionAuth auth = SessionAuth.from(producer.login(new LoginRequest(username, password)));
+        SessionAuth auth;
+        try {
+            auth = SessionAuth.from(producer.login(new LoginRequest(username, password)));
+        } catch (IllegalStateException ex) {
+            throw new ProducerUnavailableException();
+        }
         session.setAttribute(ATTRIBUTE, auth);
         return auth;
     }
@@ -55,7 +61,7 @@ public class AuthSessionService {
             try {
                 return operation.apply(refresh(session, auth).accessToken());
             } catch (ProducerException retry) {
-                if (retry.status() == 401 || retry.status() == 403) {
+                if (retry.status() == 401) {
                     clear(session);
                     throw new SessionExpiredException();
                 }

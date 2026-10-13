@@ -1,7 +1,7 @@
 # Attività del team
 
-Stato della base `main` al 12 ottobre 2026 e delle attività di Marco
-completate nella copia locale (non ancora pubblicate). La colonna **Fatto**
+Stato della base `main` al 12 ottobre 2026, delle attività di Marco completate
+nella copia locale e della UI Consumer presente il 13 ottobre. La colonna **Fatto**
 contiene una spunta per le attività completate; una cella vuota indica lavoro
 ancora da terminare. Ogni responsabile cura anche test, documentazione e
 collection Postman della propria porzione. Inventario e acquisti fissi restano
@@ -54,24 +54,24 @@ esterno è fuori scope e non è prevista per la consegna.
 | Maikol | **Annullamento live:** collegare AUCTION_CANCELLED al topic della stanza quando Marco consegna evento e payload; verificare sequence e assenza di pubblicazione in caso di rollback. | &nbsp; |
 | Maikol | **Contratto WebSocket:** aggiornare payload ed esempi dell'evento di annullamento quando viene integrato. | &nbsp; |
 | Andrea | **Consumer:** scheletro Spring Boot e configurazione di base su porta 8082. | ✓ |
-| Andrea | **Client REST:** configurare comunicazione con il Producer, DTO, Bearer token e gestione di Problem Details, timeout e Producer non disponibile. | &nbsp; |
-| Andrea | **Registrazione e login:** realizzare pagine e flussi web, conservando access/refresh token nella sessione server-side. | &nbsp; |
-| Andrea | **Sessione e sicurezza:** implementare refresh, logout, scadenza e protezione delle pagine USER/ADMIN; non esporre i token al JavaScript. | &nbsp; |
-| Andrea | **Marketplace:** realizzare catalogo e dettaglio con filtri, paginazione, indicazione astabile e quantità disponibile/bloccata. | &nbsp; |
-| Andrea | **Portafoglio:** realizzare saldi, impostazione del totale e movimenti paginati; mostrare errori e saldo riservato. Le API sono già disponibili. | &nbsp; |
-| Andrea | **Lobby:** realizzare filtri di stato/categoria/testo e countdown basati sul tempo del server. Le API sono già disponibili. | &nbsp; |
-| Andrea | **Catalogo ADMIN:** realizzare gestione categorie/prodotti e PUT completo con versione; gestire il 409 rileggendo il prodotto. | &nbsp; |
-| Andrea | **Programmazione ADMIN:** realizzare selezione del prodotto disponibile/astabile, input Europe/Rome, prezzo e riepilogo dello stock prenotato. | &nbsp; |
-| Andrea | **Stanza — ingresso:** recuperare snapshot e ticket, sottoscrivere topic/coda privata e inviare join; mostrare pre-live e presenza. | &nbsp; |
-| Andrea | **Stanza — rilanci:** realizzare form, clientBidId e knownSequence; gestire BID_CONFIRMED/BID_REJECTED e retry senza duplicare il comando. | &nbsp; |
-| Andrea | **Stanza — aggiornamenti:** sincronizzare countdown, prezzo, leader, feed e scadenza; mostrare vincitore/importo o chiusura senza offerte. | &nbsp; |
-| Andrea | **Stanza — riconnessione:** richiedere nuovo ticket e snapshot, recuperare gap di sequence e ignorare eventi vecchi/duplicati; disabilitare il form durante il riallineamento. | &nbsp; |
+| Andrea | **Client REST:** configurare comunicazione con il Producer, DTO, Bearer token e gestione di Problem Details, timeout e Producer non disponibile. | ✓ |
+| Andrea | **Registrazione e login:** realizzare pagine e flussi web, conservando access/refresh token nella sessione server-side. | ✓ |
+| Andrea | **Sessione e sicurezza:** implementare refresh, logout, scadenza e protezione delle pagine USER/ADMIN; non esporre i token al JavaScript. | ✓ |
+| Andrea | **Marketplace:** realizzare catalogo e dettaglio con filtri, paginazione, indicazione astabile e quantità disponibile/bloccata. | ✓ |
+| Andrea | **Portafoglio:** realizzare saldi, impostazione del totale e movimenti paginati; mostrare errori e saldo riservato. Le API sono già disponibili. | ✓ |
+| Andrea | **Lobby:** realizzare filtri di stato/categoria/testo e countdown basati sul tempo del server. Le API sono già disponibili. | ✓ |
+| Andrea | **Catalogo ADMIN:** realizzare gestione categorie/prodotti e PUT completo con versione; gestire il 409 rileggendo il prodotto. | ✓ |
+| Andrea | **Programmazione ADMIN:** realizzare selezione del prodotto disponibile/astabile, input Europe/Rome, prezzo e riepilogo dello stock prenotato. | ✓ |
+| Andrea | **Stanza — ingresso:** recuperare snapshot e ticket, sottoscrivere topic/coda privata e inviare join; mostrare pre-live e presenza. | ✓ |
+| Andrea | **Stanza — rilanci:** realizzare form, clientBidId e knownSequence; gestire BID_CONFIRMED/BID_REJECTED e retry senza duplicare il comando. | ✓ |
+| Andrea | **Stanza — aggiornamenti:** sincronizzare countdown, prezzo, leader, feed e scadenza; mostrare vincitore/importo o chiusura senza offerte. | ✓ |
+| Andrea | **Stanza — riconnessione:** richiedere nuovo ticket e snapshot, recuperare gap di sequence e ignorare eventi vecchi/duplicati; disabilitare il form durante il riallineamento. | ✓ |
 | Andrea | **Inventario:** realizzare la pagina dei prodotti posseduti dopo la disponibilità di `GET /me/inventario`. | &nbsp; |
-| Andrea | **Vittorie e storico:** realizzare pagine USER e ADMIN dopo le API di Marco, con filtri/paginazione concordati. | &nbsp; |
-| Andrea | **Annullamento:** aggiungere il comando ADMIN e gestire l'esito nella stanza dopo l'integrazione di API ed evento. | &nbsp; |
+| Andrea | **Vittorie e storico:** realizzare pagine USER e ADMIN dopo le API di Marco, con filtri/paginazione concordati. | ✓ |
+| Andrea | **Annullamento:** aggiungere il comando ADMIN e gestire l'esito nella stanza dopo l'integrazione di API ed evento. | ✓ |
 | Andrea | **Acquisto fisso:** realizzare acquisto e aggiornamento di saldo, disponibilità e inventario dopo la disponibilità dell'API. | &nbsp; |
 | Andrea | **Verifiche web:** provare ruoli, validazioni, sessione scaduta, Producer indisponibile, due utenti/più schede, saldo insufficiente e riconnessione. | &nbsp; |
-| Andrea | **Documentazione Consumer:** aggiornare rotte, flussi e istruzioni di avvio/demo delle pagine effettivamente integrate. | &nbsp; |
+| Andrea | **Documentazione Consumer:** aggiornare rotte, flussi e istruzioni di avvio/demo delle pagine effettivamente integrate. | ✓ |
 | Team | **Inventario — assegnazione:** decidere il responsabile dell'API; la pagina Consumer resta ad Andrea. | &nbsp; |
 | Da assegnare | **Inventario — contratto:** definire DTO, paginazione e ordinamento di `GET /me/inventario`. | &nbsp; |
 | Da assegnare | **Inventario — API:** leggere quantità e prodotti personali dalle tabelle esistenti, usando l'identità del token e autorizzazione USER. | &nbsp; |

@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Page not found')}"></head>
+<body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<main class="catalog-page error-page" id="main-content" tabindex="-1">
+    <h1>Page not found</h1>
+    <p role="alert">This page or resource could not be found. It may have moved or no longer be available.</p>
+    <a th:href="@{/marketplace}">Browse the marketplace</a>
+</main>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+</body>
+</html>

@@ -4,7 +4,9 @@ Questo documento descrive il motore completo previsto. Programmazione,
 attivazione temporale, lobby, snapshot, servizi di rilancio/settlement e trasporto
 WebSocket sono implementati. La chiusura automatica è integrata in `main`
 dal merge `3bcc9cc` del 10 ottobre 2026, nello scheduler e nel recupero dopo
-un riavvio. Annullamento e storici sono completati nelle modifiche locali di Marco del 12 ottobre; resta la UI. Il modulo email
+un riavvio. Annullamento e storici sono completati nelle modifiche locali di Marco
+del 12 ottobre; la copia di lavoro del 13 ottobre include le relative pagine
+Consumer e la stanza live. Il modulo email
 con coda e retry è già integrato; l'attivazione SMTP esterna è fuori scope. Vedere lo
 [stato del modulo aste](README.md#stato-del-modulo-aste).
 I nomi `startsAt` e `endsAt` usati nei diagrammi corrispondono ai campi
@@ -194,8 +196,10 @@ L'annullamento è consentito solo prima della scadenza e senza offerte mai ricev
 
 ## Demo
 
-Questo è il percorso di accettazione finale, non una demo già disponibile nel
-browser: mancano Consumer e API inventario/acquisti fissi.
+Il percorso asta è disponibile nella UI Consumer della copia di lavoro. La demo
+completa che comprende consultazione dell'inventario e acquisto a prezzo fisso
+attende ancora le rispettive API e pagine; la prova integrata con più utenti e
+più schede resta da eseguire.
 L'attivazione SMTP esterna non rientra nella consegna.
 
 1. L'ADMIN abilita un prodotto con tre unità e programma un'asta scegliendo

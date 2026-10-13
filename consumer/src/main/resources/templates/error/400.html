@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Invalid request')}"></head>
+<body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<main class="catalog-page error-page" id="main-content" tabindex="-1">
+    <h1>Invalid request</h1>
+    <p role="alert">Check the information you entered and try again.</p>
+    <a th:href="@{/}">Go to home</a>
+</main>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+</body>
+</html>

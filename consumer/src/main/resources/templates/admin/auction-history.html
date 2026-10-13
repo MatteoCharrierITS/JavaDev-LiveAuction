@@ -4,7 +4,7 @@
 <body><nav th:replace="~{fragments/navbar :: navbar}"></nav>
 <main class="catalog-page">
     <h1>ADMIN auction history</h1>
-    <p>Closed and cancelled auctions. Times are shown in UTC.</p>
+    <p>Closed and cancelled auctions. Times are shown in Rome time.</p>
     <p><a th:href="@{/aste}">Open auction lobby to manage active auctions</a></p>
     <form class="catalog-filters" th:action="@{/admin/aste/storico}" method="get" aria-label="Filter auction history">
         <label for="prodottoId">Product ID</label><input id="prodottoId" name="prodottoId" type="number" min="1" th:value="${prodottoId}">
@@ -28,10 +28,10 @@
             <p>State: <strong th:text="${h.stato}">CHIUSA</strong></p>
             <p th:if="${h.vincitoreId != null}">Winner ID: <span th:text="${h.vincitoreId}">1</span></p>
             <p th:unless="${h.vincitoreId != null}">No winner</p>
-            <p th:if="${h.prezzoFinale != null}">Final price: <span th:text="${h.prezzoFinale}">0.00</span> CRD</p>
-            <p>Starts: <time th:attr="datetime=${h.inizioAt}" th:text="${h.inizioAt}">Time</time></p>
-            <p>Ends: <time th:attr="datetime=${h.fineAt}" th:text="${h.fineAt}">Time</time></p>
-            <p>Concluded: <time th:attr="datetime=${h.conclusaAt}" th:text="${h.conclusaAt}">Time</time></p>
+            <p th:if="${h.prezzoFinale != null}">Final price: <span th:text="${display.amount(h.prezzoFinale)}">0,00</span> CRD</p>
+            <p>Starts: <time th:attr="datetime=${h.inizioAt}" th:text="${display.date(h.inizioAt)}">Time</time></p>
+            <p>Ends: <time th:attr="datetime=${h.fineAt}" th:text="${display.date(h.fineAt)}">Time</time></p>
+            <p>Concluded: <time th:attr="datetime=${h.conclusaAt}" th:text="${display.date(h.conclusaAt)}">Time</time></p>
         </article></div>
     </section>
     <nav th:if="${history.totalPages > 1}" class="pagination" aria-label="History pages">

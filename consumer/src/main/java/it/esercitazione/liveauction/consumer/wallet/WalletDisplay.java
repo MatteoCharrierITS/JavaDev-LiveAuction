@@ -20,7 +20,7 @@ public final class WalletDisplay {
         return format.format(value);
     }
 
-    public String date(Instant instant) { return DATE.format(instant); }
+    public String date(Instant instant) { return instant == null ? "—" : DATE.format(instant) + " (Rome)"; }
 
     public String type(String type) {
         return switch (type) {

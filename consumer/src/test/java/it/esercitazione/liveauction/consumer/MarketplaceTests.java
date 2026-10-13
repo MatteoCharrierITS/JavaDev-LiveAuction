@@ -68,7 +68,7 @@ class MarketplaceTests {
                         .param("astabile", "true").param("page", "1").param("size", "2"))
                 .andExpect(status().isOk()).andExpect(view().name("marketplace/list"))
                 .andExpect(content().string(containsString("Desk lamp")))
-                .andExpect(content().string(containsString("49.90")))
+                .andExpect(content().string(containsString("49,90")))
                 .andExpect(content().string(containsString("AVAILABLE FOR AUCTION")))
                 .andExpect(content().string(containsString("query=desk")))
                 .andExpect(content().string(containsString("categoria=office")))

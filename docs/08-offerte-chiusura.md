@@ -15,7 +15,9 @@ con il merge `3bcc9cc` del 10 ottobre 2026. Annullamento e storici
 sono completati nelle modifiche locali di Marco del 12 ottobre, mantenendo
 i lock e le interfacce economiche di questo modulo. Dall'8 ottobre 2026 il modulo WebSocket richiama
 `OffertaService` tramite `/app/aste/{id}/offerte` e trasporta gli eventi Spring
-sui topic delle stanze. Il flusso web richiede ancora il Consumer.
+sui topic delle stanze. Nella copia di lavoro del 13 ottobre il Consumer espone
+anche la stanza web con offerte, aggiornamenti live e riconnessione; la verifica
+integrata con più utenti e più schede resta da eseguire.
 L'attivazione SMTP esterna è fuori scope per la consegna. L'email è integrata
 in `main` dal commit `c9e2a11`, come descritto sotto.
 

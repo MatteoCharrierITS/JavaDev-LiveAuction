@@ -5,6 +5,8 @@ Questo report conserva la verifica precedente alle modifiche di Marco:
 annullamento e storici sono ora completati localmente e verificati nel
 [report successivo](12-annullamento-storici.md); le indicazioni sotto relative
 alle sue attività mancanti descrivono lo stato della base precedente.
+Anche la descrizione della UI Consumer qui sotto è storica: per lo stato della
+copia di lavoro al 13 ottobre vedere [Interfaccia e flussi](05-ui-flussi.md).
 Le assegnazioni restano quelle del README: ogni responsabile cura anche
 documentazione e Postman della propria porzione. Il TODO è aggiornato con
 attività per persona e stato in tabella. L'attivazione SMTP esterna è fuori scope

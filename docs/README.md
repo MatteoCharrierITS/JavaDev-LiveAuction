@@ -51,7 +51,11 @@ snapshot dopo il ritiro delle offerte sono integrate in `main`.
 Le API del portafoglio sono integrate in `main`: saldo e movimenti
 paginati, impostazione del saldo virtuale e operazioni JDBC condivise con le aste.
 Dettagli in [Portafoglio e ledger](09-portafoglio.md).
-La UI Consumer, in carico ad Andrea, resta uno scheletro senza pagine applicative.
+Nella copia di lavoro del 13 ottobre la UI Consumer include autenticazione,
+marketplace, portafoglio, lobby, stanza live, gestione ADMIN, vittorie personali,
+storico ADMIN e annullamento. Inventario e acquisti a prezzo fisso attendono API
+e pagine; il [documento UI](05-ui-flussi.md#implementazioni-mancanti) elenca
+anche le differenze fra la proposta iniziale e le pagine disponibili.
 
 Payload, filtri ed errori sono descritti in [Contratti REST](04-api-rest.md);
 il funzionamento del job è in [Motore LiveAuction](07-liveauction.md).
@@ -66,6 +70,7 @@ Vedere il [report di allineamento](11-verifica-documentazione.md).
 La verifica delle modifiche di Marco supera **268 test Producer e 1 Consumer**,
 nessuno saltato, con PostgreSQL, WebSocket e SMTP locale. Entrambe le build
 `verify` sono riuscite; dettagli nel [report di consegna](12-annullamento-storici.md).
+I conteggi Consumer in questi report sono storici e precedono le pagine attuali.
 
 ## Decisioni chiave
 
@@ -88,7 +93,7 @@ automatica è collegata in `main` dal merge `3bcc9cc`.
 | Prodotto | campo `astabile` esplicito e stock disponibile/bloccato |
 | Catalogo pubblico | prodotto e categoria entrambi attivi; ADMIN consulta anche i disattivati |
 | Modifica prodotto | PUT completo con `versione`; stock bloccato gestito dalle aste |
-| Vincita | assegnazione persistita; API storici implementate, pagine Consumer da realizzare |
+| Vincita | assegnazione persistita; API storici e pagine Consumer per vittorie e storico ADMIN presenti |
 | Live | WebSocket/STOMP più snapshot REST |
 | Persistenza | PostgreSQL + Flyway |
 

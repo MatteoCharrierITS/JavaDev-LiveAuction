@@ -11,11 +11,11 @@ flowchart LR
     P -.->|dopo il commit| M[Servizio email]
 ```
 
-Il flusso Consumer descritto qui è previsto, ma non ancora implementato in
-`main`: sono presenti l'applicazione e la configurazione di base, senza client
-REST, controller delle pagine o template applicativi.
+Nella copia di lavoro del 13 ottobre 2026 il Consumer rende le pagine
+Thymeleaf, usa un client REST e gestisce la stanza live nel browser. Le pagine
+di inventario e acquisto fisso attendono le rispettive API Producer.
 
-La Consumer dovrà rendere Thymeleaf e mantenere access token e refresh token nella
+La Consumer mantiene access token e refresh token nella
 sessione server-side. Il browser invia le credenziali alla Consumer, che chiama
 `POST /auth/login` sul Producer. Per ogni chiamata protetta la Consumer invia
 `Authorization: Bearer <accessToken>`; alla scadenza usa `POST /auth/refresh` e
@@ -47,11 +47,15 @@ Validation, PostgreSQL e Flyway.
 
 ```text
 it.esercitazione.liveauction.consumer/
-├── auth/          login web e sessione
+├── auth/          login web, sessione e filtro di autenticazione
 ├── client/        client REST verso il Producer
-├── web/           controller MVC utente e ADMIN
-├── dto/           modelli del contratto
-└── config/        sicurezza web e client HTTP
+├── marketplace/   catalogo pubblico e dettaglio
+├── wallet/        saldi, impostazione del totale e movimenti
+├── auction/       lobby, stanza, vittorie
+├── admin/         catalogo, programmazione e storico
+├── web/           attributi comuni delle pagine
+├── dto/           modelli del contratto auth
+└── config/        sicurezza web
 ```
 
 Il JavaScript della stanza gestisce presentazione, countdown, riconnessione e

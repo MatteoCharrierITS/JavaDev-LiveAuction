@@ -1,43 +1,67 @@
 # Interfaccia e flussi utente
 
-Questo documento descrive la UI Consumer. Auth, catalogo, lobby, snapshot,
-ticket, portafoglio, vittorie personali, annullamento e storico ADMIN hanno API
-Producer utilizzabili. Inventario e acquisti fissi attendono ancora le
-rispettive API e i contratti completi. Il trasferimento del prodotto vinto
-all'inventario è eseguito dal settlement, ma manca l'API per consultarlo.
+Stato della copia di lavoro al 13 ottobre 2026. La UI Consumer include
+autenticazione, catalogo, portafoglio, lobby, stanza live, gestione ADMIN,
+vittorie personali, storico ADMIN e annullamento. Usa le API del Producer;
+inventario e acquisti a prezzo fisso attendono ancora API e contratti completi.
+Il settlement assegna il prodotto vinto nell'inventario, ma manca l'API per
+consultarlo. Le sezioni seguenti distinguono le pagine disponibili dalle
+funzioni ancora previste.
 
 ## Rotte Consumer
 
 | Rotta | Accesso | Pagina |
 | --- | --- | --- |
-| `/login` | pubblico | accesso |
-| `/registrazione` | pubblico | nuovo account |
-| `/account` | autenticato | account e richiesta di eliminazione |
-| `/marketplace` | pubblico | catalogo completo |
-| `/prodotti/{id}` | pubblico | dettaglio, stock e astabilità |
-| `/aste` | pubblico | lobby |
-| `/aste/{id}` | USER | stanza LiveAuction |
+| `GET/POST /login` | pubblico | accesso |
+| `GET/POST /registrazione` | pubblico | nuovo account |
+| `GET /account`, `POST /account/delete`, `POST /logout` | autenticato; POST con CSRF | account, eliminazione e logout |
+| `GET /marketplace` | pubblico | catalogo filtrabile e paginato |
+| `GET /prodotti/{id}` | pubblico | dettaglio, stock e astabilità |
+| `GET /aste` | pubblico | lobby filtrabile e paginata |
+| `GET /aste/{id}` | USER | stanza LiveAuction |
 | `GET /aste/{id}/snapshot` | USER | snapshot Producer per la sincronizzazione browser, senza cache |
 | `GET /aste/{id}/wallet` | USER | soli saldi del portafoglio reale tramite token nella sessione Consumer |
 | `POST /aste/{id}/ticket` | USER + CSRF | solo ticket STOMP monouso al browser |
-| `/inventario` | USER | prevista; attende `GET /me/inventario` e relativo DTO |
-| `/me/vittorie` | USER | storico personale vittorie |
-| `/impostazioni/portafoglio` | USER | saldo finto e ledger |
-| `/admin/prodotti` | ADMIN | catalogo, stock e flag astabile |
-| `/admin/prodotti/nuovo` e `/admin/prodotti/{id}/modifica` | ADMIN | creazione e modifica prodotto |
-| `/admin/categorie` e `/admin/categorie/{id}/modifica` | ADMIN | gestione categorie, anche inattive |
-| `/admin/aste/nuova` | ADMIN | programmazione asta |
-| `/admin/aste/storico` | ADMIN | storico globale, filtri e paginazione |
+| `GET /me/vittorie` | USER | storico personale vittorie, paginato |
+| `GET/POST /impostazioni/portafoglio` | USER; POST con CSRF | saldi, impostazione del totale e ledger paginato |
+| `GET /admin/prodotti`, `GET /admin/prodotti/nuovo`, `GET /admin/prodotti/{id}/modifica` | ADMIN | catalogo, creazione e modifica prodotto |
+| `POST /admin/prodotti`, `POST /admin/prodotti/{id}` | ADMIN + CSRF | creazione e aggiornamento prodotto |
+| `GET /admin/categorie`, `GET /admin/categorie/{id}/modifica` | ADMIN | gestione categorie, anche inattive |
+| `POST /admin/categorie`, `POST /admin/categorie/{id}` | ADMIN + CSRF | creazione e aggiornamento categoria |
+| `GET /admin/aste/nuova`, `POST /admin/aste` | ADMIN; POST con CSRF | programmazione asta |
+| `GET /admin/aste/storico` | ADMIN | storico globale, filtri e paginazione |
 | `POST /admin/aste/{id}/annullamento` | ADMIN + CSRF | annullamento dalla lobby; verifica finale del Producer |
 
-Vittorie personali, storico ADMIN e annullamento sono implementati nel Consumer
-usando le API Producer. La lobby mostra l'annullamento agli ADMIN per aste attive
-senza offerte visibili; il Producer ricontrolla stato, scadenza e ogni offerta
-ricevuta, incluse quelle ritirate. Inventario e acquisti fissi attendono API e
-contratti completi, quindi non mostrano pagine o azioni disponibili.
+La lobby mostra l'annullamento agli ADMIN per aste attive senza offerte visibili;
+il Producer ricontrolla stato, scadenza e ogni offerta ricevuta, incluse quelle
+ritirate. Inventario e acquisti fissi non mostrano pagine o azioni disponibili.
 
-Le scritture dei form ADMIN usano POST Consumer con CSRF; il Consumer invia
-POST o PUT al Producer con il Bearer conservato nella sessione server-side.
+Le scritture dei form usano POST Consumer con CSRF; il Consumer invia POST o PUT
+al Producer con il Bearer conservato nella sessione server-side.
+
+## Implementazioni mancanti
+
+- **Inventario personale:** manca `GET /api/v1/me/inventario` con il relativo
+  contratto; il Consumer non espone `/inventario` né una pagina dei prodotti
+  posseduti. La pagina può essere integrata dopo la disponibilità dell'API.
+- **Acquisto a prezzo fisso:** mancano contratto e API
+  `POST /api/v1/prodotti/{id}/acquisti`; nel dettaglio prodotto non c'è un
+  pulsante di acquisto né l'aggiornamento post-acquisto di saldo, stock e
+  inventario. La responsabilità delle API resta da decidere dal team.
+- **Filtri aggiuntivi della lobby:** “In partenza” e “a cui partecipo” restano
+  proposte senza filtri REST dedicati e non sono presenti nella UI.
+- **Esito nella card della lobby:** per `CHIUSA` la card indica soltanto che i
+  dettagli del vincitore non sono disponibili nella lobby. Il vincitore e il
+  prezzo finale sono mostrati nella stanza e nello storico ADMIN quando previsti
+  dai rispettivi DTO.
+- **Feed persistente dei rilanci:** la stanza mostra solo eventi ricevuti mentre
+  la pagina è aperta. Il Producer non espone un GET per ricostruire il feed
+  dopo un reload; il riallineamento dello stato usa lo snapshot REST.
+
+Verifica locale del 13 ottobre: 45 test Java Consumer e 10 test JavaScript
+superati. Le verifiche web usano controller MVC con Producer simulato e test
+JavaScript della stanza; la prova completa con due utenti e più schede su
+Producer, PostgreSQL e WebSocket reali resta nel TODO di integrazione.
 
 ## Catalogo
 
@@ -49,15 +73,15 @@ La pagina mostra i valori tentati e quelli correnti, e richiede un nuovo invio
 esplicito dell'ADMIN. La versione corrente entra nel successivo PUT.
 La quantità bloccata è visualizzata ma non modificabile nel form.
 
-Ogni card indica testualmente:
+Ogni card del catalogo indica testualmente:
 
-- `DISPONIBILE ALL'ASTA` oppure `NON ASTABILE`;
-- quantità disponibile;
+- `AVAILABLE FOR AUCTION` oppure `NOT AUCTIONABLE`;
+- quantità disponibile; il dettaglio mostra anche la quantità bloccata;
 - numero di aste programmate o live.
 
-Il pannello ADMIN permette di modificare `astabile` e stock. Il pulsante
-“Programma asta” è attivo soltanto con `astabile = true` e almeno una unità
-disponibile; se è disabilitato, la UI ne mostra il motivo.
+Il pannello ADMIN permette di modificare `astabile` e stock. Il collegamento
+`Schedule` compare solo per i prodotti idonei; negli altri casi la UI indica
+`Auction disabled` o `No available stock`.
 
 ## Programmazione ADMIN
 
@@ -78,36 +102,25 @@ Filtri disponibili nella REST: stato, categoria e testo, con paginazione.
 il loro comportamento va concordato prima di mostrarli come disponibili. Ogni card
 mostra prezzo iniziale o corrente, numero offerte e uno di questi countdown:
 
-- `La stanza apre tra…` per `PROGRAMMATA`;
-- `L'asta inizia tra…` per `STANZA_APERTA`;
-- `Termina tra…` per `APERTA`;
-- vincitore o `Nessuna offerta` per `CHIUSA`.
+- `Room opens in` per `PROGRAMMATA`;
+- `Auction starts in` per `STANZA_APERTA`;
+- `Ends in` per `APERTA`;
+- nessun countdown per `CHIUSA` o `ANNULLATA`; la card mostra lo stato senza
+  dettagli del vincitore.
 
 ## Stanza LiveAuction
 
-```text
-┌──────────────────────────────────────────────────────────────────┐
-│ ● LIVE  Laptop Pro 15                         04:42 +20s/rialzo  │
-├───────────────────────────────┬──────────────────────────────────┤
-│                               │ OFFERTA ATTUALE                  │
-│        immagine/prodotto      │ 630,00 CRD                       │
-│                               │ leader: g***i                    │
-│ Prezzo iniziale: 500 CRD      │                                  │
-│ Inizio: 18:30 Europe/Rome     │ [ 631,00 ] [ RIALZA ]            │
-├───────────────────────────────┼──────────────────────────────────┤
-│ IL TUO PORTAFOGLIO            │ LIVE FEED                        │
-│ disponibile  8.750 CRD        │ 18:34 g***i → 630 CRD (+20s)   │
-│ riservato     1.250 CRD       │ 18:33 l***a → 620 CRD (+20s)   │
-└───────────────────────────────┴──────────────────────────────────┘
-```
+La pagina contiene stato e countdown, prezzo iniziale e incremento minimo,
+offerta corrente e leader, form del rilancio, saldi del portafoglio, presenza e
+feed degli eventi ricevuti. Le date sono presentate nel fuso `Europe/Rome`.
 
 Durante `STANZA_APERTA` lo stesso layout mostra utenti presenti e countdown
 all'inizio, ma il form delle offerte è disabilitato. Al termine compare un
-annuncio evidente con vincitore e importo finale, oppure “Asta conclusa senza
-offerte”.
+annuncio con vincitore e importo finale, oppure `Auction closed without bids.`.
 
-Stati connessione: `LIVE`, `RICONNESSIONE…`, `SINCRONIZZAZIONE…`. Dopo la
-riconnessione il form resta disabilitato finché non arriva uno snapshot valido.
+La UI mostra stati di connessione in inglese, tra cui `Live`, `Reconnecting…`
+e `Synchronizing…`. Dopo la riconnessione il form resta disabilitato finché
+non arriva uno snapshot valido.
 Gli ultimi venti secondi sono evidenziati rispettando `prefers-reduced-motion`.
 
 Il browser usa `LIVEAUCTION_PRODUCER_WS_URL` (default `ws://localhost:8081/ws`)
@@ -128,7 +141,7 @@ origini ammesse.
 ### Programmare
 
 Login ADMIN → prodotti → verifica `astabile` e quantità → data/ora e prezzo
-iniziale → riepilogo → conferma → unità bloccata → asta in lobby.
+iniziale → conferma → unità bloccata → asta in lobby.
 
 ### Partecipare
 
@@ -137,8 +150,9 @@ attesa → evento `AUCTION_STARTED` → rilanci → chiusura e annuncio vincitor
 
 ### Vincere
 
-Chiusura → addebito crediti → prodotto nell'inventario → voce in “Le mie
-vittorie” → email riepilogativa post-commit.
+Chiusura → addebito crediti → assegnazione persistita nell'inventario → voce in
+`My victories` → email riepilogativa post-commit. La consultazione
+dell'inventario non è ancora disponibile nella UI.
 
 ### Riconnettersi
 
@@ -147,5 +161,6 @@ WebSocket perso → indicatore offline → nuovo ticket → subscribe → snapsh
 
 ### Consultare lo storico ADMIN
 
-Login ADMIN → storico aste → filtri → dettaglio con prodotto, vincitore, prezzo
-iniziale, prezzo finale, date e numero di offerte.
+Login ADMIN → storico aste → filtri per prodotto, vincitore, stato e intervallo
+temporale → card con prodotto, ID del vincitore se presente, prezzo finale e
+date. La card non espone prezzo iniziale o numero di offerte.

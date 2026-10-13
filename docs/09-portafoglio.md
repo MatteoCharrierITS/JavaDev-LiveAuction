@@ -13,7 +13,8 @@ Il contratto delle API è in [REST](04-api-rest.md#portafoglio).
   a `9999999999.99`, massimo due decimali. Mantiene la riserva corrente e
   rifiuta un totale inferiore al riservato con `409 SALDO_INFERIORE_AL_RISERVATO`.
 - Entrambe richiedono USER; ruolo e identità sono verificati anche nei servizi.
-  Il Consumer può usare queste API con il token conservato nella sessione.
+  Nella copia di lavoro del 13 ottobre il Consumer le usa nella pagina
+  `/impostazioni/portafoglio`, con il token conservato nella sessione.
 
 Il modulo usa JDBC su `portafogli` e `movimenti_portafoglio` delle migrazioni
 V2/V8. Le proiezioni e i DTO sostituiscono i modelli JPA incompatibili presenti

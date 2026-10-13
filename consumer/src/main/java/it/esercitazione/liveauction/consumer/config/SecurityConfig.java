@@ -23,11 +23,15 @@ public class SecurityConfig {
 	SecurityFilterChain securityFilterChain(HttpSecurity http, SessionAuthenticationFilter sessionFilter) throws Exception {
 		return http
 				.authorizeHttpRequests(authorize -> authorize
-						.requestMatchers("/", "/login", "/registrazione", "/error", "/css/**", "/images/**", "/actuator/health", "/actuator/health/**").permitAll()
+						.requestMatchers("/", "/login", "/registrazione", "/error", "/css/**", "/js/**", "/images/**", "/favicon.ico", "/actuator/health", "/actuator/health/**").permitAll()
 						.requestMatchers(HttpMethod.GET, "/marketplace", "/prodotti/**", "/aste").permitAll()
 						.requestMatchers("/admin/**").hasRole("ADMIN")
 						.requestMatchers("/aste/**", "/inventario/**", "/me/vittorie/**",
 								"/impostazioni/portafoglio", "/impostazioni/portafoglio/**").hasRole("USER")
+						.requestMatchers("/account", "/account/**").authenticated()
+						// Keep this last so unknown public URLs reach MVC's accessible 404 page.
+						// Add every new private GET route above it.
+						.requestMatchers(HttpMethod.GET, "/**").permitAll()
 						.anyRequest().authenticated())
 				.formLogin(form -> form.disable())
 				.logout(logout -> logout.disable())
@@ -46,7 +50,7 @@ public class SecurityConfig {
 						} else {
 							response.sendRedirect("/login?expired=" + (Boolean.TRUE.equals(request.getAttribute("sessionExpired")) ? "1" : "0"));
 						}
-				}))
+				}).accessDeniedHandler((request, response, ex) -> response.sendError(403)))
 				.addFilterBefore(sessionFilter, AnonymousAuthenticationFilter.class)
 				.build();
 	}

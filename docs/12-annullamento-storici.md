@@ -3,6 +3,9 @@
 Modifiche locali del 12 ottobre 2026 sulla base `main` `4b82f1e`.
 Le attività di Marco nel [TODO](todo.md) sono completate nella copia di lavoro;
 questo report non indica un merge o una pubblicazione su remoto.
+La nota per Andrea più sotto fotografa la consegna del 12 ottobre: nella copia
+di lavoro del 13 ottobre le pagine Consumer di vittorie, storico e annullamento
+sono presenti. Stato attuale in [Interfaccia e flussi](05-ui-flussi.md).
 
 ## API consegnate
 

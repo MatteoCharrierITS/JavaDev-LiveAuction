@@ -33,8 +33,12 @@ public class MarketplaceController {
         String search = emptyToNull(query);
         String category = emptyToNull(categoria);
         try {
-            model.addAttribute("categories", producer.publicCategories());
-            model.addAttribute("products", producer.publicProducts(search, category, astabile, page, size));
+            var categories = producer.publicCategories();
+            var products = producer.publicProducts(search, category, astabile, page, size);
+            if (categories == null || products == null || products.content() == null)
+                throw new ProducerUnavailableException();
+            model.addAttribute("categories", categories);
+            model.addAttribute("products", products);
             model.addAttribute("query", search);
             model.addAttribute("categoria", category);
             model.addAttribute("astabile", astabile);
@@ -51,7 +55,10 @@ public class MarketplaceController {
     @GetMapping("/prodotti/{id}")
     public String detail(@PathVariable long id, Model model, HttpServletResponse response) {
         try {
-            model.addAttribute("product", producer.publicProduct(id));
+            var product = producer.publicProduct(id);
+            if (product == null || product.id() == null || product.categoria() == null)
+                throw new ProducerUnavailableException();
+            model.addAttribute("product", product);
             return "marketplace/detail";
         } catch (ProducerException ex) {
             if (ex.status() == 404) {

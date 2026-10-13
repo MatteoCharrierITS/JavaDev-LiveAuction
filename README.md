@@ -35,7 +35,7 @@ Il sistema è composto da due applicazioni indipendenti:
 - **consumer** (`:8082`): interfaccia Thymeleaf che usa esclusivamente i
   contratti esposti dal Producer.
 
-> **Stato verificato di main al 12 ottobre 2026 (base `4b82f1e`):** include l'infrastruttura Spring Boot/Docker, lo schema Flyway,
+> **Stato Producer verificato al 12 ottobre 2026 (base `4b82f1e`) e stato Consumer della copia di lavoro al 13 ottobre:** include l'infrastruttura Spring Boot/Docker, lo schema Flyway,
 > l'autenticazione, il WebSocket con ticket, presenza, comando di rilancio e
 > trasporto degli eventi post-commit, il
 > catalogo REST (categorie, prodotti, gestione ADMIN di stock, filtri e
@@ -47,8 +47,9 @@ Il sistema è composto da due applicazioni indipendenti:
 > vittorie personali e storico ADMIN; restano API inventario e acquisti a
 > prezzo fisso. L'attivazione SMTP esterna è fuori scope per la consegna. Le API del portafoglio (saldo, movimenti
 > e impostazione del saldo virtuale) sono integrate in `main`. La
-> Consumer è ancora uno scheletro senza pagine applicative: il flusso completo
-> LiveAuction non è ancora disponibile. Stato dettagliato in
+> Consumer include autenticazione, marketplace, portafoglio, lobby, stanza live,
+> gestione ADMIN, vittorie e storico. Inventario e acquisti fissi non hanno
+> ancora API o pagine. Stato dettagliato in
 > [attività del team](docs/todo.md) e [stato del modulo aste](docs/README.md#stato-del-modulo-aste).
 
 Verifica storica riportata dopo il merge `3bcc9cc`: **230 test Producer e 1 test Consumer
@@ -64,6 +65,8 @@ Verifica delle modifiche locali di Marco del 12 ottobre: **268 test Producer e
 1 Consumer superati**, nessun test saltato, con PostgreSQL, WebSocket ed SMTP
 locale di prova. Entrambe le build `verify` hanno prodotto il JAR.
 [Consegna annullamento e storici](docs/12-annullamento-storici.md).
+Questi conteggi sono verifiche storiche anteriori alle pagine Consumer attuali;
+non descrivono la copertura corrente della UI.
 
 ## La feature distintiva: LiveAuction
 
@@ -273,6 +276,15 @@ usa `localhost:5432`, applica le migrazioni Flyway e ascolta su
 disabilitato, così funziona anche se IntelliJ usa la radice del repository come
 directory di lavoro. In Postman selezionare l'ambiente **LiveAuction • Locale**
 prima di inviare le richieste.
+
+Avviare poi `LiveAuctionConsumerApplication` con JDK 21: la UI è su
+`http://localhost:8082` e chiama per default
+`http://localhost:8081/api/v1`. Per URL diversi impostare
+`LIVEAUCTION_PRODUCER_URL` e `LIVEAUCTION_PRODUCER_WS_URL`; il secondo URL deve
+essere raggiungibile dal browser e l'origine WebSocket va ammessa dal Producer.
+Registrare un USER dalla UI; per provare le pagine ADMIN in locale, promuovere
+un account come indicato nella sezione Database e ripetere il login.
+Per rotte e funzionalità mancanti vedere [Interfaccia e flussi](docs/05-ui-flussi.md).
 
 Intero stack con profilo `prod`:
 

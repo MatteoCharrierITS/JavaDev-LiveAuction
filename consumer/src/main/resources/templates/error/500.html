@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Something went wrong')}"></head>
+<body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<main class="catalog-page error-page" id="main-content" tabindex="-1">
+    <h1>Something went wrong</h1>
+    <p role="alert">We could not complete this request. Please try again later.</p>
+    <a th:href="@{/}">Go to home</a>
+</main>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+</body>
+</html>
