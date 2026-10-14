@@ -1,11 +1,11 @@
 # Interfaccia e flussi utente
 
-Stato della copia di lavoro al 13 ottobre 2026. La UI Consumer include
+Stato della copia di lavoro al 14 ottobre 2026. La UI Consumer include
 autenticazione, catalogo, portafoglio, lobby, stanza live, gestione ADMIN,
 vittorie personali, storico ADMIN e annullamento. Usa le API del Producer;
-inventario e acquisti a prezzo fisso attendono ancora API e contratti completi.
-Il settlement assegna il prodotto vinto nell'inventario, ma manca l'API per
-consultarlo. Le sezioni seguenti distinguono le pagine disponibili dalle
+L'inventario personale è ora disponibile tramite API e pagina `/inventario`;
+gli acquisti a prezzo fisso sono disponibili dal dettaglio prodotto per USER.
+Le sezioni seguenti distinguono le pagine disponibili dalle
 funzioni ancora previste.
 
 ## Rotte Consumer
@@ -23,6 +23,8 @@ funzioni ancora previste.
 | `GET /aste/{id}/wallet` | USER | soli saldi del portafoglio reale tramite token nella sessione Consumer |
 | `POST /aste/{id}/ticket` | USER + CSRF | solo ticket STOMP monouso al browser |
 | `GET /me/vittorie` | USER | storico personale vittorie, paginato |
+| `GET /inventario` | USER | prodotti posseduti e quantità, paginati, compresi quelli non più pubblici |
+| `POST /prodotti/{id}/acquisti` | USER + CSRF | quantità 1–100 e UUID, acquisto a prezzo fisso |
 | `GET/POST /impostazioni/portafoglio` | USER; POST con CSRF | saldi, impostazione del totale e ledger paginato |
 | `GET /admin/prodotti`, `GET /admin/prodotti/nuovo`, `GET /admin/prodotti/{id}/modifica` | ADMIN | catalogo, creazione e modifica prodotto |
 | `POST /admin/prodotti`, `POST /admin/prodotti/{id}` | ADMIN + CSRF | creazione e aggiornamento prodotto |
@@ -34,20 +36,18 @@ funzioni ancora previste.
 
 La lobby mostra l'annullamento agli ADMIN per aste attive senza offerte visibili;
 il Producer ricontrolla stato, scadenza e ogni offerta ricevuta, incluse quelle
-ritirate. Inventario e acquisti fissi non mostrano pagine o azioni disponibili.
+ritirate. Il form acquisto compare per USER su prodotti con prezzo e stock
+disponibile. Dopo conferma si rilegge l'inventario; portafoglio e prodotto sono
+consultabili per verificare i valori correnti. In caso di esito sconosciuto
+(timeout/5xx), la pagina conserva UUID e quantità per un retry senza doppio
+addebito. Un nuovo caricamento del prodotto genera invece un nuovo UUID.
+Il server usa il prezzo corrente sotto lock; la pagina lo dichiara esplicitamente.
 
 Le scritture dei form usano POST Consumer con CSRF; il Consumer invia POST o PUT
 al Producer con il Bearer conservato nella sessione server-side.
 
 ## Implementazioni mancanti
 
-- **Inventario personale:** manca `GET /api/v1/me/inventario` con il relativo
-  contratto; il Consumer non espone `/inventario` né una pagina dei prodotti
-  posseduti. La pagina può essere integrata dopo la disponibilità dell'API.
-- **Acquisto a prezzo fisso:** mancano contratto e API
-  `POST /api/v1/prodotti/{id}/acquisti`; nel dettaglio prodotto non c'è un
-  pulsante di acquisto né l'aggiornamento post-acquisto di saldo, stock e
-  inventario. La responsabilità delle API resta da decidere dal team.
 - **Filtri aggiuntivi della lobby:** “In partenza” e “a cui partecipo” restano
   proposte senza filtri REST dedicati e non sono presenti nella UI.
 - **Esito nella card della lobby:** per `CHIUSA` la card indica soltanto che i

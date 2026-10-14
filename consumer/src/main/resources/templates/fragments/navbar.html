@@ -7,6 +7,7 @@
         <a th:href="@{/aste}">Auctions</a>
         <a th:if="${userVisitor}" th:href="@{/impostazioni/portafoglio}">Wallet</a>
         <a th:if="${userVisitor}" th:href="@{/me/vittorie}">My victories</a>
+        <a th:if="${userVisitor}" th:href="@{/inventario}">Inventory</a>
         <a th:if="${adminVisitor}" th:href="@{/admin/prodotti}">ADMIN catalog</a>
         <a th:if="${adminVisitor}" th:href="@{/admin/aste/storico}">Auction history</a>
         <a th:if="${!signedIn}" th:href="@{/login}">Sign in</a>

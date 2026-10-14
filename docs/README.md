@@ -16,6 +16,7 @@ Questa è la specifica corrente di **LiveAuction**.
 10. [Notifiche email al vincitore](10-notifiche-email.md)
 11. [Verifica e allineamento della documentazione](11-verifica-documentazione.md)
 12. [Consegna di Marco: annullamento e storici](12-annullamento-storici.md)
+13. [Inventario, acquisti fissi e collaudo locale](13-inventario-acquisti.md)
 
 **[DA FARE — attività e prossimi passi del team](todo.md)**
 
@@ -23,7 +24,7 @@ Report di integrazione: [attenzioni dopo il collegamento WebSocket](report-integ
 
 ## Stato del modulo aste
 
-In `main`, verificato il 12 ottobre 2026 sulla base `4b82f1e`, sono implementati:
+In `main` (base corrente `ede0201`, aggiornamento del 14 ottobre 2026) sono implementati:
 
 - `POST /api/v1/admin/aste`: creazione ADMIN, input `Europe/Rome`, importi
   validati e prenotazione atomica di una unità.
@@ -43,18 +44,21 @@ In `main`, verificato il 12 ottobre 2026 sulla base `4b82f1e`, sono implementati
   invio SMTP disabilitato per default. Template di configurazione, controlli
   STARTTLS/TLS implicito e test SMTP locale sono già integrati in `main`.
 
-Nelle modifiche locali di Marco del 12 ottobre 2026 sono implementati anche
+Integrati in main dal 12 ottobre 2026 anche
 annullamento ADMIN (senza offerte), evento AUCTION_CANCELLED, vittorie USER
 e storico ADMIN con filtri e paginazione. V12 conserva la data di annullamento.
-API inventario e acquisti a prezzo fisso restano da completare. L'attivazione SMTP esterna è fuori scope per la consegna. La chiusura automatica e la correzione dello
+Nella copia di lavoro del 14 ottobre sono implementati anche API e pagina
+inventario personale, acquisti fissi e il fix degli eventi vecchi nel feed.
+Gli acquisti richiedono un ADMIN destinatario configurato con `SHOP_ADMIN_ID`.
+L'attivazione SMTP esterna è fuori scope per la consegna. La chiusura automatica e la correzione dello
 snapshot dopo il ritiro delle offerte sono integrate in `main`.
 Le API del portafoglio sono integrate in `main`: saldo e movimenti
 paginati, impostazione del saldo virtuale e operazioni JDBC condivise con le aste.
 Dettagli in [Portafoglio e ledger](09-portafoglio.md).
 Nella copia di lavoro del 13 ottobre la UI Consumer include autenticazione,
 marketplace, portafoglio, lobby, stanza live, gestione ADMIN, vittorie personali,
-storico ADMIN e annullamento. Inventario e acquisti a prezzo fisso attendono API
-e pagine; il [documento UI](05-ui-flussi.md#implementazioni-mancanti) elenca
+storico ADMIN e annullamento, ora anche inventario e acquisti fissi.
+Il [documento UI](05-ui-flussi.md#implementazioni-mancanti) elenca
 anche le differenze fra la proposta iniziale e le pagine disponibili.
 
 Payload, filtri ed errori sono descritti in [Contratti REST](04-api-rest.md);

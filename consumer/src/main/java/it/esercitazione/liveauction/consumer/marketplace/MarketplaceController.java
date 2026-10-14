@@ -59,6 +59,7 @@ public class MarketplaceController {
             if (product == null || product.id() == null || product.categoria() == null)
                 throw new ProducerUnavailableException();
             model.addAttribute("product", product);
+            model.addAttribute("purchaseId", java.util.UUID.randomUUID().toString());
             return "marketplace/detail";
         } catch (ProducerException ex) {
             if (ex.status() == 404) {

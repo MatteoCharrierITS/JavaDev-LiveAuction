@@ -25,6 +25,7 @@ public class SecurityConfig {
 				.authorizeHttpRequests(authorize -> authorize
 						.requestMatchers("/", "/login", "/registrazione", "/error", "/css/**", "/js/**", "/images/**", "/favicon.ico", "/actuator/health", "/actuator/health/**").permitAll()
 						.requestMatchers(HttpMethod.GET, "/marketplace", "/prodotti/**", "/aste").permitAll()
+						.requestMatchers(HttpMethod.POST, "/prodotti/*/acquisti").hasRole("USER")
 						.requestMatchers("/admin/**").hasRole("ADMIN")
 						.requestMatchers("/aste/**", "/inventario/**", "/me/vittorie/**",
 								"/impostazioni/portafoglio", "/impostazioni/portafoglio/**").hasRole("USER")

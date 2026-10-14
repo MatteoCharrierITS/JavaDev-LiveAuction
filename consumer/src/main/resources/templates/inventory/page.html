@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Your inventory')}"></head>
+<body><nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<main class="catalog-page">
+    <h1>Your inventory</h1>
+    <div th:replace="~{fragments/alerts :: alerts}"></div>
+    <p th:if="${inventory.content.isEmpty()}" class="empty-state">No products on this page.</p>
+    <div class="product-grid">
+        <article class="product-card" th:each="item : ${inventory.content}">
+            <h2 th:text="${item.prodotto.nome}">Product</h2>
+            <p>SKU: <span th:text="${item.prodotto.sku}">SKU</span></p>
+            <p th:text="${item.prodotto.categoria.nome}">Category</p>
+            <p th:text="${item.prodotto.descrizione}">Description</p>
+            <p>Quantity owned: <strong th:text="${item.quantita}">1</strong></p>
+            <a th:if="${item.prodotto.attivo and item.prodotto.categoria.attiva}"
+               th:href="@{/prodotti/{id}(id=${item.prodotto.id})}">Product details</a>
+            <p th:unless="${item.prodotto.attivo and item.prodotto.categoria.attiva}">No longer listed in the public catalogue.</p>
+        </article>
+    </div>
+    <nav th:if="${inventory.totalPages > 1}" class="pagination" aria-label="Inventory pages">
+        <a th:if="${inventory.page > 0}" th:href="@{/inventario(page=${inventory.page - 1},size=${inventory.size})}">Previous</a>
+        <span th:text="'Page ' + ${inventory.page + 1} + ' of ' + ${inventory.totalPages}">Page</span>
+        <a th:if="${inventory.page + 1 < inventory.totalPages}" th:href="@{/inventario(page=${inventory.page + 1},size=${inventory.size})}">Next</a>
+    </nav>
+</main><footer th:replace="~{fragments/footer :: footer}"></footer></body></html>

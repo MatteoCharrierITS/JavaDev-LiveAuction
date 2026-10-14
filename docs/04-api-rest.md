@@ -12,7 +12,8 @@
 
 ## REST
 
-Stato della base `main` `4b82f1e` e delle modifiche locali di Marco del 12 ottobre 2026.
+Stato della base `main` `ede0201` con modifiche locali del 14 ottobre 2026,
+non ancora committate: inventario e acquisti fissi inclusi.
 **Previsto** indica un contratto da implementare, non un endpoint disponibile.
 
 | Metodo | Endpoint | Accesso | Scopo | Stato |
@@ -31,8 +32,8 @@ Stato della base `main` `4b82f1e` e delle modifiche locali di Marco del 12 ottob
 | `POST` | `/admin/prodotti` | ADMIN | crea prodotto | Implementato |
 | `GET` | `/prodotti` | pubblico | catalogo paginato | Implementato |
 | `GET` | `/prodotti/{id}` | pubblico | dettaglio, stock e `astabile` | Implementato |
-| `POST` | `/prodotti/{id}/acquisti` | USER | acquisto fisso | Previsto |
-| `GET` | `/me/inventario` | USER | prodotti posseduti | Previsto |
+| `POST` | `/prodotti/{id}/acquisti` | USER | acquisto fisso idempotente | Implementato |
+| `GET` | `/me/inventario` | USER | prodotti posseduti | Implementato |
 | `GET` | `/me/portafoglio` | USER | saldo e movimenti | Implementato |
 | `PUT` | `/me/portafoglio/impostazioni` | USER | imposta saldo finto | Implementato |
 | `GET` | `/me/vittorie` | USER | storico personale vittorie | Implementato |
@@ -112,9 +113,9 @@ possono essere registrati nuovamente.
 ## Catalogo
 
 Gli endpoint catalogo e gestione categorie/prodotti sono integrati in `main`.
-`POST /prodotti/{id}/acquisti` resta un contratto futuro:
-richiede l'integrazione atomica con portafoglio, ledger e inventario e non ha
-ancora un controller. Non fa parte della gestione catalogo completata qui.
+`POST /prodotti/{id}/acquisti` è implementato nel modulo acquisti:
+coordina atomicamente portafoglio, ledger e inventario senza modificare lo stock
+bloccato dalle aste. Vedere il contratto sotto.
 
 `GET /categorie` restituisce un array di categorie attive ordinate per nome;
 `GET /admin/categorie` include anche quelle disattivate. Ogni categoria ha
@@ -266,9 +267,9 @@ stesso snapshot transazionale, anche durante rilanci o settlement concorrenti.
 }
 ```
 
-I tipi di movimento sono quelli della migrazione V8: `IMPOSTAZIONE_SALDO`,
+I tipi di movimento sono quelli delle migrazioni V8 e V14: `IMPOSTAZIONE_SALDO`,
 `RISERVA_OFFERTA`, `RILASCIO_OFFERTA`, `PAGAMENTO_ASTA`, `INCASSO_ASTA`,
-`ACQUISTO_FISSO`. `astaId` è null per operazioni non legate a un'asta.
+`ACQUISTO_FISSO`, `INCASSO_FISSO`. `astaId` è null per operazioni non legate a un'asta.
 Gli importi sono positivi; i saldi successivi descrivono l'effetto del movimento.
 Non sono esposti entity, informazioni di altri utenti o credenziali.
 
@@ -545,14 +546,82 @@ La consegna è best effort: un errore del trasporto dopo commit non annulla la
 transazione. Il client recupera lo snapshot REST per riallinearsi, disabilita
 i rilanci e mostra lo stato annullato. I nuovi ticket sono rifiutati.
 
-## Inventario e acquisti fissi (previsti)
+## Inventario personale
 
-`GET /api/v1/me/inventario` e `POST /api/v1/prodotti/{id}/acquisti` non sono
-implementati. DTO, paginazione, errori e regole dell'acquisto vanno completati
-prima di svilupparli. Il body Postman `{ "quantita": 1 }` è provvisorio.
-L'acquisto dovrà coordinare stock, portafoglio, ledger e inventario in una
-transazione; l'assegnazione dei prodotti vinti è già presente nel settlement.
-Il referente delle due API resta da decidere nel team.
+`GET /api/v1/me/inventario?page=0&size=20` è implementato e richiede USER.
+L'identità deriva dal subject del Bearer; anche il servizio verifica il ruolo
+e la corrispondenza con l'ID richiesto. Non esiste un parametro per leggere
+l'inventario altrui. La risposta ha `Cache-Control: no-store`.
+
+```json
+{
+  "content": [{
+    "prodotto": {
+      "id": 3, "sku": "KEY-001", "nome": "Tastiera", "descrizione": null,
+      "attivo": true, "categoria": {"id": 1, "nome": "Hardware", "attiva": true}
+    },
+    "quantita": 2
+  }],
+  "page": 0, "size": 20, "totalElements": 1, "totalPages": 1
+}
+```
+
+Una riga per prodotto con quantità posseduta positiva, ordinata per ID prodotto
+crescente. Page parte da zero e size è tra 1 e 100. Conteggio e pagina sono
+letti nello stesso snapshot PostgreSQL. Inventario vuoto o pagina oltre fine:
+200 con `content: []`. Prodotti e categorie non più attivi restano visibili
+al proprietario, ma la UI non collega il dettaglio pubblico non disponibile.
+Non vengono esposti dati degli altri utenti, stock o saldi del catalogo.
+Paginazione fuori limite: 400 `PAGINAZIONE_NON_VALIDA`; parametri non numerici:
+400; errori REST in `application/problem+json`. Token assente/revocato o utente
+inattivo: 401; ADMIN: 403. La lettura non assegna prodotti né modifica stock.
+
+## Acquisti fissi
+
+`POST /api/v1/prodotti/{id}/acquisti` richiede USER nella regola HTTP e nel
+servizio, con identità dal subject del token. Body:
+
+```json
+{"clientPurchaseId":"d14995b2-c122-4b80-91f9-d1db6d152df4","quantita":2}
+```
+
+Quantità obbligatoria, intera JSON, da 1 a 100; UUID obbligatorio. Prezzo e conto
+destinatario non arrivano dal browser. Prodotto e categoria devono essere attivi,
+con prezzo fisso e stock disponibile sufficiente; astabile non impedisce l'acquisto.
+Il totale usa il prezzo del catalogo sotto lock, non il prezzo visualizzato in
+precedenza dal browser. Stock bloccato e fondi riservati non sono spendibili.
+
+Il destinatario è un ADMIN attivo configurato nel Producer con `SHOP_ADMIN_ID`;
+zero (default), ID inesistente, inattivo o non ADMIN impediscono nuovi acquisti.
+La transazione addebita il compratore, accredita l'ADMIN, scrive i movimenti
+`ACQUISTO_FISSO`/`INCASSO_FISSO` (astaId null), decrementa solo lo stock
+disponibile e incrementa la quantità posseduta, aggiornando le versioni.
+Rollback completo per errore. Ordine lock: USER, portafogli per ID, prodotto,
+inventario, compatibile con programmazione e settlement.
+
+Prima esecuzione: 201, `Cache-Control: no-store`, risposta:
+
+```json
+{
+  "id":"d14995b2-c122-4b80-91f9-d1db6d152df4","prodottoId":3,"quantita":2,
+  "prezzoUnitario":10.00,"totale":20.00,"valuta":"CRD",
+  "acquistatoAt":"2026-10-14T10:00:00Z","duplicato":false
+}
+```
+
+Retry di UUID, utente, prodotto e quantità uguali: 200 con risultato originario
+e `duplicato:true`, senza nuovi effetti, anche dopo modifica prezzo,
+esaurimento/disattivazione prodotto o cambio della configurazione ADMIN.
+UUID globale già usato con dati diversi: 409 `CLIENT_PURCHASE_ID_GIA_UTILIZZATO`.
+Un nuovo UUID è un nuovo acquisto. Nessun evento d'asta o email viene generato.
+La risposta non è uno snapshot dei saldi: la UI rilegge inventario/portafoglio.
+
+Errori `application/problem+json`: 400 per body/UUID/quantità non validi;
+401 senza autenticazione; 403 ruolo errato; 404 `RISORSA_NON_TROVATA` per
+prodotto assente/non pubblico; 409 `PRODOTTO_NON_ACQUISTABILE`,
+`PRODOTTO_NON_DISPONIBILE`, `SALDO_INSUFFICIENTE`, `IMPORTO_ACQUISTO_ECCESSIVO`
+o `LIMITE_SALDO_SUPERATO`; 503 `ACQUISTI_NON_CONFIGURATI` per il conto ADMIN.
+Nessun addebito parziale quando il conto ADMIN supera NUMERIC(12,2).
 
 ## Vittorie personali e storico ADMIN
 

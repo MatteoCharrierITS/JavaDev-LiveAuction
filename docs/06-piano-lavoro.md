@@ -1,17 +1,18 @@
 # Roadmap e criteri di accettazione
 
-## Stato corrente — 13 ottobre 2026
+## Stato corrente — 14 ottobre 2026
 
 Identità, catalogo, portafoglio, programmazione, rilanci, chiusura automatica,
-STOMP e coda email sono integrati in `main` (`4b82f1e`). Le modifiche locali di
-Marco del 12 ottobre completano annullamento e storici. La copia di lavoro
-include le pagine Consumer per i flussi disponibili; restano API e pagine di
-inventario e acquisti fissi, oltre alle verifiche integrate indicate nel
+STOMP, coda email, annullamento e storici sono integrati in `main` (`ede0201`). La copia di lavoro
+include le pagine Consumer per i flussi disponibili; restano le verifiche integrate indicate nel
 [TODO](todo.md). L'attivazione SMTP
 esterna è fuori scope per la consegna.
+API e pagine inventario/acquisti sono implementate nelle modifiche locali del
+14 ottobre, insieme al fix del feed per gli eventi già coperti dallo snapshot.
 Le fasi sotto sono la roadmap di accettazione, non un elenco di attività tutte
 ancora aperte. Persone e prossimi passi sono nel [TODO](todo.md).
-Il [report documentale](11-verifica-documentazione.md) registra la verifica corrente.
+Il [report documentale](11-verifica-documentazione.md) registra la verifica storica;
+[inventario e acquisti](13-inventario-acquisti.md) descrive le modifiche correnti.
 
 ## Verifica storica del branch Prodotti — 7 ottobre 2026
 

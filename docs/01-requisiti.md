@@ -42,6 +42,18 @@ Una vittoria sposta l'unità bloccata nell'inventario del vincitore. Se l'asta
 termina senza offerte oppure viene annullata prima di riceverne, l'unità torna
 disponibile.
 
+## Acquisto a prezzo fisso (decisione del 14 ottobre 2026)
+
+Un USER può acquistare da 1 a 100 unità disponibili di un prodotto pubblico con
+prezzo fisso. Il totale viene accreditato a un ADMIN attivo scelto tramite
+`SHOP_ADMIN_ID`, non al creatore di un'asta né a un ID nel body. Stock bloccato
+e fondi riservati non sono utilizzabili. Pagamento, incasso, ledger e inventario
+committano insieme. `clientPurchaseId` UUID rende il retry idempotente: stessi
+dati restituiscono l'acquisto già concluso; dati diversi sono un conflitto.
+Prezzo autorevole è quello del catalogo sotto lock, non quello inviato dal client.
+Il proprietario può consultare tutti i propri prodotti con quantità positiva,
+compresi quelli non più pubblici, nell'inventario personale paginato.
+
 ## Portafoglio
 
 - Valuta virtuale: `CRD` (crediti), visualizzata come `1.250,00 CRD`.

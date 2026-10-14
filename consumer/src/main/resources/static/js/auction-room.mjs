@@ -294,13 +294,13 @@ export class AuctionRoom {
     handlePublic(event) {
         if (!validSequence(event.sequence) || Number(event.auctionId) !== this.id) return;
         if (this.synchronizing || !this.synced) { this.buffer.push(event); return; }
+        if (event.sequence <= this.sequence) return;
         if (['ROOM_OPENED', 'AUCTION_STARTED', 'BID_ACCEPTED', 'AUCTION_SNAPSHOT',
             'AUCTION_CLOSED', 'AUCTION_CANCELLED'].includes(event.type)
                 && !this.feedSequences.has(event.sequence)) {
             this.feedSequences.add(event.sequence);
             this.feed(event);
         }
-        if (event.sequence <= this.sequence) return;
         if (event.sequence !== this.sequence + 1) {
             this.buffer.push(event);
             this.sync();

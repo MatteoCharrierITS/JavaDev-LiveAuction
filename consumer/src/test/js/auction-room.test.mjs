@@ -49,6 +49,20 @@ test('STOMP subscribes to both destinations before join and routes private repli
     stomp.close();
 });
 
+test('snapshot-covered events never enter the live feed', () => {
+    const root = fakeRoot();
+    const room = new AuctionRoom(root, { clock: () => 0 });
+    room.applySnapshot(snapshot('APERTA', 10));
+    room.synced = true;
+    for (const sequence of [9, 10, 9]) room.handlePublic({ auctionId: 42, sequence,
+        type: 'BID_ACCEPTED', importo: 55, offerenteDisplay: 'o***d',
+        serverTime: '2026-10-11T17:00:00Z' });
+    assert.equal(room.sequence, 10);
+    assert.equal(root.node('event-feed').children.length, 0);
+    assert.equal(room.feedSequences.size, 0);
+    room.stop();
+});
+
 test('pre-live and offline rooms cannot bid; presence never changes auction sequence', () => {
     const root = fakeRoot();
     const room = new AuctionRoom(root, { clock: () => 0, WebSocketType: FakeSocket });
@@ -78,16 +92,17 @@ test('duplicate and out-of-order events preserve state; gaps require a new snaps
     room.handlePublic({ type: 'BID_ACCEPTED', auctionId: 42, sequence: 3, importo: 60,
         offerenteDisplay: 'a***e', serverTime: '2026-10-11T17:00:01Z' });
     assert.equal(room.sequence, 3);
-    assert.equal(root.node('event-feed').children.length, 1);
+    assert.equal(root.node('event-feed').children.length, 0);
     room.handlePublic({ type: 'BID_ACCEPTED', auctionId: 42, sequence: 5, importo: 70,
         offerenteDisplay: 'b***b', serverTime: '2026-10-11T17:00:02Z' });
     await new Promise(resolve => setImmediate(resolve));
     assert.equal(calls, 1);
     assert.equal(room.sequence, 6);
-    assert.equal(root.node('event-feed').children.length, 2);
+    assert.equal(root.node('event-feed').children.length, 1);
     room.handlePublic({ type: 'BID_ACCEPTED', auctionId: 42, sequence: 4, importo: 65,
         offerenteDisplay: 'c***c', serverTime: '2026-10-11T17:00:02Z' });
     assert.equal(room.sequence, 6);
+    assert.equal(root.node('event-feed').children.length, 1);
     room.stop();
 });
 

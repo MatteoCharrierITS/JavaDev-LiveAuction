@@ -7,8 +7,8 @@ Importare `local.postman_environment.json` e selezionare l'ambiente
 | --- | --- | --- |
 | `monitoring.json` | Health e Ready | Implementato |
 | `auth.json` | Registrazione, login, refresh, logout ed eliminazione account | Implementato |
-| `prodotti.json` | Categorie, catalogo e gestione ADMIN | Implementato; acquisti fissi futuri |
-| `inventario.json` | Inventario personale | API prevista |
+| `prodotti.json` | Categorie, catalogo, gestione ADMIN e acquisti USER | Implementato; acquisto/retry manuali 11–12 |
+| `inventario.json` | Inventario personale | Implementato, USER, paginazione e controlli risposta |
 | `portafoglio.json` | Saldo, movimenti paginati e impostazioni | Implementato |
 | `aste.json` | Lobby, ticket, programmazione e storici | Programmazione, lobby, snapshot, ticket, annullamento e storici implementati |
 
@@ -38,15 +38,17 @@ al PUT aggiorna anche il body per il prossimo invio. In caso di 409 sulla
 versione, rileggere il prodotto (09) e riapplicare la modifica desiderata.
 Per provare la visibilità, disattivare la categoria (04): catalogo e dettaglio
 pubblici nascondono i suoi prodotti, mentre le letture ADMIN li conservano.
-La richiesta FUTURO per acquisto fisso va eseguita solo dopo l'implementazione
-del modulo transazionale; non includerla nella sequenza di verifica catalogo.
+Le richieste 11–12 verificano acquisto e retry con `userToken`: configurare prima
+`SHOP_ADMIN_ID` con un ADMIN attivo e predisporre prezzo fisso, stock e saldo.
+La 11 genera un nuovo `clientPurchaseId` e salva `acquistoEsito`; la 12 riusa
+UUID e quantità e attende `200` con `duplicato=true`, senza nuovi effetti.
+Non includerle nella sequenza di verifica catalogo ADMIN. Rileggere inventario,
+portafoglio e prodotto per verificare quantità, addebito e stock.
 
-Le altre collection seguono [il contratto REST](../04-api-rest.md). Finché i
-relativi controller non saranno sviluppati, una risposta `404` è attesa dopo
-aver soddisfatto le regole di accesso; senza il token o ruolo richiesto la
-sicurezza può restituire `401` o `403` prima di raggiungere il controller. I body
-segnati come **provvisori** vanno aggiornati quando il modulo definirà i propri
-DTO. Impostare `prodottoId` e `astaId` nell'ambiente usando ID esistenti; la
+Le collection seguono [il contratto REST](../04-api-rest.md): gli endpoint
+elencati sono implementati. Senza il token o ruolo richiesto la sicurezza può
+restituire `401` o `403` prima di raggiungere il controller.
+Impostare `prodottoId` e `astaId` nell'ambiente usando ID esistenti; la
 richiesta di programmazione salva `astaId` dalla risposta `Location`, se
 presente.
 
@@ -101,8 +103,8 @@ il body completo del PUT. La quantità bloccata resta esclusa dall'input.
 Le variabili generate del catalogo sono dichiarate anche nell'ambiente esportato.
 
 Nel runner selezionare **solo 01–10** di `prodotti.json` su un database di prova.
-La richiesta `FUTURO Acquisto fisso` non è implementata ed è da deselezionare.
-L’intera collection `inventario.json` resta prevista. Le tre API di Marco in
+Le richieste acquisto/retry 11–12 sono separate e richiedono i prerequisiti sopra.
+La collection `inventario.json` è eseguibile dopo il login USER. Le tre API di Marco in
 `aste.json` sono implementate. Importare una collection non implica che tutte le sue API
 siano disponibili. La collection aste richiede inoltre ID validi: programmare
 prima un'asta; il ticket richiede una stanza già accessibile e non è un test

@@ -53,6 +53,7 @@ class OfferteIntegrationTests {
     @Autowired OffertaService offerte;
     @Autowired ChiusuraAstaService chiusura;
     @Autowired AstaLetturaService lettura;
+    @Autowired it.esercitazione.liveauction.producer.inventario.services.InventarioService inventario;
     @Autowired EliminazioneUtenteService eliminazione;
     @Autowired EventiRegistrati eventi;
     @MockitoBean(name = "clockOfferte") Clock clock;
@@ -280,6 +281,23 @@ class OfferteIntegrationTests {
         assertThat(movimenti("PAGAMENTO_ASTA")).isEqualTo(1);
         assertThat(movimenti("INCASSO_ASTA")).isEqualTo(1);
         assertThat(eventi.perAsta(asta).stream().filter(e -> e.evento().type().equals("AUCTION_CLOSED"))).hasSize(1);
+    }
+
+    @Test
+    void twoWinsOfSameProductAppearAsOneInventoryRowWithTotalQuantity() {
+        long altra = nuovaAsta(prodotto);
+        jdbc.update("UPDATE prodotti SET quantita_bloccata=2 WHERE id=?", prodotto);
+        offri(primo, asta, "100");
+        offri(primo, altra, "100");
+        when(clock.instant()).thenReturn(FINE.plusSeconds(20));
+        chiusura.chiudi(asta);
+        chiusura.chiudi(altra);
+        var pagina = come(primo, "USER", () -> inventario.personale(primo, 0, 20));
+        assertThat(pagina.totalElements()).isEqualTo(1);
+        assertThat(pagina.content()).singleElement().satisfies(item -> {
+            assertThat(item.prodotto().id()).isEqualTo(prodotto);
+            assertThat(item.quantita()).isEqualTo(2);
+        });
     }
 
     @Test

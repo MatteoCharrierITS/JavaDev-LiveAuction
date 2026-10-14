@@ -1,5 +1,32 @@
 # Attività del team
 
+## Aggiornamento locale — 14 ottobre 2026
+
+Sulla base `ede0201`, senza commit: aggiunti `GET /me/inventario`, pagina
+Consumer `/inventario`, navigazione, DTO e paginazione. Sono visibili anche
+i prodotti posseduti non più pubblici; i risultati sono isolati per utente.
+Corretto il feed per scartare eventi vecchi/duplicati prima della cronologia,
+con regressione JavaScript. Contratto e Postman inventario aggiornati.
+
+Il richiedente ha confermato accredito a un ADMIN configurato, quantità intera
+1–100 e UUID idempotente. Implementati API e UI acquisto, migrazioni V13/V14,
+stock/crediti/ledger/inventario atomici e retry della UI con lo stesso UUID.
+Impostare `SHOP_ADMIN_ID` con l'ID di un ADMIN attivo; default zero disabilita
+gli acquisti senza effetti economici. Nessuna nuova assegnazione personale.
+
+`clean verify` con Java 21/PostgreSQL: 293 Producer e 52 Consumer superati,
+zero errori/fallimenti/saltati; 12 test JavaScript superati. Provato anche
+acquisto reale dalla UI: 2 unità a 12,50, saldo 100→75, inventario 2 e incasso
+ADMIN 25. Database temporaneo isolato. Dettagli in
+[inventario e acquisti](13-inventario-acquisti.md).
+Avvio Docker `prod` verificato su stack isolato: tre servizi healthy e
+login/acquisto/inventario/portafoglio dalla UI riusciti. Provato anche un flusso
+asta con un browser e un secondo client STOMP, fino al vincitore persistito;
+non sostituisce tutta la matrice manuale a due browser.
+
+Le sezioni sotto conservano il piano del 13 ottobre, aggiornato per le nuove
+funzioni; le verifiche manuali non eseguite restano senza spunta.
+
 Stato di `main` al **13 ottobre 2026**, dopo le consegne di Marco
 (`4138bd5`) e Andrea (`c864b2f`) e la revisione delle loro modifiche.
 Annullamento, vittorie, storico e UI Consumer sono integrati: non sono più
@@ -9,13 +36,13 @@ Una spunta indica una funzionalità implementata. Le verifiche complete dal
 browser restano attività distinte anche quando esistono test automatici.
 Ogni responsabile cura codice, test, documentazione e Postman della propria
 area. Le verifiche residue sono ripartite secondo le assegnazioni del README;
-API inventario e acquisti fissi restano **da assegnare con decisione del team**.
+la manutenzione di inventario e acquisti fissi resta **da assegnare dal team**.
 L'attivazione SMTP esterna è fuori scope per la consegna.
 
 ## Priorità e dipendenze
 
-1. Il team assegna API inventario e acquisti fissi e definisce le regole mancanti.
-2. I referenti completano contratti, API, test e Postman; Andrea integra le pagine.
+1. Configurare l'ADMIN destinatario degli acquisti nell'ambiente locale.
+2. Il team assegna la manutenzione di inventario/acquisti, già implementati e documentati.
 3. Nel frattempo ogni responsabile collabora al collaudo dei flussi già disponibili.
 4. Il team verifica il sistema completo e lo stack Docker nell'ambiente di consegna.
 5. Si aggiornano stato, risultati delle verifiche e istruzioni della demo sul commit finale.
@@ -83,8 +110,8 @@ L'attivazione SMTP esterna è fuori scope per la consegna.
 
 ## Attività residue
 
-Le righe seguenti non sono ancora concluse; alcune sono verifiche di funzionalità
-già implementate, altre dipendono dalle due API mancanti.
+Le righe senza spunta indicano verifiche ancora da completare; le nuove API
+e pagine sono implementate nella copia di lavoro del 14 ottobre.
 
 ### Matteo — sicurezza, account e portafoglio
 
@@ -145,46 +172,46 @@ già implementate, altre dipendono dalle due API mancanti.
 
 | Chi | Che cosa | Fatto |
 | :--- | :--- | :---: |
-| Andrea | **Inventario:** dopo il contratto/API, aggiungere client e DTO, pagina /inventario, navigazione, quantità, paginazione, lista vuota e gestione errori. | &nbsp; |
-| Andrea | **Acquisto:** dopo il contratto/API, aggiungere azione nel dettaglio, quantità/conferma concordate, errori e rilettura di saldo, stock e inventario; gestire retry secondo il contratto. | &nbsp; |
+| Andrea | **Inventario:** client e DTO, pagina /inventario, navigazione, quantità, paginazione, lista vuota e gestione errori aggiunti nella copia di lavoro del 14 ottobre. | ✓ |
+| Andrea | **Acquisto:** modulo nel dettaglio, quantità 1–100, conferma, errori, inventario aggiornato e retry con stesso UUID dopo esito incerto; test Consumer aggiunti. | ✓ |
 | Andrea | **Flussi reali:** provare login, registrazione, account, portafoglio, catalogo e pannello ADMIN con Producer/PostgreSQL reali; i test MVC attuali simulano il Producer. | &nbsp; |
 | Andrea | **Sessione/errori:** provare refresh, scadenza, logout, CSRF, ruolo errato, timeout e Producer indisponibile; controllare messaggi e pagine 400/403/404/500. | &nbsp; |
 | Andrea | **Stanza reale:** pre-live, join, due utenti/più schede, rilanci, saldi, chiusura e annullamento; perdita rete, nuovo ticket e snapshot prima di riabilitare il form. | &nbsp; |
 | Andrea | **Interfaccia:** verificare filtri mantenuti, paginazione, liste vuote, validazioni e conflitti di versione, leggibilità su schermi diversi. | &nbsp; |
 | Andrea | **Consegna:** verificare sessioni/cookie e URL WebSocket nell’ambiente scelto, coordinandosi con Matteo e Maikol; aggiornare test e flussi dopo le pagine mancanti/fix. | &nbsp; |
 
-### Inventario — API da assegnare
+### Inventario — implementato, manutenzione da assegnare
 
 | Chi | Che cosa | Fatto |
 | :--- | :--- | :---: |
 | Team | **Referente e contratto:** assegnare l’API; concordare campi prodotto/quantità, paginazione, ordinamento e visibilità dei prodotti posseduti divenuti inattivi con Andrea. | &nbsp; |
-| Da assegnare | **Lettura:** implementare GET /api/v1/me/inventario sulle tabelle esistenti. Il settlement già assegna i prodotti vinti; non duplicare questa operazione. | &nbsp; |
-| Da assegnare | **Sicurezza e DTO:** identità dal token, accesso USER e isolamento degli inventari; DTO senza dati privati di altri utenti. | &nbsp; |
-| Da assegnare | **Test:** lista vuota, parametri invalidi, paginazione/ordinamento stabile, anonimo/ruolo errato, isolamento e quantità dopo più vittorie dello stesso prodotto. | &nbsp; |
-| Da assegnare | **Contratto/Postman:** completare esempi ed errori, aggiornare stato implementato e collection; verificare la pagina con Andrea. | &nbsp; |
+| Da assegnare | **Lettura:** GET /api/v1/me/inventario implementato nella copia locale, senza duplicare l'assegnazione dei prodotti. | ✓ |
+| Da assegnare | **Sicurezza e DTO:** identità dal token, accesso USER e isolamento degli inventari; DTO senza dati privati di altri utenti. | ✓ |
+| Da assegnare | **Test:** lista vuota, parametri invalidi, paginazione/ordinamento stabile, anonimo/ruolo errato, isolamento e quantità dopo più vittorie dello stesso prodotto. | ✓ |
+| Da assegnare | **Contratto/Postman:** esempi, errori e collection aggiornati; runner e accettazione finale restano verifiche distinte. | ✓ |
 
-### Acquisti fissi — API e regole da assegnare
+### Acquisti fissi — implementati, manutenzione da assegnare
 
 | Chi | Che cosa | Fatto |
 | :--- | :--- | :---: |
-| Team | **Referente e regole:** decidere quantità acquistabile, prodotto/categoria attivi e prezzo fisso, destinatario dei crediti e meccanismo di retry/idempotenza. Il body Postman quantita=1 è provvisorio. | &nbsp; |
-| Da assegnare | **Contratto:** definire POST /api/v1/prodotti/{id}/acquisti, DTO, validazioni, risposta, status e codici di errore; coordinarsi con Andrea. | &nbsp; |
-| Da assegnare | **Transazione:** stock disponibile, saldo, ledger e inventario atomici; BigDecimal, operazioni condivise, lock e versioni compatibili con aste. Lo stock bloccato non è acquistabile. | &nbsp; |
-| Da assegnare | **API protetta:** controller e servizio USER, identità dal token, nessun effetto parziale e retry secondo la regola concordata. | &nbsp; |
-| Da assegnare | **Test funzionali:** quantità invalidi, prezzo assente/prodotto non acquistabile, stock esaurito, saldo insufficiente, destinatario crediti, ledger e inventario. | &nbsp; |
-| Da assegnare | **Test transazionali:** ultima unità concorrente, acquisto/programmazione asta, rollback e retry senza doppi addebiti o assegnazioni. | &nbsp; |
-| Da assegnare | **Documentazione/Postman:** completare contratto e collection e verificare acquisto/aggiornamento dati con Andrea; coinvolgere Cristian, Matteo e Tommi nelle interfacce condivise. | &nbsp; |
+| Team | **Regole:** confermati ADMIN configurato, quantità 1–100 e UUID idempotente. Resta da assegnare il referente di manutenzione. | ✓ |
+| Da assegnare | **Contratto:** POST /api/v1/prodotti/{id}/acquisti, DTO, validazioni, risposta, status e codici di errore documentati. | ✓ |
+| Da assegnare | **Transazione:** stock disponibile, saldo, ledger e inventario atomici; BigDecimal, repository condiviso, lock e versioni compatibili con aste. Stock bloccato escluso. | ✓ |
+| Da assegnare | **API protetta:** controller e servizio USER, identità dal token, nessun effetto parziale e retry idempotente. | ✓ |
+| Da assegnare | **Test funzionali:** quantità invalide, prezzo assente/prodotto non acquistabile, stock esaurito, saldo insufficiente, destinatario crediti, ledger e inventario. | ✓ |
+| Da assegnare | **Test transazionali:** ultima unità concorrente, acquisto/programmazione asta, rollback e retry senza doppi addebiti o assegnazioni. | ✓ |
+| Da assegnare | **Documentazione/Postman:** contratto e collection aggiornati; acquisto e aggiornamento dati provati nella UI. Runner Postman non eseguito. | ✓ |
 
 ### Team — accettazione e consegna
 
 | Chi | Che cosa | Fatto |
 | :--- | :--- | :---: |
-| Team | **Suite finale:** ripetere verify Producer/Consumer con Java 21, PostgreSQL dedicato e RUN_DB_TESTS/RUN_WS_TESTS; eseguire anche i test JavaScript e registrare commit/esiti. | &nbsp; |
+| Team | **Suite finale:** clean verify Java 21/PostgreSQL con RUN_DB_TESTS/RUN_WS_TESTS: 293 Producer + 52 Consumer, 12 JavaScript. Base ede0201, modifiche senza commit. | ✓ |
 | Team | **Demo aste:** ADMIN crea prodotto e programma; due USER partecipano/rilanciano; chiusura con saldo, ledger, prodotto persistito e storici coerenti. | &nbsp; |
 | Team | **Scenari alternativi:** senza offerte, annullamento, saldo insufficiente, ritiro leader, riconnessione e riavvio; ogni responsabile risolve i problemi del proprio dominio. | &nbsp; |
-| Team | **Nuove funzioni:** dopo le API completate includere consultazione inventario e acquisto fisso nel collaudo. | &nbsp; |
+| Team | **Nuove funzioni:** inventario vuoto, acquisto fisso di 2 unità, inventario aggiornato e saldo/ledger provati con Producer/PostgreSQL reali. | ✓ |
 | Team | **Postman:** eseguire le collection sugli endpoint implementati e verificare variabili, body, errori e controlli delle risposte. | &nbsp; |
-| Team | **Avvio/Docker:** verificare applicazioni indipendenti e compose prod healthy nell’ambiente concordato; proteggere i dati esistenti. | &nbsp; |
+| Team | **Avvio/Docker:** JAR indipendenti su localhost e compose prod isolato verificati, tre servizi healthy; login e acquisto dalla UI riusciti, dati esistenti preservati. | ✓ |
 | Team | **Configurazione:** Java 21, JWT da ambiente, sessioni coerenti con HTTP/HTTPS (cookie Secure nel profilo prod), URL WebSocket accessibile dal browser e origine autorizzata. | &nbsp; |
 | Team | **Procedura demo:** documentare creazione account/ADMIN, crediti, categorie/prodotti e aste ripetibili; nessun dato demo nelle migrazioni. | &nbsp; |
 | Team | **Allineamento:** README, TODO, documenti di stato e istruzioni devono descrivere il main finale; distinguere verifiche correnti e report storici. | &nbsp; |

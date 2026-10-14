@@ -2,17 +2,17 @@
   "info": {
     "name": "LiveAuction • Inventario",
     "_postman_id": "28d2b9bb-2a70-48b8-ae31-a289f4e3e140",
-    "description": "Previsto dal contratto docs/04-api-rest.md; l'endpoint non è ancora implementato.",
+    "description": "Inventario USER implementato: prodotti propri con quantità positiva, anche non più pubblici. Contratto in docs/04-api-rest.md.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "FUTURO Il mio inventario",
+      "name": "Il mio inventario",
       "request": {
         "method": "GET",
         "header": [],
-        "url": "{{baseUrl}}/me/inventario",
-        "description": "Contratto previsto, non implementato in main. Il settlement assegna già i prodotti vinti, ma manca la lettura REST. DTO e paginazione da definire.",
+        "url": "{{baseUrl}}/me/inventario?page=0&size=20",
+        "description": "USER dal token, nessun ID utente nel body. Ordinamento ID prodotto crescente, page >= 0, size 1–100; quantità e prodotto con categoria. Include prodotti disattivati già posseduti.",
         "auth": {
           "type": "bearer",
           "bearer": [
@@ -23,7 +23,11 @@
             }
           ]
         }
-      }
+      },
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "pm.test('Inventario disponibile', () => pm.response.to.have.status(200));",
+        "if (pm.response.code === 200) { const b = pm.response.json(); pm.test('Pagina e quantità', () => { pm.expect(b.content).to.be.an('array'); pm.expect(b.page).to.eql(0); pm.expect(b.size).to.eql(20); b.content.forEach(i => { pm.expect(i.quantita).to.be.above(0); pm.expect(i.prodotto.id).to.be.a('number'); pm.expect(i).not.to.have.property('utenteId'); }); }); pm.test('Nessuna cache', () => pm.expect(pm.response.headers.get('Cache-Control')).to.include('no-store')); }"
+      ]}}]
     }
   ]
 }

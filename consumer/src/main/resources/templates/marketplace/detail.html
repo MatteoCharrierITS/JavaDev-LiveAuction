@@ -19,6 +19,16 @@
         <div><dt>Auction status</dt><dd th:text="${product.astabile} ? 'AVAILABLE FOR AUCTION' : 'NOT AUCTIONABLE'">Auction status</dd></div>
         <div><dt>Scheduled or live auctions</dt><dd th:text="${product.asteProgrammate}">0</dd></div>
     </dl>
+    <section th:if="${userVisitor and product.prezzoFisso != null and product.quantitaDisponibile > 0}">
+        <h2>Buy at fixed price</h2>
+        <p>The Producer confirms the current catalogue price. Only available, unreserved stock can be purchased.</p>
+        <form th:action="@{/prodotti/{id}/acquisti(id=${product.id})}" method="post">
+            <input type="hidden" name="clientPurchaseId" th:value="${purchaseId}">
+            <label for="quantity">Quantity</label><input id="quantity" name="quantita" type="number" min="1"
+                th:max="${T(java.lang.Math).min(100, product.quantitaDisponibile)}" value="1" required>
+            <button type="submit">Confirm purchase</button>
+        </form>
+    </section>
 </main>
 <footer th:replace="~{fragments/footer :: footer}"></footer>
 </body>

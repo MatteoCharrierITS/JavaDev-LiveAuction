@@ -30,6 +30,7 @@ public final class WalletDisplay {
             case "PAGAMENTO_ASTA" -> "Auction payment";
             case "INCASSO_ASTA" -> "Auction proceeds";
             case "ACQUISTO_FISSO" -> "Fixed-price purchase";
+            case "INCASSO_FISSO" -> "Fixed-price proceeds";
             default -> type.replace('_', ' ');
         };
     }

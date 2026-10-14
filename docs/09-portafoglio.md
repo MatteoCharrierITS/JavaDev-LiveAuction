@@ -21,8 +21,9 @@ V2/V8. Le proiezioni e i DTO sostituiscono i modelli JPA incompatibili presenti
 nel precedente branch `portafoglio-movimenti`: non vengono introdotte tabelle
 `wallet` o `movimenti`, né colonne `wallet_id`, `offerta_id` o `descrizione`.
 Il ledger usa `portafoglio_id`, `asta_id`, `data_movimento`, i due saldi
-successivi e l'enum `TipoMovimento` corrispondente alla V8. Le date sono `Instant`
-UTC e gli importi `BigDecimal`. Nessuna migrazione è stata modificata o aggiunta.
+successivi e l'enum `TipoMovimento`. Le date sono `Instant` UTC e gli importi
+`BigDecimal`. L'integrazione originaria non modificava le migrazioni; il 14 ottobre
+sono state aggiunte V13 (acquisti) e V14 (tipo `INCASSO_FISSO`), senza riscrivere V8.
 
 L'impostazione del saldo registra un movimento con importo positivo pari alla
 differenza assoluta, `asta_id` null e saldi successivi. Una riduzione resta un
@@ -83,5 +84,8 @@ Mockito riscontrato in questo ambiente. Il progetto resta configurato per Java 2
 Le fixture del modulo portafoglio vengono rimosse dopo ogni test. Il container
 dedicato è stato rimosso al termine; il database di sviluppo non è stato usato.
 La chiusura automatica è ora collegata nello scheduler del modulo aste.
-Il portafoglio non espone le API inventario o acquisti fissi, che restano
-attività separate e da assegnare nel team.
+Il portafoglio non espone direttamente inventario o acquisti: dal 14 ottobre
+sono implementati nei rispettivi domini. Gli acquisti riusano lock e ledger
+condivisi: `ACQUISTO_FISSO` addebita il USER e `INCASSO_FISSO` accredita l'ADMIN
+configurato con `SHOP_ADMIN_ID`, senza spendere il saldo riservato alle aste.
+La manutenzione dei nuovi domini resta da assegnare nel team.

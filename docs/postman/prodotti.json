@@ -2,7 +2,7 @@
   "info": {
     "name": "LiveAuction • Prodotti",
     "_postman_id": "30d10e9b-c2fe-47c0-a65e-3fe7ebe3c137",
-    "description": "Catalogo e gestione ADMIN integrati in main. Selezionare solo 01–10 nel runner, dopo il login ADMIN. Ogni richiesta verifica status e DTO; le scritture salvano ID e versione. FUTURO Acquisto fisso è un contratto provvisorio non implementato, da escludere dal runner.",
+    "description": "Catalogo e gestione ADMIN: selezionare 01–10 nel runner dopo il login ADMIN. Acquisti 11–12 implementati: eseguire separatamente con USER, saldo e stock sufficienti e SHOP_ADMIN_ID configurato. La 11 genera un UUID, la 12 ripete lo stesso acquisto senza nuovi effetti.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -392,7 +392,7 @@
       ]
     },
     {
-      "name": "FUTURO Acquisto fisso (manuale)",
+      "name": "11 Acquisto fisso USER (manuale)",
       "request": {
         "method": "POST",
         "url": "{{baseUrl}}/prodotti/{{prodottoId}}/acquisti",
@@ -412,17 +412,41 @@
             }
           ]
         },
-        "description": "CONTRATTO FUTURO, non implementato. Body provvisorio: quantita deve essere definita nel DTO del modulo acquisti. Escludere dal runner catalogo; non interpretare un 404 come una verifica del catalogo.",
+        "description": "Richiede USER, SHOP_ADMIN_ID valido, prodotto/categoria attivi, prezzo fisso, stock e saldo disponibili. Genera un nuovo acquisto a ogni invio; usare la richiesta 12 per un retry. Quantità intera 1–100. Escludere dal runner catalogo ADMIN.",
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"quantita\": 1\n}",
+          "raw": "{\n  \"clientPurchaseId\": \"{{clientPurchaseId}}\",\n  \"quantita\": 1\n}",
           "options": {
             "raw": {
               "language": "json"
             }
           }
         }
-      }
+      },
+      "event": [
+        { "listen": "prerequest", "script": { "type": "text/javascript", "exec": [
+          "pm.environment.set('clientPurchaseId', pm.variables.replaceIn('{{$guid}}'));"
+        ] } },
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test('Acquisto creato', () => pm.response.to.have.status(201));",
+          "if (pm.response.code === 201) { const d = pm.response.json(); pm.test('DTO acquisto', () => { pm.expect(d.id).to.equal(pm.environment.get('clientPurchaseId')); pm.expect(d.prodottoId).to.equal(Number(pm.environment.get('prodottoId'))); pm.expect(d.quantita).to.equal(1); pm.expect(d.duplicato).to.equal(false); pm.expect(d.valuta).to.equal('CRD'); pm.expect(d.totale).to.equal(d.prezzoUnitario); }); pm.environment.set('acquistoEsito', JSON.stringify(d)); }"
+        ] } }
+      ]
+    },
+    {
+      "name": "12 Retry acquisto USER (manuale)",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/prodotti/{{prodottoId}}/acquisti",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }] },
+        "description": "Eseguire dopo la 11 senza modificare utente, prodotto, UUID o quantità. Restituisce l'esito originario anche se il catalogo cambia, senza nuovi addebiti, incassi o assegnazioni. Rileggere portafoglio e inventario per verificare gli effetti.",
+        "body": { "mode": "raw", "raw": "{\n  \"clientPurchaseId\": \"{{clientPurchaseId}}\",\n  \"quantita\": 1\n}", "options": { "raw": { "language": "json" } } }
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Retry riconosciuto', () => pm.response.to.have.status(200));",
+        "if (pm.response.code === 200) pm.test('Stesso esito senza duplicazione', () => { const d = pm.response.json(); const original = JSON.parse(pm.environment.get('acquistoEsito')); pm.expect(d.duplicato).to.equal(true); pm.expect({...d, duplicato:false}).to.deep.equal(original); });"
+      ] } }]
     }
   ]
 }

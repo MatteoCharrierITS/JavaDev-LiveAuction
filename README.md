@@ -15,7 +15,7 @@
 | **Matteo (subentro dal 9 ottobre 2026)** | Portafoglio e movimenti: riallineamento del lavoro di Mondir, API del saldo/ledger e integrazione delle operazioni sui crediti con Tommi. |
 | **Marco** | Programmazione aste: creazione ADMIN, orari, blocco stock, scheduler, annullamento e storici. |
 | **Tommi** | Offerte e chiusura: rilanci, estensioni, concorrenza, vincitore e trasferimento di crediti e prodotto. |
-| **Da assegnare** | API inventario e acquisti a prezzo fisso; referente da decidere nel team. |
+| **Da assegnare** | Referenti di manutenzione inventario e acquisti fissi, ora implementati; nessuna nuova assegnazione personale implicita. |
 
 ### Regole di collaborazione
 
@@ -35,15 +35,19 @@ Il sistema è composto da due applicazioni indipendenti:
 - **consumer** (`:8082`): interfaccia Thymeleaf che usa esclusivamente i
   contratti esposti dal Producer.
 
-> **Stato di main al 13 ottobre 2026 (base `c864b2f`, con revisione delle consegne):**
+> **Stato della copia di lavoro al 14 ottobre 2026 (base `ede0201`, modifiche non committate):**
 > Producer e Consumer includono il flusso delle aste: autenticazione e sessione
 > web, catalogo, portafoglio, programmazione ADMIN, lobby, stanza STOMP,
 > rilanci, riserve, chiusura automatica e recupero dopo riavvio. Sono integrati
 > annullamento ADMIN senza offerte, evento AUCTION_CANCELLED, vittorie personali,
 > storico ADMIN e relative pagine. Email con coda persistente e retry disponibili;
-> SMTP esterno fuori scope. **Mancano API e pagine inventario e acquisti a prezzo
-> fisso**; i referenti delle API devono essere decisi dal team, le pagine sono
-> di Andrea. Il settlement già assegna il prodotto vinto nell'inventario.
+> SMTP esterno fuori scope. API e pagina inventario personale sono implementate,
+> con quantità, paginazione e prodotti non più pubblici. Il feed ignora gli eventi
+> già coperti dallo snapshot prima di inserirli nella cronologia.
+> Sono implementati anche gli acquisti fissi: quantità 1–100, UUID idempotente,
+> incasso su un ADMIN attivo configurato con `SHOP_ADMIN_ID`. Prima di usare
+> l'acquisto in locale occorre impostare quel parametro. Il collaudo integrato
+> rimane distinto dalla sola presenza del codice.
 
 La revisione delle modifiche `3dfeec2..c864b2f` ha verificato contratti,
 autorizzazioni, isolamento delle vittorie, transazioni, stock, eventi post-commit,
@@ -57,13 +61,22 @@ superati, zero fallimenti, errori o test saltati. PostgreSQL 16 in un container
 temporaneo senza volumi del progetto, WebSocket reali e SMTP locale di test;
 nessuna email reale inviata. Esecuzione host con Temurin 25.0.4, compilazione
 `release 21` e Mockito caricato come agente esplicito per evitare il limite di
-self-attach dell'ambiente. La conferma sul JDK 21 previsto resta nel collaudo finale.
+self-attach dell'ambiente. Questa è una verifica storica, superata dalla seguente.
+
+**Verifica del 14 ottobre:** `clean verify` con Temurin **21.0.11** e PostgreSQL 16
+dedicato: **293 test Producer, 52 Consumer e 12 JavaScript** superati, zero errori,
+fallimenti o test saltati. JAR prodotti. Incluse integrazioni database, WebSocket,
+SMTP simulato, inventario e acquisti concorrenti/idempotenti.
 
 I test Consumer simulano le risposte REST del Producer; i test JavaScript
-simulano il browser/trasporto. Questa verifica non certifica il percorso completo
-con due browser e lo stack Docker `prod`: sono attività aperte nel
-[TODO dettagliato per persona](docs/todo.md). Le priorità sono assegnare e
-completare le due API mancanti, integrare le pagine e collaudare il sistema finale.
+simulano il browser/trasporto. Il 14 ottobre sono stati provati anche acquisto
+reale dalla UI, aste con un browser e un secondo client STOMP, e avvio completo
+Docker `prod` (tre servizi healthy, login/acquisto/inventario/portafoglio dalla UI).
+Non è una certificazione della matrice manuale completa con due browser:
+le verifiche residue sono nel [TODO dettagliato per persona](docs/todo.md).
+Inventario e acquisto sono ora
+implementati anche nella UI. Per configurazione, prove correnti e limiti del
+collaudo vedere [inventario e acquisti](docs/13-inventario-acquisti.md).
 
 Per ripetere la suite usare un database PostgreSQL **dedicato ai test**:
 
@@ -189,8 +202,7 @@ applicativa. Rispondono `200` se disponibili, `503` altrimenti.
 
 Base REST: `http://localhost:8081/api/v1`
 
-La tabella seguente include anche contratti futuri. Non sono implementati
-acquisti fissi e API inventario; lo stato di ogni rotta è
+La tabella seguente riassume i contratti; lo stato di ogni rotta è
 indicato nella [tabella REST](docs/04-api-rest.md#rest).
 
 | Metodo | Endpoint | Scopo |
@@ -302,9 +314,17 @@ Avviare poi `LiveAuctionConsumerApplication` con JDK 21: la UI è su
 essere raggiungibile dal browser e l'origine WebSocket va ammessa dal Producer.
 Registrare un USER dalla UI; per provare le pagine ADMIN in locale, promuovere
 un account come indicato nella sezione Database e ripetere il login.
+Per gli acquisti fissi, impostare `SHOP_ADMIN_ID` con l'ID dell'ADMIN destinatario
+nell'ambiente del Producer e riavviarlo; il default `0` lascia disabilitati
+soltanto gli acquisti. Quantità 1–100 e retry con lo stesso UUID sono descritti in
+[inventario e acquisti](docs/13-inventario-acquisti.md).
 Per rotte e funzionalità mancanti vedere [Interfaccia e flussi](docs/05-ui-flussi.md).
 
 Intero stack con profilo `prod`:
+
+Configurare prima `AUTH_JWT_SECRET` in `.env` come indicato sopra. Il profilo
+`prod` usa cookie di sessione `Secure`: su HTTP non-localhost serve HTTPS;
+per lo sviluppo locale HTTP usare i profili predefiniti con i JAR/IDE.
 
 ```powershell
 docker compose --profile prod up --build -d

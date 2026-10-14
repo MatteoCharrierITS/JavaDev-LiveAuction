@@ -56,7 +56,7 @@ dalle relative `offerte`.
 
 ## DDL di riferimento
 
-La fonte eseguibile è `producer/src/main/resources/db/migration/` (V1–V12).
+La fonte eseguibile è `producer/src/main/resources/db/migration/` (V1–V14).
 Il DDL sotto riassume le tabelle iniziali; V9 crea `auth_sessions`, V10 aggiunge
 lo stato operativo delle offerte e V11 la coda email. Non applicare questo
 riepilogo manualmente in alternativa a Flyway.
@@ -186,6 +186,13 @@ CREATE INDEX idx_movimenti_wallet_data
 ```
 
 ## Coerenza dello stock
+
+V13 crea `acquisti_fissi`: UUID globale come PK idempotente, utente, prodotto,
+ADMIN destinatario, quantità 1–100, prezzo unitario, totale e istante UTC.
+Il totale è vincolato a prezzo per quantità e utenti/ADMIN sono distinti.
+V14 estende solo il vincolo dei tipi ledger con `INCASSO_FISSO`, senza modificare
+V8. Acquisto e incasso hanno asta_id null; i movimenti e l'acquisto sono scritti
+nella stessa transazione. Nessuna migrazione crea un ADMIN o dati demo.
 
 La modifica ADMIN del prodotto richiede la `versione` letta dal client.
 Un aggiornamento concorrente o una versione obsoleta restituisce

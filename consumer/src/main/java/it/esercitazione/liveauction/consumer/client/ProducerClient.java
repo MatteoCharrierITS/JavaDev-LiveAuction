@@ -176,6 +176,13 @@ public class ProducerClient {
                 .retrieve().body(WalletPage.class));
     }
 
+    public it.esercitazione.liveauction.consumer.inventario.InventoryPage inventory(String token, int page, int size) {
+        return call(() -> client.get().uri(builder -> builder.path("/me/inventario")
+                .queryParam("page", page).queryParam("size", size).build())
+                .header(HttpHeaders.AUTHORIZATION, bearer(token)).retrieve()
+                .body(it.esercitazione.liveauction.consumer.inventario.InventoryPage.class));
+    }
+
     public WalletBalance setWalletBalance(String accessToken, BigDecimal total) {
         return call(() -> client.put().uri("/me/portafoglio/impostazioni")
                 .header(HttpHeaders.AUTHORIZATION, bearer(accessToken))
@@ -184,6 +191,15 @@ public class ProducerClient {
     }
 
     private record WalletBalanceRequest(BigDecimal saldoTotale) {}
+
+    public it.esercitazione.liveauction.consumer.acquisto.PurchaseResult buy(String token,long product,
+            java.util.UUID clientPurchaseId,int quantity) {
+        return call(()->client.post().uri("/prodotti/{id}/acquisti",product)
+                .header(HttpHeaders.AUTHORIZATION,bearer(token)).contentType(MediaType.APPLICATION_JSON)
+                .body(new PurchaseRequest(clientPurchaseId,quantity)).retrieve()
+                .body(it.esercitazione.liveauction.consumer.acquisto.PurchaseResult.class));
+    }
+    private record PurchaseRequest(java.util.UUID clientPurchaseId,int quantita) {}
 
     // Shared entry point for later domain clients: supply the session token, never a browser token.
     public <T> T getProtected(String path, String accessToken, Class<T> responseType) {

@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Purchase')}"></head>
+<body><nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<main class="catalog-page">
+    <h1 th:text="${errorTitle}">Purchase</h1><p role="alert" th:text="${errorMessage}">Error</p>
+    <form th:if="${retryId != null}" th:action="@{/prodotti/{id}/acquisti(id=${productId})}" method="post">
+        <input type="hidden" name="clientPurchaseId" th:value="${retryId}">
+        <input type="hidden" name="quantita" th:value="${retryQuantity}">
+        <button type="submit">Retry the same purchase safely</button>
+    </form>
+    <a th:href="@{/inventario}">Check inventory</a> · <a th:href="@{/impostazioni/portafoglio}">Check balance</a>
+    <p><a th:href="@{/prodotti/{id}(id=${productId})}">Reload product</a></p>
+</main><footer th:replace="~{fragments/footer :: footer}"></footer></body></html>
