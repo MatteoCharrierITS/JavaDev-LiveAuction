@@ -5,7 +5,14 @@
 <nav th:replace="~{fragments/navbar :: navbar}"></nav>
 <main id="auction-room" class="catalog-page auction-room" th:attr="data-auction-id=${auction.id},data-websocket-url=${websocketUrl},data-csrf-header=${_csrf.headerName},data-csrf-token=${_csrf.token}">
     <header class="room-header">
-        <div><a th:href="@{/aste}">← Auctions</a><h1 th:text="${auction.prodotto.nome}">Auction</h1></div>
+        <div class="room-title">
+            <div class="media media-thumb">
+                <span class="media-ph" th:text="${#strings.substring(auction.prodotto.nome, 0, 1)}">P</span>
+                <img th:if="${auction.prodotto.immagineUrl != null and !#strings.isEmpty(auction.prodotto.immagineUrl)}"
+                     th:src="${auction.prodotto.immagineUrl}" alt="" referrerpolicy="no-referrer" onerror="this.remove()">
+            </div>
+            <div><a th:href="@{/aste}">← Auctions</a><h1 th:text="${auction.prodotto.nome}">Auction</h1></div>
+        </div>
         <p id="connection-state" class="auction-state" role="status" aria-live="polite">Synchronizing…</p>
     </header>
     <p id="room-alert" class="alert" role="alert" hidden></p>

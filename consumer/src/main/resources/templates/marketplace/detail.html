@@ -5,6 +5,12 @@
 <nav th:replace="~{fragments/navbar :: navbar}"></nav>
 <main class="catalog-page product-detail">
     <a th:href="@{/marketplace}">← Marketplace</a>
+    <div class="media media-large">
+        <span class="media-ph" th:text="${#strings.substring(product.nome, 0, 1)}">P</span>
+        <img th:if="${product.immagineUrl != null and !#strings.isEmpty(product.immagineUrl)}"
+             th:src="${product.immagineUrl}" th:alt="${product.nome}" referrerpolicy="no-referrer"
+             onerror="this.remove()">
+    </div>
     <p class="product-category" th:text="${product.categoria.nome}">Category</p>
     <h1 th:text="${product.nome}">Product</h1>
     <p th:if="${product.descrizione != null and !#strings.isEmpty(product.descrizione)}"

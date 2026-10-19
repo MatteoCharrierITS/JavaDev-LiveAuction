@@ -10,10 +10,17 @@
         <p th:text="${victories.totalElements} + ' victories'">Victories</p>
         <div class="product-grid">
             <article class="product-card" th:each="v : ${victories.content}">
+                <div class="media">
+                    <span class="media-ph" th:text="${#strings.substring(v.prodotto.nome, 0, 1)}">P</span>
+                    <img th:if="${v.prodotto.immagineUrl != null and !#strings.isEmpty(v.prodotto.immagineUrl)}"
+                         th:src="${v.prodotto.immagineUrl}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">
+                </div>
+                <div class="card-body">
                 <h2 th:text="${v.prodotto.nome}">Product</h2>
                 <p>Product #<span th:text="${v.prodotto.id}">1</span> · Auction #<span th:text="${v.id}">1</span></p>
                 <p>Final price: <strong th:text="${display.amount(v.prezzoFinale)}">0,00</strong> CRD</p>
                 <p>Closed: <time th:attr="datetime=${v.chiusaAt}" th:text="${display.date(v.chiusaAt)}">Time</time></p>
+                </div>
             </article>
         </div>
     </section>

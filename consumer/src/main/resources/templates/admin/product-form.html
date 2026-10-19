@@ -9,6 +9,7 @@
 <label for="sku">SKU</label><input id="sku" th:field="*{sku}" maxlength="30" required><label for="nome">Name</label><input id="nome" th:field="*{nome}" maxlength="200" required>
 <label for="descrizione">Description</label><textarea id="descrizione" th:field="*{descrizione}" maxlength="5000" rows="5"></textarea>
 <label for="prezzoFisso">Fixed price (CRD, optional)</label><input id="prezzoFisso" th:field="*{prezzoFisso}" type="number" min="0.01" step="0.01">
+<label for="immagineUrl">Image URL (optional, https)</label><input id="immagineUrl" th:field="*{immagineUrl}" type="url" maxlength="500" placeholder="https://cdn.dummyjson.com/...">
 <label for="astabile">Auction eligibility flag</label><select id="astabile" th:field="*{astabile}"><option value="true">Enabled</option><option value="false">Disabled</option></select>
 <label for="quantitaDisponibile">Available stock</label><input id="quantitaDisponibile" th:field="*{quantitaDisponibile}" type="number" min="0" step="1" required>
 <div th:if="${productId != null}"><label for="attivo">Product status</label><select id="attivo" th:field="*{attivo}"><option value="true">Active</option><option value="false">Inactive</option></select>

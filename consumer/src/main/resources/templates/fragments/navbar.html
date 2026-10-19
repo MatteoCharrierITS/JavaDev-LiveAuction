@@ -1,17 +1,23 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org">
 <nav th:fragment="navbar" class="site-nav" aria-label="Main navigation">
-    <a class="brand" th:href="@{/}">LiveAuction</a>
+    <a class="brand" th:href="@{/marketplace}"><span class="brand-mark" aria-hidden="true">LA</span> LiveAuction</a>
     <div class="nav-links">
         <a th:href="@{/marketplace}">Marketplace</a>
         <a th:href="@{/aste}">Auctions</a>
-        <a th:if="${userVisitor}" th:href="@{/impostazioni/portafoglio}">Wallet</a>
         <a th:if="${userVisitor}" th:href="@{/me/vittorie}">My victories</a>
         <a th:if="${userVisitor}" th:href="@{/inventario}">Inventory</a>
         <a th:if="${adminVisitor}" th:href="@{/admin/prodotti}">ADMIN catalog</a>
         <a th:if="${adminVisitor}" th:href="@{/admin/aste/storico}">Auction history</a>
+    </div>
+    <div class="nav-user">
+        <a th:if="${userVisitor}" class="nav-balance" th:href="@{/impostazioni/portafoglio}" title="Wallet">
+            <span class="muted-light">Wallet</span>
+            <strong id="nav-balance-amount" th:attr="data-url=@{/me/saldo}">CRD</strong>
+        </a>
+        <script th:if="${userVisitor}" th:src="@{/js/nav-balance.js}" defer></script>
         <a th:if="${!signedIn}" th:href="@{/login}">Sign in</a>
-        <a th:if="${!signedIn}" th:href="@{/registrazione}">Create account</a>
+        <a th:if="${!signedIn}" class="btn btn-light" th:href="@{/registrazione}">Create account</a>
         <a th:if="${signedIn}" th:href="@{/account}" th:text="${displayName}">Account</a>
         <form th:if="${signedIn}" th:action="@{/logout}" method="post">
             <button type="submit" class="link-button">Sign out</button>

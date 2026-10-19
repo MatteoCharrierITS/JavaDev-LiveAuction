@@ -27,7 +27,7 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.GET, "/marketplace", "/prodotti/**", "/aste").permitAll()
 						.requestMatchers(HttpMethod.POST, "/prodotti/*/acquisti").hasRole("USER")
 						.requestMatchers("/admin/**").hasRole("ADMIN")
-						.requestMatchers("/aste/**", "/inventario/**", "/me/vittorie/**",
+						.requestMatchers("/aste/**", "/inventario/**", "/me/vittorie/**", "/me/saldo",
 								"/impostazioni/portafoglio", "/impostazioni/portafoglio/**").hasRole("USER")
 						.requestMatchers("/account", "/account/**").authenticated()
 						// Keep this last so unknown public URLs reach MVC's accessible 404 page.

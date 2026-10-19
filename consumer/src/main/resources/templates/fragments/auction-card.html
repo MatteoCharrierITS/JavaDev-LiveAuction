@@ -1,25 +1,34 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org">
 <article th:fragment="card(auction, serverTime, userVisitor, signedIn)" class="product-card auction-card">
-    <p class="auction-state" th:text="${auction.stato}">State</p>
-    <h2 th:text="${auction.prodotto.nome}">Product</h2>
-    <p class="product-price">Starting price: <span th:text="${display.amount(auction.prezzoIniziale)}">0,00</span> CRD</p>
-    <p class="product-price" th:if="${auction.offertaCorrente != null}">Current offer: <span th:text="${display.amount(auction.offertaCorrente)}">0,00</span> CRD</p>
-    <dl class="product-facts">
-        <div><dt>Offers</dt><dd th:text="${auction.numeroOfferte}">0</dd></div>
-        <div><dt>Room opens</dt><dd><time class="auction-time" th:attr="datetime=${auction.aperturaStanzaAt}" th:text="${display.date(auction.aperturaStanzaAt)}">Time</time></dd></div>
-        <div><dt>Starts</dt><dd><time class="auction-time" th:attr="datetime=${auction.inizioAt}" th:text="${display.date(auction.inizioAt)}">Time</time></dd></div>
-        <div><dt>Ends</dt><dd><time class="auction-time" th:attr="datetime=${auction.fineAt}" th:text="${display.date(auction.fineAt)}">Time</time></dd></div>
-    </dl>
-    <p class="auction-countdown" th:if="${auction.countdownLabel() != null and auction.countdownTarget() != null}"
-       th:attr="data-target=${auction.countdownTarget()}">
-        <span th:text="${auction.countdownLabel()}">Countdown</span>:
-        <strong class="auction-remaining">Calculating…</strong>
-    </p>
-    <p th:if="${auction.stato == 'CHIUSA'}" class="muted">Closed auction. Winner details are not available in the lobby.</p>
-    <p th:if="${auction.stato == 'ANNULLATA'}" class="muted">This auction was cancelled.</p>
-    <p th:if="${auction.roomAvailableAt(serverTime) and userVisitor}"><a th:href="@{/aste/{id}(id=${auction.id})}">Enter auction room</a></p>
-    <p th:if="${auction.roomAvailableAt(serverTime) and !signedIn}"><a th:href="@{/login}">Sign in to enter the room</a></p>
-    <p th:if="${auction.stato == 'PROGRAMMATA'}" class="muted">Room access begins when the Producer opens it.</p>
+    <div class="media">
+        <span class="media-ph" th:text="${#strings.substring(auction.prodotto.nome, 0, 1)}">P</span>
+        <img th:if="${auction.prodotto.immagineUrl != null and !#strings.isEmpty(auction.prodotto.immagineUrl)}"
+             th:src="${auction.prodotto.immagineUrl}" alt="" loading="lazy" referrerpolicy="no-referrer"
+             onerror="this.remove()">
+        <span class="auction-state media-badge" th:classappend="'state-' + ${auction.stato}" th:text="${auction.stato}">State</span>
+    </div>
+    <div class="card-body">
+        <h2 th:text="${auction.prodotto.nome}">Product</h2>
+        <p class="product-price" th:if="${auction.offertaCorrente != null}"><small>Current offer</small> <span th:text="${display.amount(auction.offertaCorrente)}">0,00</span> <small>CRD</small></p>
+        <p class="product-price" th:if="${auction.offertaCorrente == null}"><small>Starting price</small> <span th:text="${display.amount(auction.prezzoIniziale)}">0,00</span> <small>CRD</small></p>
+        <p class="muted small" th:if="${auction.offertaCorrente != null}">Starting price: <span th:text="${display.amount(auction.prezzoIniziale)}">0,00</span> CRD</p>
+        <p class="auction-countdown" th:if="${auction.countdownLabel() != null and auction.countdownTarget() != null}"
+           th:attr="data-target=${auction.countdownTarget()}">
+            <span th:text="${auction.countdownLabel()}">Countdown</span>:
+            <strong class="auction-remaining">Calculating…</strong>
+        </p>
+        <dl class="product-facts compact">
+            <div><dt>Offers</dt><dd th:text="${auction.numeroOfferte}">0</dd></div>
+            <div><dt>Room opens</dt><dd><time class="auction-time" th:attr="datetime=${auction.aperturaStanzaAt}" th:text="${display.date(auction.aperturaStanzaAt)}">Time</time></dd></div>
+            <div><dt>Starts</dt><dd><time class="auction-time" th:attr="datetime=${auction.inizioAt}" th:text="${display.date(auction.inizioAt)}">Time</time></dd></div>
+            <div><dt>Ends</dt><dd><time class="auction-time" th:attr="datetime=${auction.fineAt}" th:text="${display.date(auction.fineAt)}">Time</time></dd></div>
+        </dl>
+        <p th:if="${auction.stato == 'CHIUSA'}" class="muted">Closed auction. Winner details are not available in the lobby.</p>
+        <p th:if="${auction.stato == 'ANNULLATA'}" class="muted">This auction was cancelled.</p>
+        <a class="btn btn-block" th:if="${auction.roomAvailableAt(serverTime) and userVisitor}" th:href="@{/aste/{id}(id=${auction.id})}">Enter auction room</a>
+        <a class="btn btn-block btn-outline" th:if="${auction.roomAvailableAt(serverTime) and !signedIn}" th:href="@{/login}">Sign in to enter the room</a>
+        <p th:if="${auction.stato == 'PROGRAMMATA'}" class="muted small">Room access begins when the Producer opens it.</p>
+    </div>
 </article>
 </html>
