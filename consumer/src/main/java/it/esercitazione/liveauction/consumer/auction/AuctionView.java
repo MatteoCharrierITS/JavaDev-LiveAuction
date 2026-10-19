@@ -6,7 +6,7 @@ import java.time.Instant;
 public record AuctionView(Long id, String stato, Product prodotto,
                           BigDecimal prezzoIniziale, BigDecimal offertaCorrente, long numeroOfferte,
                           Instant aperturaStanzaAt, Instant inizioAt, Instant fineAt) {
-    public record Product(Long id, String nome) { }
+    public record Product(Long id, String nome, String immagineUrl) { }
 
     public boolean roomAvailableAt(Instant serverTime) {
         return id != null && serverTime != null && aperturaStanzaAt != null

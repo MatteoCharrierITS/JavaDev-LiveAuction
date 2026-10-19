@@ -29,7 +29,7 @@ public class AuthWebController {
 
     @GetMapping("/")
     public String home(Authentication authentication) {
-        return authenticated(authentication) ? "redirect:/account" : "redirect:/login";
+        return "redirect:/marketplace";
     }
 
     @GetMapping("/login")

@@ -4,6 +4,6 @@ import java.math.BigDecimal;
 
 public record AdminProduct(Long id, String sku, String nome, String descrizione, BigDecimal prezzoFisso,
         boolean astabile, int quantitaDisponibile, int quantitaBloccata, long asteProgrammate,
-        boolean attivo, AdminCategory categoria, long versione) {
+        boolean attivo, AdminCategory categoria, long versione, String immagineUrl) {
     public boolean eligible() { return astabile && quantitaDisponibile > 0; }
 }

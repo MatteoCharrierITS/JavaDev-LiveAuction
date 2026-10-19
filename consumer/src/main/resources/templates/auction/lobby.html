@@ -32,14 +32,14 @@
         <th:block th:unless="${auctions.content.isEmpty()}">
             <p class="result-count" th:text="${auctions.totalElements} + ' auctions found'">Auctions found</p>
             <div class="product-grid">
-                <th:block th:each="auction : ${auctions.content}">
+                <div class="auction-cell" th:each="auction : ${auctions.content}">
                     <div th:replace="~{fragments/auction-card :: card(${auction}, ${auctions.serverTime}, ${userVisitor}, ${signedIn})}"></div>
                     <form th:if="${adminVisitor and auction.numeroOfferte == 0 and (auction.stato == 'PROGRAMMATA' or auction.stato == 'STANZA_APERTA' or auction.stato == 'APERTA') and auction.fineAt != null and auctions.serverTime.isBefore(auction.fineAt)}"
                           th:action="@{/admin/aste/{id}/annullamento(id=${auction.id})}" method="post">
-                        <button type="submit">Cancel auction #<span th:text="${auction.id}">1</span></button>
+                        <button type="submit" class="danger">Cancel auction #<span th:text="${auction.id}">1</span></button>
                         <span class="muted">The Producer checks final eligibility.</span>
                     </form>
-                </th:block>
+                </div>
             </div>
         </th:block>
     </section>

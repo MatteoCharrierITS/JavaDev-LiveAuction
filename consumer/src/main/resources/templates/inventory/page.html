@@ -8,6 +8,12 @@
     <p th:if="${inventory.content.isEmpty()}" class="empty-state">No products on this page.</p>
     <div class="product-grid">
         <article class="product-card" th:each="item : ${inventory.content}">
+            <div class="media">
+                <span class="media-ph" th:text="${#strings.substring(item.prodotto.nome, 0, 1)}">P</span>
+                <img th:if="${item.prodotto.immagineUrl != null and !#strings.isEmpty(item.prodotto.immagineUrl)}"
+                     th:src="${item.prodotto.immagineUrl}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">
+            </div>
+            <div class="card-body">
             <h2 th:text="${item.prodotto.nome}">Product</h2>
             <p>SKU: <span th:text="${item.prodotto.sku}">SKU</span></p>
             <p th:text="${item.prodotto.categoria.nome}">Category</p>
@@ -16,6 +22,7 @@
             <a th:if="${item.prodotto.attivo and item.prodotto.categoria.attiva}"
                th:href="@{/prodotti/{id}(id=${item.prodotto.id})}">Product details</a>
             <p th:unless="${item.prodotto.attivo and item.prodotto.categoria.attiva}">No longer listed in the public catalogue.</p>
+            </div>
         </article>
     </div>
     <nav th:if="${inventory.totalPages > 1}" class="pagination" aria-label="Inventory pages">
