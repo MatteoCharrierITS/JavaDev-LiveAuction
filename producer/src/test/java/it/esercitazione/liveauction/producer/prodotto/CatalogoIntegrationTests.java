@@ -126,6 +126,34 @@ class CatalogoIntegrationTests {
     }
 
     @Test
+    void immagineUrlIsOptionalValidatedAndExposed() throws Exception {
+        Fixture f = fixture();
+        mvc.perform(get("/api/v1/prodotti/{id}", f.productId()))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.immagineUrl").doesNotExist());
+        var corpo = new java.util.LinkedHashMap<String, Object>();
+        corpo.put("categoriaId", f.categoryId());
+        corpo.put("sku", f.sku());
+        corpo.put("nome", "Con immagine");
+        corpo.put("astabile", true);
+        corpo.put("quantitaDisponibile", 3);
+        corpo.put("attivo", true);
+        corpo.put("versione", 0L);
+        corpo.put("immagineUrl", "javascript:alert(1)");
+        mvc.perform(put("/api/v1/admin/prodotti/{id}", f.productId())
+                        .header("Authorization", "Bearer " + f.adminToken())
+                        .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(corpo)))
+                .andExpect(status().isBadRequest());
+        corpo.put("immagineUrl", "https://cdn.example.com/p/1.webp");
+        mvc.perform(put("/api/v1/admin/prodotti/{id}", f.productId())
+                        .header("Authorization", "Bearer " + f.adminToken())
+                        .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(corpo)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.immagineUrl").value("https://cdn.example.com/p/1.webp"));
+        mvc.perform(get("/api/v1/prodotti/{id}", f.productId()))
+                .andExpect(jsonPath("$.immagineUrl").value("https://cdn.example.com/p/1.webp"));
+    }
+
+    @Test
     void adminFiltersInactiveProductsAndCannotOverwriteChangedStock() throws Exception {
         Fixture f = fixture();
         jdbc.update("UPDATE prodotti SET quantita_disponibile = 2, quantita_bloccata = 1, versione = versione + 1 WHERE id = ?",

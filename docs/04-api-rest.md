@@ -154,6 +154,7 @@ GET /api/v1/prodotti?query=laptop&categoria=informatica&astabile=true&page=0&siz
     "sku": "INF-LAP-001",
     "nome": "Laptop Pro 15",
     "descrizione": "Laptop per lo studio",
+    "immagineUrl": "https://cdn.example.com/prodotti/laptop-pro-15.webp",
     "prezzoFisso": 1299.90,
     "astabile": true,
     "quantitaDisponibile": 3,
@@ -171,6 +172,10 @@ GET /api/v1/prodotti?query=laptop&categoria=informatica&astabile=true&page=0&siz
 }
 ```
 
+`immagineUrl` è l'URL (http o https, max 500) dell'immagine del prodotto, oppure `null` se
+non presente; compare in tutte le risposte che descrivono un prodotto (catalogo,
+dettaglio, ADMIN, inventario) e nella sintesi `prodotto` di aste, snapshot, storici e vittorie.
+
 `astabile` è un campo persistito, non è derivato da altri valori. La possibilità
 effettiva di programmare una nuova asta richiede anche
 `quantitaDisponibile > 0`.
@@ -184,7 +189,8 @@ presente in `content`, senza l'involucro di paginazione.
 `POST /admin/prodotti` restituisce `201` e il DTO prodotto. Richiede
 `categoriaId` positivo ed esistente, `sku` non vuoto (max 30), `nome` non vuoto
 (max 200), `astabile` boolean e `quantitaDisponibile` intera non negativa.
-`descrizione` è facoltativa (max 5000); `prezzoFisso` è facoltativo o null,
+`descrizione` è facoltativa (max 5000); `immagineUrl` è facoltativa (max 500, deve essere
+un URL `http://` o `https://`; stringa vuota o null = nessuna immagine); `prezzoFisso` è facoltativo o null,
 altrimenti deve essere positivo con max 10 cifre intere e 2 decimali.
 SKU normalizzato in maiuscolo senza spazi esterni; nome e descrizione vengono
 ripuliti dagli spazi esterni. Un prodotto nuovo è attivo, con quantità bloccata
@@ -202,6 +208,7 @@ o null vengono azzerati. Esempio:
   "sku": "INF-LAP-001",
   "nome": "Laptop Pro 15",
   "descrizione": "Laptop per lo studio",
+  "immagineUrl": "https://cdn.example.com/prodotti/laptop-pro-15.webp",
   "prezzoFisso": 1299.90,
   "astabile": true,
   "quantitaDisponibile": 3,
@@ -346,7 +353,7 @@ Il body usa il DTO di creazione, con una sintesi del prodotto e orari UTC:
 {
   "id": 42,
   "stato": "PROGRAMMATA",
-  "prodotto": { "id": 1, "nome": "Laptop Pro 15" },
+  "prodotto": { "id": 1, "nome": "Laptop Pro 15", "immagineUrl": "https://cdn.example.com/prodotti/laptop-pro-15.webp" },
   "prezzoIniziale": 500.00,
   "incrementoMinimo": 1.00,
   "aperturaStanzaAt": "2026-10-03T16:27:00Z",
@@ -400,7 +407,7 @@ GET /api/v1/aste?stato=APERTA&categoria=informatica&query=laptop&page=0&size=12
   "content": [{
     "id": 42,
     "stato": "APERTA",
-    "prodotto": { "id": 1, "nome": "Laptop Pro 15" },
+    "prodotto": { "id": 1, "nome": "Laptop Pro 15", "immagineUrl": "https://cdn.example.com/prodotti/laptop-pro-15.webp" },
     "prezzoIniziale": 500.00,
     "incrementoMinimo": 1.00,
     "offertaCorrente": 630.00,
@@ -434,7 +441,7 @@ restituisce `404 RISORSA_NON_TROVATA` in `application/problem+json`.
 {
   "id": 42,
   "stato": "STANZA_APERTA",
-  "prodotto": { "id": 1, "nome": "Laptop Pro 15" },
+  "prodotto": { "id": 1, "nome": "Laptop Pro 15", "immagineUrl": "https://cdn.example.com/prodotti/laptop-pro-15.webp" },
   "prezzoIniziale": 500.00,
   "incrementoMinimo": 1.00,
   "offertaCorrente": null,
@@ -557,7 +564,7 @@ l'inventario altrui. La risposta ha `Cache-Control: no-store`.
 {
   "content": [{
     "prodotto": {
-      "id": 3, "sku": "KEY-001", "nome": "Tastiera", "descrizione": null,
+      "id": 3, "sku": "KEY-001", "nome": "Tastiera", "descrizione": null, "immagineUrl": null,
       "attivo": true, "categoria": {"id": 1, "nome": "Hardware", "attiva": true}
     },
     "quantita": 2
@@ -642,7 +649,7 @@ non include aste senza vincitore, annullate o ancora aperte.
 {
   "content": [{
     "id": 18,
-    "prodotto": { "id": 3, "nome": "Tastiera meccanica" },
+    "prodotto": { "id": 3, "nome": "Tastiera meccanica", "immagineUrl": null },
     "prezzoFinale": 75.00,
     "chiusaAt": "2026-10-12T12:37:20Z"
   }],

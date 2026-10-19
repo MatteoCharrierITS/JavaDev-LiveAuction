@@ -79,6 +79,7 @@ public class ProdottoService {
         prodotto.setSku(sku);
         prodotto.setNome(request.nome().trim());
         prodotto.setDescrizione(normalizzaDescrizione(request.descrizione()));
+        prodotto.setImmagineUrl(normalizzaDescrizione(request.immagineUrl()));
         prodotto.setPrezzoFisso(request.prezzoFisso());
         prodotto.setAstabile(request.astabile());
         prodotto.setQuantitaDisponibile(request.quantitaDisponibile());
@@ -104,6 +105,7 @@ public class ProdottoService {
         prodotto.setSku(sku);
         prodotto.setNome(request.nome().trim());
         prodotto.setDescrizione(normalizzaDescrizione(request.descrizione()));
+        prodotto.setImmagineUrl(normalizzaDescrizione(request.immagineUrl()));
         prodotto.setPrezzoFisso(request.prezzoFisso());
         prodotto.setAstabile(request.astabile());
         prodotto.setQuantitaDisponibile(request.quantitaDisponibile());

@@ -56,7 +56,7 @@ dalle relative `offerte`.
 
 ## DDL di riferimento
 
-La fonte eseguibile è `producer/src/main/resources/db/migration/` (V1–V14).
+La fonte eseguibile è `producer/src/main/resources/db/migration/` (V1–V15).
 Il DDL sotto riassume le tabelle iniziali; V9 crea `auth_sessions`, V10 aggiunge
 lo stato operativo delle offerte e V11 la coda email. Non applicare questo
 riepilogo manualmente in alternativa a Flyway.
@@ -110,6 +110,7 @@ CREATE TABLE prodotti (
     sku VARCHAR(30) NOT NULL UNIQUE,
     nome VARCHAR(200) NOT NULL,
     descrizione TEXT,
+    immagine_url VARCHAR(500), -- aggiunta da V15, nullable
     prezzo_fisso NUMERIC(12,2),
     astabile BOOLEAN NOT NULL DEFAULT FALSE,
     quantita_disponibile INT NOT NULL DEFAULT 0,
@@ -194,6 +195,9 @@ V14 estende solo il vincolo dei tipi ledger con `INCASSO_FISSO`, senza modificar
 V8. Acquisto e incasso hanno asta_id null; i movimenti e l'acquisto sono scritti
 nella stessa transazione. Nessuna migrazione crea un ADMIN o dati demo.
 
+V15 aggiunge `prodotti.immagine_url VARCHAR(500)` nullable (URL http/https dell'immagine
+del prodotto, esposto come `immagineUrl`); nessun valore predefinito e nessun dato demo.
+
 La modifica ADMIN del prodotto richiede la `versione` letta dal client.
 Un aggiornamento concorrente o una versione obsoleta restituisce
 `409 VERSIONE_NON_AGGIORNATA`. Ogni modulo che aggiorna lo stock, anche tramite
@@ -224,7 +228,8 @@ Le migrazioni che creano tabelle usano una tabella per file e non inseriscono
 dati demo. V10 è un'evoluzione della tabella `offerte`: aggiunge colonne e
 indici e ricostruisce il leader per le offerte già presenti. Le nuove
 evoluzioni richiedono migrazioni versionate, senza riscrivere quelle applicate.
-Utenti, prodotti e aste vanno creati esplicitamente dopo l'avvio.
+Utenti, prodotti e aste vanno creati esplicitamente dopo l'avvio, oppure con il popolamento
+demo opzionale del Producer (`DEMO_SEED=true`, vedere `docs/15-dati-demo.md`).
 
 ## Annullamento e storici (V12)
 

@@ -31,6 +31,9 @@ public class Prodotto {
     @Column(name = "descrizione", columnDefinition = "TEXT")
     private String descrizione;
 
+    @Column(name = "immagine_url", length = 500)
+    private String immagineUrl;
+
     @Column(name = "prezzo_fisso", precision = 12, scale = 2)
     private BigDecimal prezzoFisso;
 

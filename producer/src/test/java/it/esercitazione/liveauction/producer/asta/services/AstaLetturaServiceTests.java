@@ -56,7 +56,7 @@ class AstaLetturaServiceTests {
     }
 
     private void prepara(Stato stato, String username) {
-        var asta = new DatiAsta(42L, stato, 3L, "Laptop", new BigDecimal("500.00"),
+        var asta = new DatiAsta(42L, stato, 3L, "Laptop", null, new BigDecimal("500.00"),
                 new BigDecimal("1.00"), null, INIZIO, INIZIO.plusSeconds(420), 2, 0);
         when(repository.snapshot(42)).thenReturn(Optional.of(new DatiSnapshot(asta,
                 username == null ? null : 9L, username, null, null, null)));

@@ -11,6 +11,6 @@ public record AstaSintesiResponse(
         Instant aperturaStanzaAt, Instant inizioAt, Instant fineAt,
         boolean offerteConsentite, long sequence) {
 
-    public record ProdottoSintesi(Long id, String nome) {
+    public record ProdottoSintesi(Long id, String nome, String immagineUrl) {
     }
 }

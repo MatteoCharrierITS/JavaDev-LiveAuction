@@ -70,7 +70,7 @@ public class AstaLetturaService {
     }
 
     private static ProdottoSintesi prodotto(DatiAsta asta) {
-        return new ProdottoSintesi(asta.prodottoId(), asta.prodottoNome());
+        return new ProdottoSintesi(asta.prodottoId(), asta.prodottoNome(), asta.prodottoImmagineUrl());
     }
 
     private static boolean offerteConsentite(DatiAsta asta, Instant adesso) {

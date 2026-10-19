@@ -142,7 +142,7 @@ class ProdottoAstaLockIntegrationTests {
         risposta.fieldNames().forEachRemaining(campi::add);
         assertThat(campi).containsExactlyInAnyOrder("id", "stato", "prodotto", "prezzoIniziale",
                 "incrementoMinimo", "aperturaStanzaAt", "inizioAt", "fineAt", "serverTime", "sequence");
-        assertThat(risposta.get("prodotto").size()).isEqualTo(2);
+        assertThat(risposta.get("prodotto").size()).isEqualTo(3);
         Instant inizioAt = richiesta().inizioLocale().atZone(ZoneId.of("Europe/Rome")).toInstant();
         assertThat(risposta.get("inizioAt").asText()).isEqualTo(inizioAt.toString());
         assertThat(risposta.get("aperturaStanzaAt").asText()).isEqualTo(inizioAt.minusSeconds(180).toString());

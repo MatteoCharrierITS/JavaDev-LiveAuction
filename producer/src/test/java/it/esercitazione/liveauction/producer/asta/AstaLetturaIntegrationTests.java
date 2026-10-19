@@ -100,7 +100,7 @@ class AstaLetturaIntegrationTests {
         assertThat(Instant.parse(risposta.get("aperturaStanzaAt").asText())).isEqualTo(inizio.minusSeconds(180));
         assertThat(Instant.parse(risposta.get("fineAt").asText())).isEqualTo(inizio.plusSeconds(420));
         assertThat(body).doesNotContain("password", "email", "admin", "versione", "dataCreazione");
-        assertThat(risposta.get("prodotto").size()).isEqualTo(2);
+        assertThat(risposta.get("prodotto").size()).isEqualTo(3);
         assertThat(risposta.has("vincitore")).isFalse();
     }
 

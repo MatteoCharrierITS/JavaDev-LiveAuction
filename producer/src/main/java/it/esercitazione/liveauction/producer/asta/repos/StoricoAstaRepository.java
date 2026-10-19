@@ -51,14 +51,15 @@ public class StoricoAstaRepository {
         long totale = jdbc.queryForObject("SELECT count(*) " + filtro, parametri, Long.class);
         parametri.addValue("size", size).addValue("offset", (long) page * size);
         var contenuto = jdbc.query("""
-                SELECT a.id, a.stato, p.id AS prodotto_id, p.nome, a.vincitore_id,
+                SELECT a.id, a.stato, p.id AS prodotto_id, p.nome, p.immagine_url, a.vincitore_id,
                     CASE WHEN a.stato = 'CHIUSA' AND a.vincitore_id IS NOT NULL
                         THEN a.offerta_corrente END AS prezzo_finale, a.inizio_at, a.fine_at,
                 """ + CONCLUSA + " AS conclusa_at " + filtro
                 + " ORDER BY " + CONCLUSA + " DESC, a.id DESC LIMIT :size OFFSET :offset",
                 parametri, (rs, row) -> new StoricoAstaResponse(rs.getLong("id"),
                         Stato.valueOf(rs.getString("stato")),
-                        new ProdottoSintesi(rs.getLong("prodotto_id"), rs.getString("nome")),
+                        new ProdottoSintesi(rs.getLong("prodotto_id"), rs.getString("nome"),
+                                rs.getString("immagine_url")),
                         rs.getObject("vincitore_id", Long.class), rs.getBigDecimal("prezzo_finale"),
                         rs.getTimestamp("inizio_at").toInstant(), rs.getTimestamp("fine_at").toInstant(),
                         rs.getTimestamp("conclusa_at").toInstant()));

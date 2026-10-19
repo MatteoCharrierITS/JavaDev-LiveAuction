@@ -20,7 +20,7 @@ public class AstaLetturaRepository {
 
     private static final String CAMPI_ASTA = """
             a.id, a.stato, a.prezzo_iniziale, a.incremento_minimo, a.offerta_corrente,
-            a.inizio_at, a.fine_at, a.sequence, p.id AS prodotto_id, p.nome AS prodotto_nome,
+            a.inizio_at, a.fine_at, a.sequence, p.id AS prodotto_id, p.nome AS prodotto_nome, p.immagine_url AS prodotto_immagine_url,
             (SELECT count(*) FROM offerte o WHERE o.asta_id = a.id) AS numero_offerte
             """;
     private static final String TABELLE_LOBBY = """
@@ -84,7 +84,7 @@ public class AstaLetturaRepository {
 
     private static DatiAsta leggiAsta(ResultSet rs) throws SQLException {
         return new DatiAsta(rs.getLong("id"), Stato.valueOf(rs.getString("stato")),
-                rs.getLong("prodotto_id"), rs.getString("prodotto_nome"),
+                rs.getLong("prodotto_id"), rs.getString("prodotto_nome"), rs.getString("prodotto_immagine_url"),
                 rs.getBigDecimal("prezzo_iniziale"), rs.getBigDecimal("incremento_minimo"),
                 rs.getBigDecimal("offerta_corrente"), istante(rs, "inizio_at"), istante(rs, "fine_at"),
                 rs.getLong("sequence"), rs.getLong("numero_offerte"));
@@ -95,7 +95,7 @@ public class AstaLetturaRepository {
         return valore == null ? null : valore.toInstant();
     }
 
-    public record DatiAsta(Long id, Stato stato, Long prodottoId, String prodottoNome,
+    public record DatiAsta(Long id, Stato stato, Long prodottoId, String prodottoNome, String prodottoImmagineUrl,
                           BigDecimal prezzoIniziale, BigDecimal incrementoMinimo, BigDecimal offertaCorrente,
                           Instant inizioAt, Instant fineAt, long sequence, long numeroOfferte) {
     }

@@ -6,6 +6,7 @@ public record PaginaInventarioResponse(List<Elemento> content, int page, int siz
                                        long totalElements, long totalPages) {
     public record Elemento(Prodotto prodotto, int quantita) {}
     public record Prodotto(long id, String sku, String nome, String descrizione,
+                           String immagineUrl,
                            boolean attivo, Categoria categoria) {}
     public record Categoria(long id, String nome, boolean attiva) {}
 }

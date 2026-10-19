@@ -21,12 +21,13 @@ public record ProgrammaAstaResponse(
     public static ProgrammaAstaResponse from(Asta asta, Instant serverTime) {
         return new ProgrammaAstaResponse(
                 asta.getId(), asta.getStato(),
-                new ProdottoSintesi(asta.getProdotto().getId(), asta.getProdotto().getNome()),
+                new ProdottoSintesi(asta.getProdotto().getId(), asta.getProdotto().getNome(),
+                        asta.getProdotto().getImmagineUrl()),
                 asta.getPrezzoIniziale(), asta.getIncrementoMinimo(),
                 asta.getInizioAt().minusSeconds(3 * 60), asta.getInizioAt(), asta.getFineAt(),
                 serverTime, asta.getSequence());
     }
 
-    public record ProdottoSintesi(Long id, String nome) {
+    public record ProdottoSintesi(Long id, String nome, String immagineUrl) {
     }
 }

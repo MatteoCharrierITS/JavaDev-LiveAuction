@@ -29,13 +29,13 @@ public class InventarioService {
         long totale = jdbc.queryForObject("SELECT count(*) FROM inventario_utenti WHERE utente_id=? AND quantita>0",
                 Long.class, utenteId);
         var content = jdbc.query("""
-                SELECT p.id, p.sku, p.nome, p.descrizione, p.attivo, i.quantita,
+                SELECT p.id, p.sku, p.nome, p.descrizione, p.immagine_url, p.attivo, i.quantita,
                        c.id AS categoria_id, c.nome AS categoria_nome, c.attiva
                 FROM inventario_utenti i JOIN prodotti p ON p.id=i.prodotto_id
                 JOIN categorie c ON c.id=p.categoria_id
                 WHERE i.utente_id=? AND i.quantita>0 ORDER BY p.id LIMIT ? OFFSET ?
                 """, (rs, row) -> new Elemento(new Prodotto(rs.getLong("id"), rs.getString("sku"),
-                rs.getString("nome"), rs.getString("descrizione"), rs.getBoolean("attivo"),
+                rs.getString("nome"), rs.getString("descrizione"), rs.getString("immagine_url"), rs.getBoolean("attivo"),
                 new Categoria(rs.getLong("categoria_id"), rs.getString("categoria_nome"), rs.getBoolean("attiva"))),
                 rs.getInt("quantita")), utenteId, size, (long) page * size);
         return new PaginaInventarioResponse(content, page, size, totale,
