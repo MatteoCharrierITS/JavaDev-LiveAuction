@@ -3,6 +3,7 @@ package it.esercitazione.liveauction.producer.websocket;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.messaging.simp.config.ChannelRegistration;
@@ -27,16 +28,19 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     private final TicketHandshakeHandler ticketHandshakeHandler;
     private final AstaStompAuthorizationInterceptor authorizationInterceptor;
     private final ObjectMapper json;
+    private final String[] allowedOrigins;
     private TaskScheduler messageBrokerTaskScheduler;
 
     public WebSocketConfig(TicketHandshakeInterceptor ticketHandshakeInterceptor,
                            TicketHandshakeHandler ticketHandshakeHandler,
                            AstaStompAuthorizationInterceptor authorizationInterceptor,
-                           ObjectMapper json) {
+                           ObjectMapper json,
+                           @Value("${app.websocket.allowed-origins:http://localhost:8082}") String[] allowedOrigins) {
         this.ticketHandshakeInterceptor = ticketHandshakeInterceptor;
         this.ticketHandshakeHandler = ticketHandshakeHandler;
         this.authorizationInterceptor = authorizationInterceptor;
         this.json = json;
+        this.allowedOrigins = allowedOrigins;
     }
 
     @Autowired
@@ -48,7 +52,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.setPreserveReceiveOrder(true);
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("http://localhost:8082")
+                .setAllowedOrigins(allowedOrigins)
                 .addInterceptors(ticketHandshakeInterceptor)
                 .setHandshakeHandler(ticketHandshakeHandler);
     }

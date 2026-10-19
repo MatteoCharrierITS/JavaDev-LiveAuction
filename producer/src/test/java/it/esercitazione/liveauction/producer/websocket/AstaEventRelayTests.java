@@ -24,7 +24,8 @@ class AstaEventRelayTests {
     @Test
     void jsonConverterPreservesAmountPrecisionAndRejectsFractionalSequence() {
         var config = new WebSocketConfig(mock(TicketHandshakeInterceptor.class), mock(TicketHandshakeHandler.class),
-                mock(AstaStompAuthorizationInterceptor.class), new ObjectMapper());
+                mock(AstaStompAuthorizationInterceptor.class), new ObjectMapper(),
+                new String[]{"http://localhost:8082"});
         var converters = new ArrayList<MessageConverter>();
         // Simula il converter permissivo registrato da Boot prima del nostro.
         converters.add(new org.springframework.messaging.converter.MappingJackson2MessageConverter());

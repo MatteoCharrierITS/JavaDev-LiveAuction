@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { webcrypto } from 'node:crypto';
 
 globalThis.document = { querySelector: () => null, createElement: () => ({ textContent: '' }) };
 const { RoomStomp } = await import('../../main/resources/static/js/room-stomp.mjs');
@@ -122,6 +123,36 @@ test('bid command has a fresh UUID and current knownSequence; private rejection 
     assert.equal(room.pending, null);
     assert.match(root.node('bid-status').textContent, /rejected/);
     room.stop();
+});
+
+test('HTTP over a network IP can send bids when crypto.randomUUID is unavailable', () => {
+    const cryptoDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'crypto');
+    Object.defineProperty(globalThis, 'crypto', { configurable: true,
+        value: { getRandomValues: webcrypto.getRandomValues.bind(webcrypto) } });
+    const root = fakeRoot();
+    const room = new AuctionRoom(root, { clock: () => 0 });
+    const sent = [];
+    room.refreshWallet = () => {};
+    room.applySnapshot(snapshot()); room.synced = true; room.online = true;
+    room.stomp = { sendBid: command => { sent.push(command); return true; }, close() {} };
+    root.node('bid-amount').value = '61,50';
+    room.updateBidAccess();
+    try {
+        for (let attempt = 0; attempt < 2; attempt++) {
+            room.bid({ preventDefault() {} });
+            const command = sent[attempt];
+            assert.match(command.clientBidId, /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+            assert.equal(command.importo, 61.5);
+            assert.equal(command.knownSequence, 3);
+            room.privateMessage({ type: 'BID_REJECTED', clientBidId: command.clientBidId,
+                code: 'OFFERTA_SUPERATA', message: 'Bid too low' });
+        }
+        assert.notEqual(sent[0].clientBidId, sent[1].clientBidId);
+    } finally {
+        room.stop();
+        if (cryptoDescriptor) Object.defineProperty(globalThis, 'crypto', cryptoDescriptor);
+        else delete globalThis.crypto;
+    }
 });
 
 test('reconnection requests a new ticket and synchronizes before bidding', async () => {

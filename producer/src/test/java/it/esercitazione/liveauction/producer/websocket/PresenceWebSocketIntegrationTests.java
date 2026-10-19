@@ -2,10 +2,11 @@ package it.esercitazione.liveauction.producer.websocket;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -36,7 +37,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {"spring.docker.compose.enabled=false", "spring.http.client.factory=simple",
-                "app.aste.scheduler.enabled=false"})
+                "app.aste.scheduler.enabled=false",
+                "app.websocket.allowed-origins=http://localhost:8082,http://vpn-test:8082"})
 @AutoConfigureMockMvc
 @EnabledIfEnvironmentVariable(named = "RUN_WS_TESTS", matches = "true")
 class PresenceWebSocketIntegrationTests {
@@ -52,8 +54,9 @@ class PresenceWebSocketIntegrationTests {
     @AfterEach
     void pulisci() { data.close(); }
 
-    @Test
-    void joinSendsPrivateSnapshotAndPublicPresenceWithoutSequence() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"http://localhost:8082", "http://vpn-test:8082"})
+    void joinSendsPrivateSnapshotAndPublicPresenceWithoutSequence(String origin) throws Exception {
         String username = "ws_" + UUID.randomUUID().toString().substring(0, 8);
         data.usernames.add(username);
         mvc.perform(post("/api/v1/auth/register")
@@ -94,7 +97,7 @@ class PresenceWebSocketIntegrationTests {
         client.setMessageConverter(new MappingJackson2MessageConverter());
         try {
             WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
-            headers.setOrigin("http://localhost:8082");
+            headers.setOrigin(origin);
             StompSession session = client.connectAsync("ws://localhost:" + port + "/ws?ticket="
                     + ticket.get("ticket").asText(), headers, new StompSessionHandlerAdapter() {})
                     .get(10, TimeUnit.SECONDS);

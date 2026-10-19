@@ -17,6 +17,7 @@ Questa è la specifica corrente di **LiveAuction**.
 11. [Verifica e allineamento della documentazione](11-verifica-documentazione.md)
 12. [Consegna di Marco: annullamento e storici](12-annullamento-storici.md)
 13. [Inventario, acquisti fissi e collaudo locale](13-inventario-acquisti.md)
+14. [Avvio demo e correzioni HTTP su LAN/VPN — 19 ottobre 2026](14-avvio-demo-vpn.md)
 
 **[DA FARE — attività e prossimi passi del team](todo.md)**
 

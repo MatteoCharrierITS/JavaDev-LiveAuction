@@ -686,6 +686,14 @@ il Problem Details standard di Spring.
 
 Handshake: `ws://localhost:8081/ws?ticket={ticketMonouso}`.
 
+Il Producer accetta per default l'origine esatta `http://localhost:8082`.
+Per prove LAN/VPN configurare `LIVEAUCTION_WS_ALLOWED_ORIGINS` con le origini
+Consumer consentite separate da virgole. Nel Consumer configurare
+`LIVEAUCTION_PRODUCER_WS_URL` con un URL raggiungibile dal browser, per esempio
+`ws://192.168.1.10:8081/ws`; `localhost` sul PC remoto indica il PC remoto stesso.
+Queste variabili sono inoltrate anche da Docker Compose. Ticket, ruoli e
+validazione delle offerte rimangono obbligatori con qualsiasi origine ammessa.
+
 Il ticket può essere richiesto solo da tre minuti prima dell'inizio. Prima di
 quel momento il server risponde `409 STANZA_NON_APERTA`.
 `POST /api/v1/aste/{id}/ticket` richiede `ROLE_USER` e restituisce `200` con:

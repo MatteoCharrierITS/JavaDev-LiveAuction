@@ -326,6 +326,25 @@ Configurare prima `AUTH_JWT_SECRET` in `.env` come indicato sopra. Il profilo
 `prod` usa cookie di sessione `Secure`: su HTTP non-localhost serve HTTPS;
 per lo sviluppo locale HTTP usare i profili predefiniti con i JAR/IDE.
 
+Per una prova Docker su LAN/VPN tramite HTTP, impostare esplicitamente
+`CONSUMER_SESSION_COOKIE_SECURE=false` nel `.env` locale e ricreare il Consumer:
+`docker compose --profile prod up -d --no-deps consumer`. Questo consente al
+browser di inviare il cookie di sessione anche usando l'IP del server; con HTTPS
+mantenere il valore predefinito `true`. Per le aste live occorre configurare
+anche un URL WebSocket raggiungibile dal browser e ammettere la relativa origine
+nel Producer. Esempio `.env` per un server con IP `192.168.1.10`:
+
+```dotenv
+CONSUMER_SESSION_COOKIE_SECURE=false
+LIVEAUCTION_PRODUCER_WS_URL=ws://192.168.1.10:8081/ws
+LIVEAUCTION_WS_ALLOWED_ORIGINS=http://localhost:8082,http://192.168.1.10:8082
+```
+
+Ricreare Producer e Consumer dopo queste modifiche (ricompilare il Producer se
+si sta aggiornando da una versione con origine localhost fissa). Consentire TCP
+8081 e 8082 nel firewall dai PC di prova. I browser locali e remoti useranno il
+medesimo URL WebSocket; l'IP configurato deve essere raggiungibile da entrambi.
+
 ```powershell
 docker compose --profile prod up --build -d
 docker compose --profile prod ps
@@ -341,6 +360,8 @@ docker compose --profile prod down
 ```
 
 ## Documentazione
+
+- [Avvio demo e correzioni HTTP su LAN/VPN del 19 ottobre](docs/14-avvio-demo-vpn.md)
 
 - [Consegna aggiornata](Consegna.md)
 - [Indice progettazione](docs/README.md)

@@ -1,5 +1,19 @@
 # Attività del team
 
+## Aggiornamento locale — 19 ottobre 2026
+
+Configurato lo stack Docker locale e `SHOP_ADMIN_ID` con un ADMIN demo attivo;
+inseriti account, catalogo, acquisti e aste di prova. Corretti cookie di sessione
+per le prove HTTP tramite IP, URL/origini WebSocket configurabili e generazione
+UUID dei rilanci quando `crypto.randomUUID()` non è disponibile.
+
+Superati 23 test Producer mirati (con integrazioni su database separato) e 13
+test JavaScript. Nel browser su HTTP tramite IP verificato un rilancio accettato,
+con aggiornamento del prezzo, leader, portafoglio ed estensione. Non è stata
+rieseguita l'intera suite Java né completata tutta la matrice manuale su due PC.
+Le attività residue sotto restano aperte salvo queste verifiche specifiche.
+Dettagli e limiti nel [resoconto della sessione](14-avvio-demo-vpn.md).
+
 ## Aggiornamento locale — 14 ottobre 2026
 
 Sulla base `ede0201`, senza commit: aggiunti `GET /me/inventario`, pagina

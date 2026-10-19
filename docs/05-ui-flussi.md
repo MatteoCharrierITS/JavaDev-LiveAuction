@@ -46,6 +46,11 @@ Il server usa il prezzo corrente sotto lock; la pagina lo dichiara esplicitament
 Le scritture dei form usano POST Consumer con CSRF; il Consumer invia POST o PUT
 al Producer con il Bearer conservato nella sessione server-side.
 
+Il browser genera un UUID v4 per ogni comando di rilancio, conservandolo nei
+retry. Su HTTP tramite IP LAN/VPN `crypto.randomUUID()` non è disponibile:
+la stanza usa in quel caso `crypto.getRandomValues()` per generare l'UUID,
+così l'invio dell'offerta funziona anche senza un contesto HTTPS/localhost.
+
 ## Implementazioni mancanti
 
 - **Filtri aggiuntivi della lobby:** “In partenza” e “a cui partecipo” restano
