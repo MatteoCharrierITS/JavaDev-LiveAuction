@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" role="img" aria-label="Pupazzo ispirato alla mascotte Java, illustrazione non ufficiale">
+ <defs><linearGradient id="plush" x2="1" y2="1"><stop stop-color="#ffffff"/><stop offset="1" stop-color="#babdce"/></linearGradient></defs>
+ <ellipse cx="320" cy="421" rx="147" ry="20" fill="#101019" opacity=".45"/>
+ <path d="M222 287q-63 6-82-46m278 46q65 7 83-46" fill="none" stroke="#d7d9e5" stroke-width="23" stroke-linecap="round"/>
+ <circle cx="139" cy="232" r="23" fill="url(#plush)"/><circle cx="502" cy="232" r="23" fill="url(#plush)"/>
+ <path d="M320 65C274 117 228 211 214 316q-8 88 106 88t106-88C413 210 365 116 320 65z" fill="url(#plush)"/>
+ <path d="M320 65c-34 42-70 109-91 177q90-52 183 0c-22-68-58-135-92-177z" fill="#252532"/>
+ <ellipse cx="320" cy="229" rx="47" ry="35" fill="#ed675b"/>
+ <ellipse cx="308" cy="217" rx="15" ry="7" fill="#ffb29c" opacity=".7"/>
+ <path d="M253 374q-44 5-46 31 50 21 85-4m95-27q43 5 46 31-50 21-85-4" fill="#d5d7e3"/>
+ <path d="M320 280v88" stroke="#b7bbc9" stroke-dasharray="4 7" stroke-width="2"/>
+</svg>

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" role="img" aria-label="Cartellone con scritto TOP, illustrazione">
+ <defs><linearGradient id="board" x2="1" y2="1"><stop stop-color="#b8a0ff"/><stop offset="1" stop-color="#7052c3"/></linearGradient></defs>
+ <ellipse cx="320" cy="416" rx="190" ry="18" fill="#101019" opacity=".45"/>
+ <path d="M282 333v75m76-75v75" stroke="#bca489" stroke-width="15" stroke-linecap="round"/>
+ <g transform="rotate(-5 320 220)"><rect x="105" y="89" width="430" height="256" rx="19" fill="#c8b4fa"/>
+ <rect x="116" y="100" width="408" height="234" rx="12" fill="url(#board)"/>
+ <path d="m164 140 10 20 22 3-16 16 4 22-20-10-20 10 4-22-16-16 22-3z" fill="#ffe4a5"/>
+ <text x="320" y="270" text-anchor="middle" font-family="sans-serif" font-size="112" font-weight="900" fill="#fff6dc">TOP</text>
+ <path d="m475 125 6 16 17 2-13 11 4 17-14-9-15 9 4-17-13-11 18-2z" fill="#ffe4a5"/></g>
+</svg>

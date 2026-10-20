@@ -9,7 +9,12 @@ public class ProductMedia {
         String key = Normalizer.normalize(name == null ? "" : name, Normalizer.Form.NFD)
                 .replaceAll("\\p{M}", "").toLowerCase(Locale.ROOT);
         String file;
-        if (key.contains("cuff") || key.contains("headphone") || key.contains("audio")) file = "headphones.webp";
+        if (key.contains("eclipse")) file = "eclipse.svg";
+        else if (key.contains("cartellone") && key.contains("top")) file = "top.svg";
+        else if (key.contains("java") || key.contains("duke")) file = "java-plush.svg";
+        else if (key.contains("python") || key.contains("pitone")) file = "python-plush.svg";
+        else if (key.contains("tazza")) file = "mug.svg";
+        else if (key.contains("cuff") || key.contains("headphone") || key.contains("audio")) file = "headphones.webp";
         else if (key.contains("tastier") || key.contains("keyboard")) file = "keyboard.svg";
         else if (key.contains("mouse")) file = "mouse.svg";
         else if (key.contains("notebook") || key.contains("laptop") || key.contains("informatica")) file = "laptop.webp";

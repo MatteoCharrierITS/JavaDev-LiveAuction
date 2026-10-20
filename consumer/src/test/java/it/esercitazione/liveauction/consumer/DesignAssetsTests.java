@@ -20,6 +20,10 @@ class DesignAssetsTests {
         mvc.perform(get("/images/products/keyboard.svg")).andExpect(status().isOk())
                 .andExpect(content().contentType("image/svg+xml"));
         mvc.perform(get("/images/products/generic.svg")).andExpect(status().isOk());
+        for (String asset : java.util.List.of("eclipse", "top", "java-plush", "python-plush", "mug")) {
+            mvc.perform(get("/images/products/" + asset + ".svg")).andExpect(status().isOk())
+                    .andExpect(content().contentType("image/svg+xml"));
+        }
     }
 
     @Test void stileEScriptSonoServitiLocalmenteConVersione() throws Exception {

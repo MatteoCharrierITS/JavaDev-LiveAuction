@@ -1,0 +1,14 @@
+{
+  "categorie": [
+    {"nome": "Developer collectibles", "slug": "developer-collectibles", "attiva": true},
+    {"nome": "Accessori da scrivania", "slug": "accessori-scrivania", "attiva": true}
+  ],
+  "prodotti": [
+    {"categoria": "developer-collectibles", "sku": "DEV-ECLIPSE-001", "nome": "Licenza Eclipse (edizione simbolica)", "descrizione": "Articolo virtuale per la dimostrazione didattica: certificato simbolico Eclipse. Non costituisce una licenza software reale né attribuisce diritti o servizi. Si acquista soltanto con crediti virtuali CRD.", "prezzoFisso": 25.00, "astabile": true, "quantitaDisponibile": 30},
+    {"categoria": "developer-collectibles", "sku": "DEV-TOP-001", "nome": "Cartellone TOP", "descrizione": "Cartellone celebrativo con la scritta TOP, per il progetto migliore della giornata. Articolo dimostrativo con crediti virtuali.", "prezzoFisso": 35.00, "astabile": true, "quantitaDisponibile": 30},
+    {"categoria": "developer-collectibles", "sku": "DEV-JAVA-001", "nome": "Pupazzo Java — Duke", "descrizione": "Pupazzo da scrivania ispirato alla mascotte di Java, compagno di compilazioni e debug. Illustrazione dimostrativa, non merchandising ufficiale.", "prezzoFisso": 150.00, "astabile": true, "quantitaDisponibile": 30},
+    {"categoria": "developer-collectibles", "sku": "DEV-PYTHON-001", "nome": "Pupazzo del pitone maledetto (Python)", "descrizione": "Il pitone maledetto in versione pupazzo: sorveglia l'indentazione e infesta i traceback. Articolo ironico dimostrativo, non merchandising ufficiale.", "prezzoFisso": 120.00, "astabile": true, "quantitaDisponibile": 30},
+    {"categoria": "accessori-scrivania", "sku": "DEV-KEY-001", "nome": "Tastiera meccanica del programmatore", "descrizione": "Tastiera meccanica illustrativa per la postazione di sviluppo. Disponibile per acquisto e aste con crediti virtuali.", "prezzoFisso": 250.00, "astabile": true, "quantitaDisponibile": 30},
+    {"categoria": "accessori-scrivania", "sku": "DEV-MUG-001", "nome": "Tazza da debug", "descrizione": "Tazza da scrivania per le pause tra un test e l'altro. Articolo a prezzo fisso, utile per provare il flusso di acquisto senza asta.", "prezzoFisso": 40.00, "astabile": false, "quantitaDisponibile": 30}
+  ]
+}

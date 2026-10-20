@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" role="img" aria-label="Tazza da debug, illustrazione">
+ <ellipse cx="320" cy="417" rx="154" ry="18" fill="#101019" opacity=".45"/>
+ <path d="M425 186h35q64 3 55 70t-88 54" fill="none" stroke="#a9a0d0" stroke-width="31"/>
+ <path d="M184 159h252v187q-8 55-126 55t-126-55z" fill="#c4b8ea"/>
+ <ellipse cx="310" cy="159" rx="126" ry="27" fill="#ece5ff"/><ellipse cx="310" cy="159" rx="106" ry="17" fill="#665047"/>
+ <text x="310" y="274" text-anchor="middle" font-family="monospace" font-size="35" font-weight="bold" fill="#45346c">DEBUG</text>
+ <text x="310" y="317" text-anchor="middle" font-family="monospace" font-size="24" fill="#665286">&lt;/&gt;</text>
+ <path d="M280 115q-25-26 0-52m60 52q-25-26 0-52" fill="none" stroke="#bcb3d7" stroke-width="8" stroke-linecap="round" opacity=".55"/>
+</svg>

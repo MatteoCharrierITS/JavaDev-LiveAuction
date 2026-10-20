@@ -1,5 +1,14 @@
 # Attività del team
 
+## Preparazione consegna — 21 ottobre 2026
+
+Pronto `liveauction_ufficiale_20261022`: maikol ADMIN e tre USER con 10.000 CRD,
+credenziali precedenti conservate per i primi tre. Sei articoli, nessuna vecchia
+asta o transazione. Registrazione utente3 verificata dalla UI. Eliminati 18 DB
+storici dopo backup. Script avvio/arresto con rilevamento IP hotspot, origini WS
+esatte ed email disabilitate. Superati 298 test Producer, 67 Consumer e 21 JS.
+Resta la verifica dal secondo PC sul vero hotspot. [Guida](19-prova-professore.md).
+
 ## Aggiornamento locale — 20 ottobre 2026
 
 Wallet ora di sola lettura: nessuna ricarica USER, nemmeno tramite API. Nuovi

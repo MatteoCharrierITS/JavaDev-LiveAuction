@@ -1,9 +1,12 @@
 # LiveAuction — Spring Boot Producer/Consumer
 
-**Demo del 20 ottobre:** ambiente persistente separato per prove da più PC,
-account ADMIN/USER, email disabilitate e configurazione LAN in
-[demo multi-PC](docs/15-demo-multipc.md). Il vecchio database con le otto aste
-incoerenti è conservato e non viene usato dal collaudo corrente.
+**Prova del 22 ottobre:** database ufficiale pulito, quattro account con 10.000
+CRD e sei articoli pronti. Collegare tutti i PC all'hotspot, poi dalla radice
+eseguire `bash scripts/avvia-locale.sh` e usare l'URL stampato.
+Arresto con Ctrl+C o `bash scripts/ferma-locale.sh`, senza cancellare dati.
+[Guida alla prova e backup](docs/19-prova-professore.md).
+I precedenti database dimostrativi e di review sono stati eliminati dopo backup;
+i report del 20 ottobre restano documentazione storica, non lo stato attuale.
 
 > **[DA FARE — attività e prossimi passi per ogni persona](docs/todo.md)**
 >

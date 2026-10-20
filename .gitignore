@@ -39,6 +39,7 @@ bin/
 .vscode/
 
 # Configurazioni locali e segreti
+.local/
 .env
 .env.*
 !.env.example

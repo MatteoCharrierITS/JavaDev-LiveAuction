@@ -12,7 +12,10 @@ class ProductMediaTests {
     @ParameterizedTest
     @CsvSource({"CUFFIE Bluetooth,headphones.webp", "Keyboard RGB,keyboard.svg", "Mouse wireless,mouse.svg",
             "Notebook Studio,laptop.webp", "Monitor QHD,monitor.svg", "Lampada LED,lamp.webp",
-            "Zaino urbano,backpack.webp", "Speaker esaurito,speaker.svg"})
+            "Zaino urbano,backpack.webp", "Speaker esaurito,speaker.svg",
+            "Licenza Eclipse (edizione simbolica),eclipse.svg", "Cartellone TOP,top.svg",
+            "Pupazzo Java — Duke,java-plush.svg", "Pupazzo del pitone maledetto (Python),python-plush.svg",
+            "Tazza da debug,mug.svg"})
     void sceglieSoloAssetLocaliPerTipo(String name, String file) {
         assertThat(media.image(name)).isEqualTo("/images/products/" + file);
     }

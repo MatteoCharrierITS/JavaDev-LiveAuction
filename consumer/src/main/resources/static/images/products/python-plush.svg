@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" role="img" aria-label="Pupazzo del pitone maledetto, illustrazione ironica">
+ <defs><linearGradient id="snake" x2="1" y2="1"><stop stop-color="#a6dfb3"/><stop offset="1" stop-color="#388f84"/></linearGradient></defs>
+ <ellipse cx="320" cy="421" rx="162" ry="21" fill="#101019" opacity=".45"/>
+ <path d="M422 348c86 30 52 67-49 60-91-6-174 2-177-45-3-40 75-36 120-25 58 13 95-26 57-61-41-37-117-9-117-87" fill="none" stroke="url(#snake)" stroke-width="59" stroke-linecap="round"/>
+ <path d="M255 201c-73 1-83-109-8-125 62-13 112 24 103 74-6 34-36 53-95 51z" fill="url(#snake)"/>
+ <ellipse cx="244" cy="125" rx="18" ry="20" fill="#f4d57a"/><ellipse cx="307" cy="125" rx="18" ry="20" fill="#f4d57a"/>
+ <path d="m239 111 9 29m64-29-9 29" stroke="#2c3340" stroke-width="6"/>
+ <path d="m222 100 36 7m32 0 36-7" stroke="#365b58" stroke-width="10" stroke-linecap="round"/>
+ <path d="M267 175h24m-12 0v23m0 0-9 9m9-9 9 9" fill="none" stroke="#b4558f" stroke-width="5" stroke-linecap="round"/>
+ <path d="m238 251 20 11m34 53 20 8m-85 45 20 6m100 33 20 1" stroke="#d6ebbe" stroke-width="6" stroke-linecap="round" stroke-dasharray="3 6"/>
+</svg>
