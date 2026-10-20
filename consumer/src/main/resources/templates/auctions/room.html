@@ -4,6 +4,7 @@
 <body>
 <nav th:replace="~{fragments/navbar :: navbar}"></nav>
 <main id="auction-room" class="catalog-page auction-room" th:attr="data-auction-id=${auction.id},data-websocket-url=${websocketUrl},data-csrf-header=${_csrf.headerName},data-csrf-token=${_csrf.token}">
+    <span id="main-content" tabindex="-1"></span>
     <header class="room-header">
         <div><a th:href="@{/aste}">← Auctions</a><h1 th:text="${auction.prodotto.nome}">Auction</h1></div>
         <p id="connection-state" class="auction-state" role="status" aria-live="polite">Synchronizing…</p>
@@ -18,6 +19,6 @@
     </div>
 </main>
 <footer th:replace="~{fragments/footer :: footer}"></footer>
-<script type="module" th:src="@{/js/auction-room.mjs}"></script>
+<script type="module" th:src="@{/js/auction-room.mjs(v='20261020-ws-host')}"></script>
 </body>
 </html>

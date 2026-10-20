@@ -8,7 +8,9 @@ import it.esercitazione.liveauction.producer.auth.responses.RegistrazioneRespons
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.jdbc.core.JdbcTemplate;
+import it.esercitazione.liveauction.producer.portafoglio.config.PortafoglioProperties;
+import it.esercitazione.liveauction.producer.portafoglio.repos.PortafoglioRepository;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,11 +21,13 @@ import java.util.Locale;
 
 @Service
 @RequiredArgsConstructor
+@EnableConfigurationProperties(PortafoglioProperties.class)
 public class RegistrazioneService {
 
     private final UtenteRepository utenteRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JdbcTemplate jdbcTemplate;
+    private final PortafoglioRepository portafogli;
+    private final PortafoglioProperties configurazionePortafoglio;
 
     @Transactional
     public RegistrazioneResponse registra(RegistrazioneRequest request) {
@@ -59,8 +63,8 @@ public class RegistrazioneService {
                     "Username o email già utilizzati", exception);
         }
 
-        // Il saldo iniziale è zero: non serve un movimento di ledger.
-        jdbcTemplate.update("INSERT INTO portafogli (utente_id) VALUES (?)", salvato.getId());
+        // Utente, portafoglio e credito iniziale committano o falliscono insieme.
+        portafogli.creaConCreditoIniziale(salvato.getId(), configurazionePortafoglio.saldoIniziale());
 
         return new RegistrazioneResponse(
                 salvato.getId(),

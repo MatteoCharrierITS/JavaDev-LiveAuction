@@ -1,11 +1,15 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org">
 <article th:fragment="card(product)" class="product-card">
+    <figure class="product-visual">
+        <img th:src="@{${productMedia.image(product.nome)}}" alt="Product illustration" width="600" height="440" loading="lazy" decoding="async" data-product-image>
+        <figcaption class="media-caption">Illustrative image</figcaption>
+    </figure>
     <p class="product-category" th:text="${product.categoria.nome}">Category</p>
     <h2><a th:href="@{/prodotti/{id}(id=${product.id})}" th:text="${product.nome}">Product</a></h2>
     <p th:if="${product.descrizione != null and !#strings.isEmpty(product.descrizione)}"
        class="product-description" th:text="${product.descrizione}">Description</p>
-    <p class="product-price" th:if="${product.prezzoFisso != null}"><span th:text="${display.amount(product.prezzoFisso)}">0,00</span> CRD</p>
+    <p class="product-price" th:if="${product.prezzoFisso != null}"><span th:text="${display.amount(product.prezzoFisso)}">0,00</span> <small>CRD</small></p>
     <p class="product-price muted" th:unless="${product.prezzoFisso != null}">No fixed price</p>
     <p th:if="${product.quantitaDisponibile == 0}" class="stock-unavailable">Currently unavailable</p>
     <dl class="product-facts">
@@ -13,5 +17,10 @@
         <div><dt>Available</dt><dd th:text="${product.quantitaDisponibile}">0</dd></div>
         <div><dt>Scheduled or live auctions</dt><dd th:text="${product.asteProgrammate}">0</dd></div>
     </dl>
+    <div class="card-bottom">
+        <span th:if="${product.quantitaDisponibile > 0}" class="stock-label" th:text="${product.quantitaDisponibile} + ' available'">Available</span>
+        <span th:unless="${product.quantitaDisponibile > 0}" class="muted">Out of stock</span>
+        <a class="card-action" th:href="@{/prodotti/{id}(id=${product.id})}" th:attr="aria-label='View ' + ${product.nome}"><span aria-hidden="true">↗</span></a>
+    </div>
 </article>
 </html>

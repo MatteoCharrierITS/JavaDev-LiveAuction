@@ -28,6 +28,7 @@ public class AstaScheduler {
     private final AstaLifecycleService lifecycleService;
     private final ChiusuraAstaService chiusuraAstaService;
     private final Clock clock;
+    private final SchedulerFailureLog errori;
 
     @Autowired
     public AstaScheduler(AstaRepository astaRepository, AstaLifecycleService lifecycleService,
@@ -41,6 +42,7 @@ public class AstaScheduler {
         this.lifecycleService = lifecycleService;
         this.chiusuraAstaService = chiusuraAstaService;
         this.clock = clock;
+        this.errori = new SchedulerFailureLog(log, clock);
     }
 
     @EventListener(ApplicationReadyEvent.class)
@@ -59,21 +61,24 @@ public class AstaScheduler {
         Set<Long> ids = new LinkedHashSet<>();
         try {
             ids = new LinkedHashSet<>(astaRepository.trovaIdDaAttivare(Stato.PROGRAMMATA, adesso.plusSeconds(180)));
+            errori.successo("lettura-programmate");
         } catch (RuntimeException exception) {
-            log.warn("Impossibile leggere le aste PROGRAMMATA da attivare; nuovo tentativo al prossimo ciclo", exception);
+            errori.fallimento("lettura-programmate", "Impossibile leggere le aste PROGRAMMATA da attivare", exception);
         }
         try {
             ids.addAll(astaRepository.trovaIdDaAttivare(Stato.STANZA_APERTA, adesso));
+            errori.successo("lettura-stanze");
         } catch (RuntimeException exception) {
-            log.warn("Impossibile leggere le aste STANZA_APERTA da attivare; nuovo tentativo al prossimo ciclo", exception);
+            errori.fallimento("lettura-stanze", "Impossibile leggere le aste STANZA_APERTA da attivare", exception);
         }
 
         // Il servizio apre una transazione distinta per ogni asta e ricontrolla lo stato sotto lock.
         for (long id : ids) {
             try {
                 lifecycleService.aggiornaStato(id);
+                errori.successo("transizione-" + id);
             } catch (RuntimeException exception) {
-                log.warn("Transizione dell'asta {} fallita; nuovo tentativo al prossimo ciclo", id, exception);
+                errori.fallimento("transizione-" + id, "Transizione dell'asta " + id + " fallita", exception);
             }
         }
     }
@@ -82,8 +87,9 @@ public class AstaScheduler {
         Set<Long> ids;
         try {
             ids = new LinkedHashSet<>(astaRepository.trovaIdDaChiudere(Stato.APERTA, clock.instant()));
+            errori.successo("lettura-chiusure");
         } catch (RuntimeException exception) {
-            log.warn("Impossibile leggere le aste scadute; nuovo tentativo al prossimo ciclo", exception);
+            errori.fallimento("lettura-chiusure", "Impossibile leggere le aste scadute", exception);
             return;
         }
 
@@ -91,8 +97,9 @@ public class AstaScheduler {
         for (long id : ids) {
             try {
                 chiusuraAstaService.chiudi(id);
+                errori.successo("chiusura-" + id);
             } catch (RuntimeException exception) {
-                log.warn("Chiusura dell'asta {} fallita; nuovo tentativo al prossimo ciclo", id, exception);
+                errori.fallimento("chiusura-" + id, "Chiusura dell'asta " + id + " fallita", exception);
             }
         }
     }

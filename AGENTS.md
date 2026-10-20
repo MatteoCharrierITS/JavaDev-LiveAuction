@@ -26,7 +26,9 @@
 - Gli errori REST seguono `application/problem+json`; rispetta gli status e i
   codici definiti nel contratto quando il modulo li specifica.
 - I ruoli sono `USER` e `ADMIN`. La registrazione crea un utente `USER` e un
-  portafoglio a saldo zero nella stessa transazione. Il login restituisce un
+  portafoglio con credito iniziale configurato in `app.portafoglio.saldo-iniziale`
+  (default 10.000 CRD) e movimento ledger nella stessa transazione. Il wallet è
+  di sola lettura per l'utente, senza API di ricarica. Il login restituisce un
   token Bearer; il Consumer lo conserva nella propria sessione server-side.
 - Il Producer abilita `@PreAuthorize` con `@EnableMethodSecurity`. Per le nuove
   operazioni protette, definisci il ruolo richiesto sia nel contratto REST sia

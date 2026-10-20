@@ -1,0 +1,5 @@
+# Credito assegnato una sola volta alla registrazione, non una ricarica periodica.
+# I saldi degli utenti esistenti non cambiano quando cambia questo valore.
+app:
+  portafoglio:
+    saldo-iniziale: ${WALLET_INITIAL_BALANCE:10000.00}

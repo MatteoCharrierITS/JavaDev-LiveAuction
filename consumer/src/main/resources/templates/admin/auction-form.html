@@ -1,5 +1,5 @@
 <!doctype html><html lang="en" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments/head :: head('Schedule auction')}"></head><body>
-<nav th:replace="~{fragments/navbar :: navbar}"></nav><main class="catalog-page"><h1>Schedule an auction</h1><p><a th:href="@{/admin/prodotti}">Back to products</a></p>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav><main id="main-content" class="catalog-page"><h1>Schedule an auction</h1><p><a th:href="@{/admin/prodotti}">Back to products</a></p>
 <p th:if="${formError}" class="alert alert-error" role="alert" th:text="${formError}"></p><section class="admin-panel">
 <p>Only auction enabled products with available stock are listed. The Producer checks stock again when you submit.</p>
 <p th:if="${eligibleProducts.isEmpty()}" class="empty-state">No products are currently eligible.</p>

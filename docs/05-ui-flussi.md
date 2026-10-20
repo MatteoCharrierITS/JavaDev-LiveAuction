@@ -1,5 +1,9 @@
 # Interfaccia e flussi utente
 
+Aggiornamento grafico del 20 ottobre 2026: tema scuro, catalogo illustrato,
+navigazione responsive e account con scorciatoie per ruolo. Contratti e regole
+di dominio invariati; dettagli e collaudo nel [resoconto UI](16-ui-design.md).
+
 Stato della copia di lavoro al 14 ottobre 2026. La UI Consumer include
 autenticazione, catalogo, portafoglio, lobby, stanza live, gestione ADMIN,
 vittorie personali, storico ADMIN e annullamento. Usa le API del Producer;
@@ -25,7 +29,7 @@ funzioni ancora previste.
 | `GET /me/vittorie` | USER | storico personale vittorie, paginato |
 | `GET /inventario` | USER | prodotti posseduti e quantità, paginati, compresi quelli non più pubblici |
 | `POST /prodotti/{id}/acquisti` | USER + CSRF | quantità 1–100 e UUID, acquisto a prezzo fisso |
-| `GET/POST /impostazioni/portafoglio` | USER; POST con CSRF | saldi, impostazione del totale e ledger paginato |
+| `GET /impostazioni/portafoglio` | USER | sola lettura: saldi e ledger paginato; nessuna ricarica |
 | `GET /admin/prodotti`, `GET /admin/prodotti/nuovo`, `GET /admin/prodotti/{id}/modifica` | ADMIN | catalogo, creazione e modifica prodotto |
 | `POST /admin/prodotti`, `POST /admin/prodotti/{id}` | ADMIN + CSRF | creazione e aggiornamento prodotto |
 | `GET /admin/categorie`, `GET /admin/categorie/{id}/modifica` | ADMIN | gestione categorie, anche inattive |

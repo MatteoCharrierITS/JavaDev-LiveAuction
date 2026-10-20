@@ -68,7 +68,7 @@ class AcquistoIntegrationTests {
                 .andExpect(status().isCreated()).andExpect(jsonPath("$.totale").value(20))
                 .andExpect(jsonPath("$.duplicato").value(false));
         assertThat(balance(buyer)).isEqualByComparingTo("980");
-        assertThat(balance(admin)).isEqualByComparingTo("20");
+        assertThat(balance(admin)).isEqualByComparingTo("10020");
         assertThat(number("SELECT quantita_disponibile FROM prodotti WHERE id=?",product)).isZero();
         assertThat(number("SELECT quantita_bloccata FROM prodotti WHERE id=?",product)).isEqualTo(1);
         assertThat(number("SELECT quantita FROM inventario_utenti WHERE utente_id=? AND prodotto_id=?",buyer.id(),product)).isEqualTo(2);

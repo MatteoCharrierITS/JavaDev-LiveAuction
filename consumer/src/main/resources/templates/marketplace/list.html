@@ -3,47 +3,76 @@
 <head th:replace="~{fragments/head :: head('Marketplace')}"></head>
 <body>
 <nav th:replace="~{fragments/navbar :: navbar}"></nav>
-<main class="catalog-page">
-    <header class="catalog-heading">
+<main id="main-content" class="catalog-page marketplace-page">
+    <section class="market-hero" th:if="${query == null and categoria == null and astabile == null and products.page == 0}" aria-labelledby="hero-title">
+        <span class="hero-index" aria-hidden="true">01 — DISCOVER</span>
+        <div class="hero-copy">
+            <p class="eyebrow"><span class="live-dot" aria-hidden="true"></span> THE NEXT FIND IS YOURS</p>
+            <h1 id="hero-title">Great gear.<br><span>Better bids.</span></h1>
+            <p class="hero-description">Discover something worth bidding for. Explore the collection, join a live auction, and make your next move.</p>
+            <div class="hero-actions">
+                <a class="button" th:href="@{/aste}">Explore auctions <span aria-hidden="true">↗</span></a>
+                <a class="text-link" href="#collection">Browse the collection <span aria-hidden="true">↓</span></a>
+            </div>
+        </div>
+        <div class="hero-art" aria-label="Collection illustration">
+            <span class="hero-word" aria-hidden="true">PLAY.</span>
+            <img th:src="@{/images/products/headphones.webp}" width="600" height="600" alt="Silver over-ear headphones, illustrative collection image" fetchpriority="high">
+            <p class="hero-image-caption">COLLECTION INSPIRATION · ILLUSTRATIVE IMAGE</p>
+        </div>
+    </section>
+    <div class="benefit-strip" th:if="${query == null and categoria == null and astabile == null and products.page == 0}" aria-label="How LiveAuction works">
+        <span><b aria-hidden="true">↗</b> Real-time bidding</span>
+        <span><b aria-hidden="true">◇</b> Virtual credits. Real competition.</span>
+        <span><b aria-hidden="true">+</b> Every accepted bid adds 20 seconds</span>
+    </div>
+    <header class="catalog-heading" th:unless="${query == null and categoria == null and astabile == null and products.page == 0}">
+        <p class="eyebrow">THE COLLECTION</p>
         <h1>Marketplace</h1>
         <p>Explore products available in the public catalogue.</p>
     </header>
-    <form id="catalog-filters" class="catalog-filters" th:action="@{/marketplace}" method="get" aria-label="Filter products">
-        <label for="query">Search</label>
-        <input id="query" name="query" type="search" th:value="${query}" placeholder="Name, SKU, or description">
-        <label for="categoria">Category</label>
-        <select id="categoria" name="categoria">
-            <option value="">All categories</option>
-            <option th:each="category : ${categories}" th:value="${category.slug}" th:text="${category.nome}"
-                    th:selected="${category.slug == categoria}">Category</option>
-        </select>
-        <label for="astabile">Auction status</label>
-        <select id="astabile" name="astabile">
-            <option value="" th:selected="${astabile == null}">All products</option>
-            <option value="true" th:selected="${astabile != null and astabile}">Available for auction</option>
-            <option value="false" th:selected="${astabile != null and !astabile}">Not auctionable</option>
-        </select>
-        <input type="hidden" name="size" th:value="${products.size}">
-        <button type="submit">Apply filters</button>
-        <a th:href="@{/marketplace}">Clear filters</a>
-    </form>
-    <p id="catalog-loading" class="loading-state" role="status" hidden>Loading products…</p>
-    <section aria-label="Products">
-        <p th:if="${products.content.isEmpty()}" class="empty-state">No products match these filters.</p>
-        <th:block th:unless="${products.content.isEmpty()}">
-            <p class="result-count" th:text="${products.totalElements} + ' products found'">Products found</p>
-            <div class="product-grid">
-                <th:block th:each="product : ${products.content}">
-                    <div th:replace="~{fragments/product-card :: card(${product})}"></div>
-                </th:block>
-            </div>
-        </th:block>
+    <section th:if="${!#arrays.isEmpty(categories) and query == null and categoria == null and astabile == null and products.page == 0}" aria-labelledby="category-heading">
+        <div class="section-heading">
+            <div><span class="eyebrow">FIND YOUR DIRECTION</span><h2 id="category-heading">Explore by category</h2></div>
+            <a class="muted" href="#collection">View all <span aria-hidden="true">↗</span></a>
+        </div>
+        <div class="category-grid">
+            <a class="category-tile" th:each="category : ${categories}" th:href="@{/marketplace(categoria=${category.slug})}">
+                <div><span class="eyebrow">THE COLLECTION</span><h3 th:text="${category.nome}">Category</h3><span class="category-link">Explore <span aria-hidden="true">↗</span></span></div>
+                <img th:src="@{${productMedia.image(category.slug)}}" alt="" width="240" height="180" loading="lazy">
+            </a>
+        </div>
     </section>
-    <nav th:if="${products.totalPages > 1}" class="pagination" aria-label="Product pages">
-        <a th:if="${products.page > 0}" th:href="@{/marketplace(query=${query},categoria=${categoria},astabile=${astabile},page=${products.page - 1},size=${products.size})}">Previous</a>
-        <span th:text="'Page ' + ${products.page + 1} + ' of ' + ${products.totalPages}">Page</span>
-        <a th:if="${products.page + 1 < products.totalPages}" th:href="@{/marketplace(query=${query},categoria=${categoria},astabile=${astabile},page=${products.page + 1},size=${products.size})}">Next</a>
-    </nav>
+    <section id="collection" aria-labelledby="collection-heading">
+        <div class="section-heading">
+            <div><span class="eyebrow">YOUR NEXT DISCOVERY</span><h2 id="collection-heading">Find your next upgrade</h2></div>
+            <p class="result-count" th:text="${products.totalElements} + ' products found'">Products found</p>
+        </div>
+        <form id="catalog-filters" class="catalog-filters market-filters" th:action="@{/marketplace}" method="get" aria-label="Filter products">
+            <div class="filter-field"><label for="query">Search</label><input id="query" name="query" type="search" th:value="${query}" placeholder="Name, SKU, or description"></div>
+            <div class="filter-field"><label for="categoria">Category</label><select id="categoria" name="categoria">
+                <option value="">All categories</option>
+                <option th:each="category : ${categories}" th:value="${category.slug}" th:text="${category.nome}" th:selected="${category.slug == categoria}">Category</option>
+            </select></div>
+            <div class="filter-field"><label for="astabile">Auction status</label><select id="astabile" name="astabile">
+                <option value="" th:selected="${astabile == null}">All products</option>
+                <option value="true" th:selected="${astabile != null and astabile}">Available for auction</option>
+                <option value="false" th:selected="${astabile != null and !astabile}">Not auctionable</option>
+            </select></div>
+            <input type="hidden" name="size" th:value="${products.size}">
+            <button type="submit">Apply filters</button><a class="clear-filters" th:href="@{/marketplace}">Clear filters</a>
+        </form>
+        <p id="catalog-loading" class="loading-state" role="status" hidden>Loading products…</p>
+        <p th:if="${products.content.isEmpty()}" class="empty-state">No products match these filters. <a th:href="@{/marketplace}">Clear filters and explore the collection ↗</a></p>
+        <div th:unless="${products.content.isEmpty()}" class="product-grid">
+            <th:block th:each="product : ${products.content}"><div th:replace="~{fragments/product-card :: card(${product})}"></div></th:block>
+        </div>
+        <nav th:if="${products.totalPages > 1}" class="pagination" aria-label="Product pages">
+            <a th:if="${products.page > 0}" th:href="@{/marketplace(query=${query},categoria=${categoria},astabile=${astabile},page=${products.page - 1},size=${products.size})}">Previous</a>
+            <span th:text="'Page ' + ${products.page + 1} + ' of ' + ${products.totalPages}">Page</span>
+            <a th:if="${products.page + 1 < products.totalPages}" th:href="@{/marketplace(query=${query},categoria=${categoria},astabile=${astabile},page=${products.page + 1},size=${products.size})}">Next</a>
+        </nav>
+    </section>
 </main>
 <footer th:replace="~{fragments/footer :: footer}"></footer>
 <script th:src="@{/js/catalog-loading.js}" defer></script>

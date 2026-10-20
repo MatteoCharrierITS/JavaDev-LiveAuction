@@ -55,6 +55,8 @@ class AuthFlowIntegrationTests {
         long userId = json.readTree(registrationBody).get("id").asLong();
         assertThat(jdbc.queryForObject(
                 "SELECT COUNT(*) FROM portafogli WHERE utente_id = ?", Integer.class, userId)).isEqualTo(1);
+        assertThat(jdbc.queryForObject("SELECT saldo_totale FROM portafogli WHERE utente_id = ?",
+                java.math.BigDecimal.class, userId)).isEqualByComparingTo("10000");
         String hash = jdbc.queryForObject(
                 "SELECT password_hash FROM utenti WHERE id = ?", String.class, userId);
         assertThat(hash).isNotEqualTo(password);

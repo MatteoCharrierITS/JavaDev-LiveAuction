@@ -71,16 +71,6 @@ class WalletTests {
                         : MediaType.APPLICATION_JSON).body(body));
     }
 
-    private void expectPut(String submitted, HttpStatus status, String body) {
-        stub.server.expect(requestTo("http://producer.test/api/v1/me/portafoglio/impostazioni"))
-                .andExpect(method(org.springframework.http.HttpMethod.PUT))
-                .andExpect(header("Authorization", "Bearer wallet-token"))
-                .andExpect(org.springframework.test.web.client.match.MockRestRequestMatchers.content()
-                        .json("{\"saldoTotale\":" + submitted + "}"))
-                .andRespond(withStatus(status).contentType(status.isError() ? MediaType.APPLICATION_PROBLEM_JSON
-                        : MediaType.APPLICATION_JSON).body(body));
-    }
-
     @Test void routeIsUserOnlyAndUpdateRequiresCsrf() throws Exception {
         mvc.perform(get("/impostazioni/portafoglio")).andExpect(redirectedUrl("/login?expired=0"));
         mvc.perform(get("/impostazioni/portafoglio").session(session("ADMIN"))).andExpect(status().isForbidden());
@@ -97,7 +87,7 @@ class WalletTests {
                 .andExpect(status().isOk()).andExpect(view().name("wallet/page"))
                 .andExpect(content().string(containsString("0,00 CRD")))
                 .andExpect(content().string(containsString("No movements yet.")))
-                .andExpect(content().string(containsString("absolute amount replaces the current total")))
+                .andExpect(content().string(containsString("cannot be topped up")))
                 .andExpect(content().string(containsString("name=\"_csrf\"")))
                 .andExpect(content().string(not(containsString("wallet-token"))));
         stub.server.verify();
@@ -123,48 +113,21 @@ class WalletTests {
         stub.server.verify();
     }
 
-    @Test void identicalBalancePutThenFreshGet() throws Exception {
-        MockHttpSession session = session("USER");
-        expectPut("100.00", HttpStatus.OK,
-                "{\"saldoTotale\":100.00,\"saldoRiservato\":0.00,\"saldoDisponibile\":100.00,\"valuta\":\"CRD\"}");
-        expectGet(0, 20, HttpStatus.OK, page("", 0, 20, 0, 0, "100.00"));
-        mvc.perform(post("/impostazioni/portafoglio").session(session).with(csrf())
-                        .param("saldoTotale", "100.00"))
-                .andExpect(redirectedUrl("/impostazioni/portafoglio?page=0&size=20"));
-        mvc.perform(get("/impostazioni/portafoglio").session(session))
-                .andExpect(status().isOk())
-                .andExpect(content().string(containsString("100,00 CRD")));
-        stub.server.verify();
+    @Test void forgedBalancePostIsForbiddenEvenWithCsrf() throws Exception {
+        mvc.perform(post("/impostazioni/portafoglio").session(session("USER")).with(csrf())
+                .param("saldoTotale", "9999999999.99")).andExpect(status().isForbidden());
+        stub.server.verify(); // No Producer request is made.
     }
 
-    @Test void invalidAmountAndProducerValidationShowCurrentBalance() throws Exception {
-        expectGet(0, 20, HttpStatus.OK, page("", 0, 20, 0, 0, "0.00"));
-        mvc.perform(post("/impostazioni/portafoglio").session(session("USER")).with(csrf())
-                        .param("saldoTotale", "-1.00"))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string(containsString("at most two decimal places")));
-        stub.server.verify();
-
-        stub.server.reset();
-        expectPut("1.00", HttpStatus.BAD_REQUEST, "{\"code\":\"IMPORTO_NON_VALIDO\"}");
-        expectGet(0, 20, HttpStatus.OK, page("", 0, 20, 0, 0, "0.00"));
-        mvc.perform(post("/impostazioni/portafoglio").session(session("USER")).with(csrf())
-                        .param("saldoTotale", "1.00"))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string(containsString("Producer rejected this amount")));
-        stub.server.verify();
-    }
-
-    @Test void reserveConflictShowsFreshReservedBalance() throws Exception {
-        expectPut("5.00", HttpStatus.CONFLICT, "{\"code\":\"SALDO_INFERIORE_AL_RISERVATO\"}");
-        expectGet(0, 20, HttpStatus.OK, "{\"saldoTotale\":10.00,\"saldoRiservato\":8.00,"
-                + "\"saldoDisponibile\":2.00,\"valuta\":\"CRD\",\"movimenti\":[],"
-                + "\"page\":0,\"size\":20,\"totalElements\":0,\"totalPages\":0}");
-        mvc.perform(post("/impostazioni/portafoglio").session(session("USER")).with(csrf())
-                        .param("saldoTotale", "5.00"))
-                .andExpect(status().isConflict())
-                .andExpect(content().string(containsString("lower than the currently reserved balance")))
-                .andExpect(content().string(containsString("8,00 CRD")));
+    @Test void welcomeCreditIsVisibleInReadOnlyLedger() throws Exception {
+        String movement = "{\"id\":1,\"astaId\":null,\"tipo\":\"CREDITO_INIZIALE\",\"importo\":10000.00,"
+                + "\"saldoTotaleDopo\":10000.00,\"saldoRiservatoDopo\":0,\"dataMovimento\":\"2026-10-20T12:00:00Z\"}";
+        expectGet(0, 20, HttpStatus.OK, page(movement, 0, 20, 1, 1, "10000.00"));
+        mvc.perform(get("/impostazioni/portafoglio").session(session("USER")))
+                .andExpect(status().isOk()).andExpect(content().string(containsString("Welcome credits")))
+                .andExpect(content().string(containsString("10.000,00 CRD")))
+                .andExpect(content().string(not(containsString("name=\"saldoTotale\""))))
+                .andExpect(content().string(not(containsString("Set balance"))));
         stub.server.verify();
     }
 

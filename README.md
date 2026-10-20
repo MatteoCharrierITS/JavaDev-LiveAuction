@@ -1,5 +1,10 @@
 # LiveAuction — Spring Boot Producer/Consumer
 
+**Demo del 20 ottobre:** ambiente persistente separato per prove da più PC,
+account ADMIN/USER, email disabilitate e configurazione LAN in
+[demo multi-PC](docs/15-demo-multipc.md). Il vecchio database con le otto aste
+incoerenti è conservato e non viene usato dal collaudo corrente.
+
 > **[DA FARE — attività e prossimi passi per ogni persona](docs/todo.md)**
 >
 > Il riferimento del team per cosa manca, priorità e dipendenze. Aggiornalo quando completi o integri un'attività.
@@ -216,7 +221,6 @@ indicato nella [tabella REST](docs/04-api-rest.md#rest).
 | `POST` | `/prodotti/{id}/acquisti` | acquisto a prezzo fisso |
 | `GET` | `/me/inventario` | prodotti vinti o acquistati |
 | `GET` | `/me/portafoglio` | saldo e movimenti paginati |
-| `PUT` | `/me/portafoglio/impostazioni` | imposta saldo virtuale USER |
 | `POST` | `/admin/aste` | programma un'asta e riserva lo stock |
 | `GET` | `/aste` | lobby delle aste |
 | `GET` | `/aste/{id}` | snapshot autorevole |
@@ -256,7 +260,13 @@ database nuovo prima di riavviare il Producer: la cronologia Flyway precedente
 non corrisponde più ai file attuali. Conserva una copia degli eventuali dati
 che vuoi mantenere.
 
-La registrazione crea anche un portafoglio a zero. Il login restituisce un
+La registrazione crea anche un portafoglio con **10.000 CRD iniziali** e un
+movimento `CREDITO_INIZIALE`, nella stessa transazione. L'importo è configurabile
+in [application.yaml](producer/src/main/resources/application.yaml) tramite
+`app.portafoglio.saldo-iniziale` o `WALLET_INITIAL_BALANCE`. Cambia soltanto i nuovi
+iscritti, non i saldi esistenti. Il wallet è di sola lettura: gli utenti non
+possono più impostare o ricaricare il saldo, nemmeno tramite API.
+Il login restituisce un
 access token Bearer valido 30 minuti e un refresh token valido 7 giorni.
 Il logout revoca subito entrambi. Con il profilo `prod`, impostare
 `AUTH_JWT_SECRET` in `.env` con una stringa casuale di almeno 32 byte: senza
@@ -312,6 +322,8 @@ Avviare poi `LiveAuctionConsumerApplication` con JDK 21: la UI è su
 `http://localhost:8081/api/v1`. Per URL diversi impostare
 `LIVEAUCTION_PRODUCER_URL` e `LIVEAUCTION_PRODUCER_WS_URL`; il secondo URL deve
 essere raggiungibile dal browser e l'origine WebSocket va ammessa dal Producer.
+Il default `LIVEAUCTION_PRODUCER_WS_URL=auto` usa l'host della pagina sulla porta
+8081; non serve inserire l'IP nel Consumer per la normale demo sulla stessa macchina.
 Registrare un USER dalla UI; per provare le pagine ADMIN in locale, promuovere
 un account come indicato nella sezione Database e ripetere il login.
 Per gli acquisti fissi, impostare `SHOP_ADMIN_ID` con l'ID dell'ADMIN destinatario
@@ -336,14 +348,16 @@ nel Producer. Esempio `.env` per un server con IP `192.168.1.10`:
 
 ```dotenv
 CONSUMER_SESSION_COOKIE_SECURE=false
-LIVEAUCTION_PRODUCER_WS_URL=ws://192.168.1.10:8081/ws
+LIVEAUCTION_PRODUCER_WS_URL=auto
 LIVEAUCTION_WS_ALLOWED_ORIGINS=http://localhost:8082,http://192.168.1.10:8082
 ```
 
 Ricreare Producer e Consumer dopo queste modifiche (ricompilare il Producer se
 si sta aggiornando da una versione con origine localhost fissa). Consentire TCP
 8081 e 8082 nel firewall dai PC di prova. I browser locali e remoti useranno il
-medesimo URL WebSocket; l'IP configurato deve essere raggiungibile da entrambi.
+proprio host di accesso alla UI per il WebSocket in modalità `auto`.
+Se cambia la rete, aggiornare comunque le origini esatte nel Producer e
+riavviarlo. Per porte diverse da 8081 o reverse proxy usare un URL completo.
 
 ```powershell
 docker compose --profile prod up --build -d

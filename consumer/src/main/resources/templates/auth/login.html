@@ -3,10 +3,12 @@
 <head th:replace="~{fragments/head :: head('Sign in')}"></head>
 <body>
 <nav th:replace="~{fragments/navbar :: navbar}"></nav>
-<main class="auth-card">
+<main id="main-content" class="auth-card">
+    <p class="eyebrow">YOUR NEXT MOVE STARTS HERE</p>
     <h1>Sign in</h1>
+    <p class="auth-intro">Welcome back. Your next great find is waiting.</p>
     <div th:replace="~{fragments/alerts :: alerts}"></div>
-    <form th:action="@{/login}" th:object="${form}" method="post">
+    <form th:action="@{/login}" th:object="${form}" method="post" data-submit-label="Signing in…">
         <label for="username">Username</label>
         <input id="username" th:field="*{username}" autocomplete="username" required autofocus>
         <p class="field-error" th:if="${#fields.hasErrors('username')}">Enter your username.</p>

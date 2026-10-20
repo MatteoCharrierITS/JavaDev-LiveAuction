@@ -18,6 +18,10 @@ Questa è la specifica corrente di **LiveAuction**.
 12. [Consegna di Marco: annullamento e storici](12-annullamento-storici.md)
 13. [Inventario, acquisti fissi e collaudo locale](13-inventario-acquisti.md)
 14. [Avvio demo e correzioni HTTP su LAN/VPN — 19 ottobre 2026](14-avvio-demo-vpn.md)
+15. [Demo persistente multi-PC — 20 ottobre 2026](15-demo-multipc.md)
+16. [Nuova UI e verifiche desktop/mobile — 20 ottobre 2026](16-ui-design.md)
+17. [Correzione offerte dopo cambio rete — 20 ottobre 2026](17-correzione-ws-lan.md)
+18. [Wallet di sola lettura e credito iniziale configurabile](18-wallet-sola-lettura.md)
 
 **[DA FARE — attività e prossimi passi del team](todo.md)**
 

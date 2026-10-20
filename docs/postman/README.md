@@ -81,16 +81,16 @@ Per provare i rilanci, usare un client STOMP con il ticket monouso ottenuto dall
 collection, sottoscrivere `/topic/aste/{astaId}` e `/user/queue/aste`, quindi
 inviare `PLACE_BID` a `/app/aste/{astaId}/offerte` come nel
 [contratto STOMP](../04-api-rest.md#websocketstomp). L'asta deve essere APERTA e
-l'utente deve avere saldo disponibile: impostarlo con la richiesta PUT della
-collection `portafoglio.json`.
+l'utente deve avere saldo disponibile: i nuovi iscritti ricevono 10.000 CRD
+per default, configurabili dal server. Non esiste più la ricarica tramite PUT.
 Il mittente riceve `BID_CONFIRMED` o `BID_REJECTED`; il topic riceve gli eventi
 post-commit. Un retry dello stesso UUID non ripubblica l'evento pubblico.
 La chiusura è un servizio interno, non un endpoint REST manuale.
 
-Per `portafoglio.json`, effettuare il login USER: il GET verifica saldi e pagina
-dei movimenti; il PUT imposta il saldo virtuale assoluto (esempio: 10000 CRD).
-Ripetere il GET dopo il PUT mostra il movimento `IMPOSTAZIONE_SALDO`. Un PUT
-identico non aggiunge movimenti. Le due API non sono accessibili agli ADMIN.
+Per `portafoglio.json`, effettuare il login USER: il GET verifica saldi e ledger.
+La seconda richiesta è un test negativo: il vecchio PUT deve restituire 403.
+La pagina wallet è di sola lettura; `CREDITO_INIZIALE` documenta il bonus di
+iscrizione. Gli ADMIN non hanno accesso alla pagina wallet personale.
 
 ## Verifica del catalogo e uso del runner
 

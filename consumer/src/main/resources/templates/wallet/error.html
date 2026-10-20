@@ -3,7 +3,7 @@
 <head th:replace="~{fragments/head :: head('Wallet')}"></head>
 <body>
 <nav th:replace="~{fragments/navbar :: navbar}"></nav>
-<main class="wallet-page">
+<main id="main-content" class="wallet-page">
     <div class="error-page" role="alert">
         <h1 th:text="${errorTitle}">Wallet unavailable</h1>
         <p th:text="${errorMessage}">Please try again.</p>

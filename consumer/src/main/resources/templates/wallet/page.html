@@ -3,13 +3,13 @@
 <head th:replace="~{fragments/head :: head('Wallet')}"></head>
 <body>
 <nav th:replace="~{fragments/navbar :: navbar}"></nav>
-<main class="wallet-page">
+<main id="main-content" class="wallet-page">
     <header>
+        <p class="eyebrow">READY FOR YOUR NEXT BID</p>
         <h1>Your wallet</h1>
-        <p class="muted">Virtual credits for LiveAuction.</p>
+        <p class="muted">View your virtual credits, reservations and transaction history. Credits are assigned at registration and cannot be topped up.</p>
     </header>
     <div th:replace="~{wallet/fragments :: balance}"></div>
-    <div th:replace="~{wallet/fragments :: settings}"></div>
     <div th:replace="~{wallet/fragments :: ledger}"></div>
 </main>
 <footer th:replace="~{fragments/footer :: footer}"></footer>

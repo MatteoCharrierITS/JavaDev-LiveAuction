@@ -1,6 +1,6 @@
 <!doctype html><html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/head :: head('ADMIN products')}"></head><body>
-<nav th:replace="~{fragments/navbar :: navbar}"></nav><main class="catalog-page">
+<nav th:replace="~{fragments/navbar :: navbar}"></nav><main id="main-content" class="catalog-page">
 <h1>Manage products</h1><div th:replace="~{fragments/alerts :: alerts}"></div>
 <nav class="admin-actions"><a th:href="@{/admin/prodotti/nuovo}">Create product</a><a th:href="@{/admin/categorie}">Manage categories</a><a th:href="@{/admin/aste/nuova}">Schedule auction</a></nav>
 <form class="catalog-filters" th:action="@{/admin/prodotti}" method="get">

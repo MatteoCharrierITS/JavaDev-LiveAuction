@@ -1,4 +1,8 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org">
-<footer th:fragment="footer" class="site-footer">LiveAuction</footer>
+<footer th:fragment="footer" class="site-footer">
+    <a class="brand" th:href="@{/marketplace}"><span>Live<em>Auction</em></span></a>
+    <p class="footer-note">Great finds. Real-time bids. Virtual credits only.</p>
+    <a th:href="@{/aste}">Explore auctions <span aria-hidden="true">↗</span></a>
+</footer>
 </html>

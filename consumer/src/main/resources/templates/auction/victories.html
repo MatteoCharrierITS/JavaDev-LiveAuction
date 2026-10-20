@@ -2,7 +2,8 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/head :: head('Your victories')}"></head>
 <body><nav th:replace="~{fragments/navbar :: navbar}"></nav>
-<main class="catalog-page">
+<main id="main-content" class="catalog-page">
+    <p class="eyebrow">WELL PLAYED</p>
     <h1>Your victories</h1>
     <p>Auctions you won. Times are shown in Rome time.</p>
     <p th:if="${victories.content.isEmpty()}" class="empty-state">No victories on this page.</p>
@@ -10,6 +11,7 @@
         <p th:text="${victories.totalElements} + ' victories'">Victories</p>
         <div class="product-grid">
             <article class="product-card" th:each="v : ${victories.content}">
+                <figure class="product-visual"><img th:src="@{${productMedia.image(v.prodotto.nome)}}" alt="Product illustration" width="600" height="440" loading="lazy" data-product-image><figcaption class="media-caption">Illustrative image</figcaption></figure>
                 <h2 th:text="${v.prodotto.nome}">Product</h2>
                 <p>Product #<span th:text="${v.prodotto.id}">1</span> · Auction #<span th:text="${v.id}">1</span></p>
                 <p>Final price: <strong th:text="${display.amount(v.prezzoFinale)}">0,00</strong> CRD</p>

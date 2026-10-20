@@ -24,6 +24,7 @@ public final class WalletDisplay {
 
     public String type(String type) {
         return switch (type) {
+            case "CREDITO_INIZIALE" -> "Welcome credits";
             case "IMPOSTAZIONE_SALDO" -> "Balance set";
             case "RISERVA_OFFERTA" -> "Bid reserved";
             case "RILASCIO_OFFERTA" -> "Bid reserve released";

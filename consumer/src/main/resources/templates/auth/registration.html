@@ -3,8 +3,10 @@
 <head th:replace="~{fragments/head :: head('Create account')}"></head>
 <body>
 <nav th:replace="~{fragments/navbar :: navbar}"></nav>
-<main class="auth-card">
+<main id="main-content" class="auth-card">
+    <p class="eyebrow">JOIN THE NEXT AUCTION</p>
     <h1>Create account</h1>
+    <p class="auth-intro">Find your favourites. Start your collection. All with virtual credits.</p>
     <div th:replace="~{fragments/alerts :: alerts}"></div>
     <form th:action="@{/registrazione}" th:object="${form}" method="post">
         <label for="username">Username</label>

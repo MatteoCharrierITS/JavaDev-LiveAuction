@@ -56,6 +56,13 @@ compresi quelli non più pubblici, nell'inventario personale paginato.
 
 ## Portafoglio
 
+- Alla registrazione il USER riceve una sola volta 10.000 CRD, configurabili
+  in `producer/src/main/resources/application.yaml` come `app.portafoglio.saldo-iniziale`.
+  Utente, wallet e movimento `CREDITO_INIZIALE` sono creati atomicamente.
+- Non sono consentite ricariche o impostazioni manuali del saldo da parte degli
+  utenti. La pagina wallet mostra saldi e transazioni. Cambiare la configurazione
+  non modifica i saldi degli account esistenti né accredita nuovamente al login.
+
 - Valuta virtuale: `CRD` (crediti), visualizzata come `1.250,00 CRD`.
 - Ogni utente dispone di saldo totale, riservato e disponibile.
 - `saldoDisponibile = saldoTotale - saldoRiservato`.

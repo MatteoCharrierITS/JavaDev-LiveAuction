@@ -2,12 +2,15 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/head :: head('Your inventory')}"></head>
 <body><nav th:replace="~{fragments/navbar :: navbar}"></nav>
-<main class="catalog-page">
+<main id="main-content" class="catalog-page inventory-page">
+    <p class="eyebrow">MAKE IT YOURS</p>
     <h1>Your inventory</h1>
+    <p class="muted">Your finds, all in one place. Purchases and auction wins live here.</p>
     <div th:replace="~{fragments/alerts :: alerts}"></div>
     <p th:if="${inventory.content.isEmpty()}" class="empty-state">No products on this page.</p>
     <div class="product-grid">
         <article class="product-card" th:each="item : ${inventory.content}">
+            <figure class="product-visual"><img th:src="@{${productMedia.image(item.prodotto.nome)}}" alt="Product illustration" width="600" height="440" loading="lazy" data-product-image><figcaption class="media-caption">Illustrative image</figcaption></figure>
             <h2 th:text="${item.prodotto.nome}">Product</h2>
             <p>SKU: <span th:text="${item.prodotto.sku}">SKU</span></p>
             <p th:text="${item.prodotto.categoria.nome}">Category</p>

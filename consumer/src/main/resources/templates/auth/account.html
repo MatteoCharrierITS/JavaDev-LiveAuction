@@ -3,9 +3,29 @@
 <head th:replace="~{fragments/head :: head('Account')}"></head>
 <body>
 <nav th:replace="~{fragments/navbar :: navbar}"></nav>
-<main class="auth-card">
+<main id="main-content" class="auth-card">
+    <p class="eyebrow">YOUR SPACE</p>
     <h1>Your account</h1>
     <p>Signed in as <strong th:text="${username}">username</strong>.</p>
+    <section th:if="${userVisitor}" aria-labelledby="account-links-heading">
+        <h2 id="account-links-heading">Where next?</h2>
+        <div class="account-shortcuts">
+            <a th:href="@{/inventario}">Inventory <small>Your purchases and wins</small></a>
+            <a th:href="@{/impostazioni/portafoglio}">Wallet <small>Balance and movements</small></a>
+            <a th:href="@{/me/vittorie}">My victories <small>Your winning bids</small></a>
+            <a th:href="@{/aste}">Auctions <small>Find your next room</small></a>
+        </div>
+    </section>
+    <section th:if="${adminVisitor}" aria-labelledby="admin-links-heading">
+        <h2 id="admin-links-heading">Your control room</h2>
+        <div class="account-shortcuts">
+            <a th:href="@{/admin/prodotti}">Manage products <small>Catalogue and stock</small></a>
+            <a th:href="@{/admin/aste/nuova}">Schedule auction <small>Start the next live room</small></a>
+            <a th:href="@{/admin/aste/storico}">Auction history <small>Results and winners</small></a>
+            <a th:href="@{/admin/categorie}">Categories <small>Organise the collection</small></a>
+        </div>
+    </section>
+    <details class="danger-zone"><summary>Account deletion</summary>
     <section aria-labelledby="delete-heading">
         <h2 id="delete-heading">Delete account</h2>
         <p>This permanently deactivates and anonymizes your account.</p>
@@ -14,6 +34,7 @@
             <button class="danger" type="submit">Delete my account</button>
         </form>
     </section>
+    </details>
 </main>
 <footer th:replace="~{fragments/footer :: footer}"></footer>
 </body>

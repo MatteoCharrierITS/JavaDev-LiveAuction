@@ -1,5 +1,34 @@
 # Attività del team
 
+## Aggiornamento locale — 20 ottobre 2026
+
+Wallet ora di sola lettura: nessuna ricarica USER, nemmeno tramite API. Nuovi
+iscritti con 10.000 CRD configurabili da YAML, accredito una tantum nel ledger.
+Verificati 298 test Producer (DB/WS inclusi), 62 Consumer e 21 JavaScript.
+Pubblicato e provato nel browser. Saldi vecchi invariati; resta il recupero
+dell'asta 6 bloccata per limite d'incasso. [Dettagli](18-wallet-sola-lettura.md).
+
+Corretto il WebSocket dopo un ulteriore cambio rete: endpoint automatico basato
+sull'host della pagina e origini locali riallineate. Riscontro e limiti nel
+[report della correzione](17-correzione-ws-lan.md). Ora 21 test JavaScript.
+
+Completato anche il redesign Consumer: tema scuro, catalogo illustrato, menu
+mobile e scorciatoie account. Verificati 63 test Java Consumer e 18 JavaScript;
+prove browser desktop/mobile e acquisto riuscite. Vedi [resoconto UI](16-ui-design.md).
+
+Nuova demo persistente `liveauction_demo_20261020`, separata dal database con
+le otto aste incoerenti (conservato senza correzioni arbitrarie). Account
+`maikol` ADMIN destinatario degli acquisti, `utente1` e `utente2` USER;
+configurazione LAN ed email disabilitate nel `.env` locale ignorato da Git.
+Rilanci da due sessioni UI, acquisto via IP, login ADMIN, programmazione e
+annullamento verificati. Corretta la ripetizione dei log dello scheduler senza
+modificare i retry. Suite: 297 Producer + 52 Consumer, zero errori, fallimenti o
+saltati; 13 JavaScript superati. Dati demo, avvio e limiti nel
+[resoconto multi-PC](15-demo-multipc.md). Restano da provare PC fisici distinti
+sulla rete effettiva e completare la matrice manuale dei guasti di rete.
+Verificata anche la chiusura naturale della prima asta con vincitore, pagamento,
+incasso ADMIN, assegnazione inventario e riserva zero; nessuna email inviata.
+
 ## Aggiornamento locale — 19 ottobre 2026
 
 Configurato lo stack Docker locale e `SHOP_ADMIN_ID` con un ADMIN demo attivo;

@@ -1,5 +1,9 @@
 # Modello dati PostgreSQL
 
+Aggiornamento 20 ottobre 2026: V15 ammette `CREDITO_INIZIALE` nel ledger.
+La registrazione assegna atomicamente il credito configurato (default 10.000 CRD).
+I vecchi saldi e le migrazioni precedenti non sono riscritti.
+
 ## Risposta rapida: come riconoscere un prodotto astabile
 
 La decisione è memorizzata direttamente in `prodotti.astabile`:
@@ -168,7 +172,7 @@ CREATE TABLE movimenti_portafoglio (
     asta_id BIGINT REFERENCES aste(id),
     tipo VARCHAR(30) NOT NULL CHECK (tipo IN (
         'IMPOSTAZIONE_SALDO', 'RISERVA_OFFERTA', 'RILASCIO_OFFERTA',
-        'PAGAMENTO_ASTA', 'INCASSO_ASTA', 'ACQUISTO_FISSO'
+        'PAGAMENTO_ASTA', 'INCASSO_ASTA', 'ACQUISTO_FISSO', 'INCASSO_FISSO', 'CREDITO_INIZIALE'
     )),
     importo NUMERIC(12,2) NOT NULL CHECK (importo > 0),
     saldo_totale_dopo NUMERIC(12,2) NOT NULL,

@@ -1,18 +1,20 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org">
 <nav th:fragment="navbar" class="site-nav" aria-label="Main navigation">
-    <a class="brand" th:href="@{/}">LiveAuction</a>
-    <div class="nav-links">
-        <a th:href="@{/marketplace}">Marketplace</a>
-        <a th:href="@{/aste}">Auctions</a>
-        <a th:if="${userVisitor}" th:href="@{/impostazioni/portafoglio}">Wallet</a>
-        <a th:if="${userVisitor}" th:href="@{/me/vittorie}">My victories</a>
-        <a th:if="${userVisitor}" th:href="@{/inventario}">Inventory</a>
-        <a th:if="${adminVisitor}" th:href="@{/admin/prodotti}">ADMIN catalog</a>
-        <a th:if="${adminVisitor}" th:href="@{/admin/aste/storico}">Auction history</a>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <a class="brand" th:href="@{/}" aria-label="LiveAuction"><span class="brand-symbol" aria-hidden="true">LA</span><span>Live<em>Auction</em></span></a>
+    <button class="nav-toggle" type="button" aria-controls="primary-links" aria-expanded="false">Menu <span aria-hidden="true">☰</span></button>
+    <div class="nav-links" id="primary-links">
+        <a th:href="@{/marketplace}" th:attr="aria-current=${currentPath == '/marketplace' or #strings.startsWith(currentPath, '/prodotti/')} ? 'page' : null">Marketplace</a>
+        <a th:href="@{/aste}" th:attr="aria-current=${#strings.startsWith(currentPath, '/aste')} ? 'page' : null">Auctions</a>
+        <a th:if="${userVisitor}" th:href="@{/impostazioni/portafoglio}" th:attr="aria-current=${#strings.startsWith(currentPath, '/impostazioni/portafoglio')} ? 'page' : null">Wallet</a>
+        <a th:if="${userVisitor}" th:href="@{/me/vittorie}" th:attr="aria-current=${currentPath == '/me/vittorie'} ? 'page' : null">My victories</a>
+        <a th:if="${userVisitor}" th:href="@{/inventario}" th:attr="aria-current=${currentPath == '/inventario'} ? 'page' : null">Inventory</a>
+        <a th:if="${adminVisitor}" th:href="@{/admin/prodotti}" th:attr="aria-current=${#strings.startsWith(currentPath, '/admin/prodotti') or #strings.startsWith(currentPath, '/admin/categorie')} ? 'page' : null">ADMIN catalog</a>
+        <a th:if="${adminVisitor}" th:href="@{/admin/aste/storico}" th:attr="aria-current=${currentPath == '/admin/aste/storico'} ? 'page' : null">Auction history</a>
         <a th:if="${!signedIn}" th:href="@{/login}">Sign in</a>
-        <a th:if="${!signedIn}" th:href="@{/registrazione}">Create account</a>
-        <a th:if="${signedIn}" th:href="@{/account}" th:text="${displayName}">Account</a>
+        <a th:if="${!signedIn}" class="nav-cta" th:href="@{/registrazione}">Create account <span aria-hidden="true">↗</span></a>
+        <a th:if="${signedIn}" class="account-link" th:href="@{/account}" th:text="${displayName}" th:attr="aria-current=${currentPath == '/account'} ? 'page' : null">Account</a>
         <form th:if="${signedIn}" th:action="@{/logout}" method="post">
             <button type="submit" class="link-button">Sign out</button>
         </form>

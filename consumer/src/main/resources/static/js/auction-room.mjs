@@ -1,5 +1,22 @@
 import { RoomStomp } from './room-stomp.mjs';
 
+// Native local deployment: UI and Producer share a host, not a port.
+// Explicit URLs remain available for proxies, HTTPS and nonstandard ports.
+export function resolveWebSocketUrl(configured, location = globalThis.location) {
+    if (configured === 'auto') {
+        const url = new URL(location.href);
+        url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+        url.port = '8081';
+        url.pathname = '/ws';
+        url.search = '';
+        url.hash = '';
+        return url;
+    }
+    const url = new URL(configured);
+    if (!['ws:', 'wss:'].includes(url.protocol)) throw new Error('Invalid WebSocket protocol');
+    return url;
+}
+
 const money = value => value == null ? '—' : `${new Intl.NumberFormat('it-IT', {
     minimumFractionDigits: 2, maximumFractionDigits: 2
 }).format(Number(value))} CRD`;
@@ -201,7 +218,7 @@ export class AuctionRoom {
             }});
             if (generation !== this.generation || this.destroyed) return;
             if (!response.ticket) throw new Error('Ticket unavailable');
-            const url = new URL(this.websocketUrl);
+            const url = resolveWebSocketUrl(this.websocketUrl);
             url.searchParams.set('ticket', response.ticket);
             // The short-lived ticket remains only in this transport instance.
             this.stomp = new RoomStomp(url.toString(), this.id, {

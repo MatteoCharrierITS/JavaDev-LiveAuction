@@ -54,6 +54,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/categorie", "/api/v1/prodotti/**", "/api/v1/aste/**").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/me").authenticated()
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/me/portafoglio/impostazioni").denyAll()
                         .requestMatchers("/api/v1/me/**").hasRole("USER")
                         .requestMatchers(HttpMethod.POST, "/api/v1/aste/*/ticket").hasRole("USER")
                         .anyRequest().authenticated())

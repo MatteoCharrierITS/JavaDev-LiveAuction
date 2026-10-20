@@ -1,6 +1,7 @@
 package it.esercitazione.liveauction.consumer.web;
 
 import it.esercitazione.liveauction.consumer.wallet.WalletDisplay;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -8,6 +9,14 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 
 @ControllerAdvice
 public class PageModelAdvice {
+    @ModelAttribute("productMedia")
+    public ProductMedia productMedia() { return new ProductMedia(); }
+
+    @ModelAttribute("currentPath")
+    public String currentPath(HttpServletRequest request) {
+        return request.getRequestURI().substring(request.getContextPath().length());
+    }
+
     @ModelAttribute("display")
     public WalletDisplay display() { return new WalletDisplay(); }
 

@@ -1,5 +1,5 @@
 <!doctype html><html lang="en" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments/head :: head('ADMIN categories')}"></head><body>
-<nav th:replace="~{fragments/navbar :: navbar}"></nav><main class="catalog-page"><h1>Manage categories</h1><div th:replace="~{fragments/alerts :: alerts}"></div><p><a th:href="@{/admin/prodotti}">Back to products</a></p>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav><main id="main-content" class="catalog-page"><h1>Manage categories</h1><div th:replace="~{fragments/alerts :: alerts}"></div><p><a th:href="@{/admin/prodotti}">Back to products</a></p>
 <section class="admin-panel"><h2>Create category</h2><p th:if="${formError}" class="alert alert-error" role="alert" th:text="${formError}"></p>
 <form class="admin-form" th:action="@{/admin/categorie}" th:object="${form}" method="post">
 <label for="nome">Name</label><input id="nome" th:field="*{nome}" maxlength="100" required>

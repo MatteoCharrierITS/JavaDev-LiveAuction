@@ -1,7 +1,11 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org">
 <article th:fragment="card(auction, serverTime, userVisitor, signedIn)" class="product-card auction-card">
-    <p class="auction-state" th:text="${auction.stato}">State</p>
+    <figure class="product-visual">
+        <img th:src="@{${productMedia.image(auction.prodotto.nome)}}" alt="Product illustration" width="600" height="440" loading="lazy" data-product-image>
+        <figcaption class="media-caption">Illustrative image</figcaption>
+    </figure>
+    <p class="auction-state" th:attr="data-state=${auction.stato}" th:text="${auction.stato}">State</p>
     <h2 th:text="${auction.prodotto.nome}">Product</h2>
     <p class="product-price">Starting price: <span th:text="${display.amount(auction.prezzoIniziale)}">0,00</span> CRD</p>
     <p class="product-price" th:if="${auction.offertaCorrente != null}">Current offer: <span th:text="${display.amount(auction.offertaCorrente)}">0,00</span> CRD</p>
@@ -18,8 +22,8 @@
     </p>
     <p th:if="${auction.stato == 'CHIUSA'}" class="muted">Closed auction. Winner details are not available in the lobby.</p>
     <p th:if="${auction.stato == 'ANNULLATA'}" class="muted">This auction was cancelled.</p>
-    <p th:if="${auction.roomAvailableAt(serverTime) and userVisitor}"><a th:href="@{/aste/{id}(id=${auction.id})}">Enter auction room</a></p>
-    <p th:if="${auction.roomAvailableAt(serverTime) and !signedIn}"><a th:href="@{/login}">Sign in to enter the room</a></p>
+    <p th:if="${auction.roomAvailableAt(serverTime) and userVisitor}"><a class="button" th:href="@{/aste/{id}(id=${auction.id})}">Enter auction room <span aria-hidden="true">↗</span></a></p>
+    <p th:if="${auction.roomAvailableAt(serverTime) and !signedIn}"><a class="button button-secondary" th:href="@{/login}">Sign in to enter the room</a></p>
     <p th:if="${auction.stato == 'PROGRAMMATA'}" class="muted">Room access begins when the Producer opens it.</p>
 </article>
 </html>

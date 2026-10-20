@@ -9,19 +9,6 @@
         <div><dt>Available</dt><dd th:text="${display.amount(wallet.saldoDisponibile) + ' ' + wallet.valuta}">0,00 CRD</dd></div>
     </dl>
 </section>
-<section th:fragment="settings" class="wallet-panel" aria-labelledby="settings-heading">
-    <h2 id="settings-heading">Set virtual balance</h2>
-    <p>Enter the new <strong>total balance</strong>. This absolute amount replaces the current total while keeping existing reservations.</p>
-    <form th:action="@{/impostazioni/portafoglio}" method="post" class="wallet-form">
-        <input type="hidden" name="page" th:value="${wallet.page}">
-        <input type="hidden" name="size" th:value="${wallet.size}">
-        <label for="saldoTotale">New total balance (<span th:text="${wallet.valuta}">CRD</span>)</label>
-        <input id="saldoTotale" name="saldoTotale" type="number" min="0" max="9999999999.99" step="0.01"
-               required th:value="${enteredBalance}" th:attr="aria-invalid=${formError != null}">
-        <p th:if="${formError}" class="field-error" role="alert" th:text="${formError}"></p>
-        <button type="submit">Set balance</button>
-    </form>
-</section>
 <section th:fragment="ledger" class="wallet-panel" aria-labelledby="ledger-heading">
     <h2 id="ledger-heading">Ledger</h2>
     <p th:if="${wallet.movimenti.isEmpty()}" class="empty-state">No movements yet.</p>

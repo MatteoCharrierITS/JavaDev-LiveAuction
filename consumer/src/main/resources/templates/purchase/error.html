@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/head :: head('Purchase')}"></head>
 <body><nav th:replace="~{fragments/navbar :: navbar}"></nav>
-<main class="catalog-page">
+<main id="main-content" class="catalog-page">
     <h1 th:text="${errorTitle}">Purchase</h1><p role="alert" th:text="${errorMessage}">Error</p>
     <form th:if="${retryId != null}" th:action="@{/prodotti/{id}/acquisti(id=${productId})}" method="post">
         <input type="hidden" name="clientPurchaseId" th:value="${retryId}">

@@ -1,59 +1,46 @@
 # Portafoglio e ledger
 
-Modulo integrato in `main` il 9 ottobre 2026, a partire dalla base `c9e2a11`.
-Matteo è subentrato sul modulo di Mondir.
-Il contratto delle API è in [REST](04-api-rest.md#portafoglio).
+Modulo integrato in main il 9 ottobre 2026; Matteo è subentrato sul modulo di Mondir.
+Decisione aggiornata del 20 ottobre 2026: wallet di sola lettura e credito iniziale
+configurabile. Il contratto corrente è in [REST](04-api-rest.md#portafoglio).
 
-## API e persistenza
+## Comportamento corrente
 
-- `GET /api/v1/me/portafoglio`: saldi e pagina dei movimenti personali,
-  ordinati per data e ID decrescenti; lettura `REPEATABLE_READ` per avere saldo,
-  conteggio e pagina coerenti durante modifiche concorrenti.
-- `PUT /api/v1/me/portafoglio/impostazioni`: saldo virtuale assoluto, da zero
-  a `9999999999.99`, massimo due decimali. Mantiene la riserva corrente e
-  rifiuta un totale inferiore al riservato con `409 SALDO_INFERIORE_AL_RISERVATO`.
-- Entrambe richiedono USER; ruolo e identità sono verificati anche nei servizi.
-  Nella copia di lavoro del 13 ottobre il Consumer le usa nella pagina
-  `/impostazioni/portafoglio`, con il token conservato nella sessione.
-
-Il modulo usa JDBC su `portafogli` e `movimenti_portafoglio` delle migrazioni
-V2/V8. Le proiezioni e i DTO sostituiscono i modelli JPA incompatibili presenti
-nel precedente branch `portafoglio-movimenti`: non vengono introdotte tabelle
-`wallet` o `movimenti`, né colonne `wallet_id`, `offerta_id` o `descrizione`.
-Il ledger usa `portafoglio_id`, `asta_id`, `data_movimento`, i due saldi
-successivi e l'enum `TipoMovimento`. Le date sono `Instant` UTC e gli importi
-`BigDecimal`. L'integrazione originaria non modificava le migrazioni; il 14 ottobre
-sono state aggiunte V13 (acquisti) e V14 (tipo `INCASSO_FISSO`), senza riscrivere V8.
-
-L'impostazione del saldo registra un movimento con importo positivo pari alla
-differenza assoluta, `asta_id` null e saldi successivi. Una riduzione resta un
-movimento `IMPOSTAZIONE_SALDO`: il saldo successivo descrive il risultato.
-Ripetere un PUT con lo stesso totale non produce una modifica, quindi non
-inserisce importi zero e non cambia versione o data del portafoglio.
+- GET /api/v1/me/portafoglio: saldi e movimenti personali paginati, ordinati per
+  data e ID decrescenti. Lettura REPEATABLE_READ; ruolo USER e identità verificati
+  anche nel servizio. Il Consumer conserva il token nella sessione server-side.
+- La pagina /impostazioni/portafoglio mostra saldo totale, disponibile, riservato
+  e ledger. Non contiene moduli di ricarica o impostazione. Il vecchio PUT
+  /api/v1/me/portafoglio/impostazioni e il POST Consumer sono vietati con 403 per
+  gli utenti autenticati. Rimossi controller, client e servizio di modifica.
+- La registrazione crea nella stessa transazione utente USER, wallet e movimento
+  CREDITO_INIZIALE, con riserva zero e asta_id null. Importo predefinito 10000.00
+  in producer/src/main/resources/application.yaml: app.portafoglio.saldo-iniziale.
+  Override opzionale WALLET_INITIAL_BALANCE, inoltrato anche da Compose.
+- La configurazione ammette 0–9999999999.99, massimo due decimali; valori invalidi
+  impediscono l'avvio. Con zero non si registra un movimento di importo zero.
+  Il bonus è attribuito una sola volta: login, refresh e lettura non accreditano
+  nulla. Modificare il valore e riavviare riguarda solo le nuove registrazioni.
+- I saldi e i movimenti degli account esistenti restano invariati. I movimenti
+  IMPOSTAZIONE_SALDO già presenti restano leggibili come dati storici.
 
 ## Operazioni economiche condivise
 
-`PortafoglioRepository` centralizza `bloccaPortafogli` e `movimenta`, estratti
-senza duplicare lo SQL del motore d'asta. Le operazioni richiedono una transazione
-esistente (`MANDATORY`), così saldo e ledger partecipano alla transazione
-chiamante. Un errore annulla entrambe le scritture.
+PortafoglioRepository centralizza lock ordinati per ID e movimenti di ledger.
+Le operazioni di scrittura richiedono una transazione esistente (MANDATORY).
+Ogni variazione aggiorna saldo, versione, data UTC e ledger atomicamente;
+BigDecimal, riserva <= totale, non negatività e limite NUMERIC(12,2) invariati.
+Rilanci, rilascio, pagamento, incasso e acquisti continuano a usare il componente.
+La creazione fallisce se il wallet esiste già: non è un endpoint di ricarica.
 
-`OfferteRepository` mantiene le deleghe usate da rilanci, ritiri e settlement,
-convertendo gli errori del portafoglio in `OffertaException` per conservare il
-contratto STOMP. `PortafoglioBloccato` è ora una proiezione del modulo portafoglio.
-Il tipo di movimento condiviso è un enum; l'adattatore delle aste accetta ancora
-le stringhe dei servizi esistenti.
+V15 aggiunge CREDITO_INIZIALE al vincolo dei tipi di movimento, senza riscrivere
+V8/V14 o modificare retroattivamente saldi. Nessun dato demo nelle migrazioni.
+API, UI, test e collection Postman sono allineati alla nuova regola.
 
-I lock conservano l'ordine del motore: utente, aste quando richieste, poi
-portafogli ordinati per ID. L'impostazione del saldo acquisisce il lock utente
-`FOR NO KEY UPDATE`, poi il portafoglio; non acquisisce lock sulle aste.
-Non acquisire lock utente o asta dopo avere bloccato un portafoglio. Il settlement
-conserva il proprio ordine asta, portafogli, prodotto e inventario.
+## Verifiche storiche (comportamento precedente)
 
-Ogni movimento aggiorna `versione` e `data_modifica` nella stessa transazione.
-Il componente verifica non negatività, riserva <= totale e limite NUMERIC(12,2).
-Le nuove operazioni economiche devono riusarlo dopo aver acquisito i lock e
-validato le regole del proprio dominio.
+La sezione seguente documenta il collaudo del 9 ottobre, quando il saldo iniziale
+era zero e l'impostazione manuale era consentita. Non è il contratto attuale.
 
 ## Verifiche del 9 ottobre 2026
 

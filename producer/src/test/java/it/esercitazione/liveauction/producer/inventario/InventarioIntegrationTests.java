@@ -49,6 +49,7 @@ class InventarioIntegrationTests {
         }
         jdbc.update("DELETE FROM categorie WHERE id=?",categoria);
         for(long u:utenti) {
+            jdbc.update("DELETE FROM movimenti_portafoglio WHERE portafoglio_id IN (SELECT id FROM portafogli WHERE utente_id=?)",u);
             jdbc.update("DELETE FROM auth_sessions WHERE utente_id=?",u);
             jdbc.update("DELETE FROM portafogli WHERE utente_id=?",u);
             jdbc.update("DELETE FROM utenti WHERE id=?",u);

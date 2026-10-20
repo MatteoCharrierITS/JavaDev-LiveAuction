@@ -11,7 +11,6 @@ import it.esercitazione.liveauction.consumer.auction.AuctionSnapshot;
 import it.esercitazione.liveauction.consumer.auction.RoomTicket;
 import it.esercitazione.liveauction.consumer.auction.VictoryPage;
 import it.esercitazione.liveauction.consumer.wallet.WalletPage;
-import it.esercitazione.liveauction.consumer.wallet.WalletBalance;
 import it.esercitazione.liveauction.consumer.admin.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -182,15 +181,6 @@ public class ProducerClient {
                 .header(HttpHeaders.AUTHORIZATION, bearer(token)).retrieve()
                 .body(it.esercitazione.liveauction.consumer.inventario.InventoryPage.class));
     }
-
-    public WalletBalance setWalletBalance(String accessToken, BigDecimal total) {
-        return call(() -> client.put().uri("/me/portafoglio/impostazioni")
-                .header(HttpHeaders.AUTHORIZATION, bearer(accessToken))
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(new WalletBalanceRequest(total)).retrieve().body(WalletBalance.class));
-    }
-
-    private record WalletBalanceRequest(BigDecimal saldoTotale) {}
 
     public it.esercitazione.liveauction.consumer.acquisto.PurchaseResult buy(String token,long product,
             java.util.UUID clientPurchaseId,int quantity) {

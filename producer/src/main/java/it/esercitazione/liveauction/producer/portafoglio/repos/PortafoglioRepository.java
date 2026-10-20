@@ -22,6 +22,17 @@ public class PortafoglioRepository {
     private static final BigDecimal MASSIMO_SALDO = new BigDecimal("9999999999.99");
     private final JdbcTemplate jdbc;
 
+    /** Solo alla creazione: il vincolo UNIQUE impedisce accrediti ripetuti. */
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void creaConCreditoIniziale(long utenteId, BigDecimal credito) {
+        jdbc.update("INSERT INTO portafogli (utente_id) VALUES (?)", utenteId);
+        if (credito.signum() > 0) {
+            var saldo = bloccaPortafogli(List.of(utenteId)).get(utenteId);
+            movimenta(saldo, null, TipoMovimento.CREDITO_INIZIALE, credito,
+                    credito, BigDecimal.ZERO, Instant.now());
+        }
+    }
+
     public void verificaUtenteAttivo(long utenteId, boolean lock) {
         String sql = "SELECT id FROM utenti WHERE id = ? AND attivo AND ruolo = 'USER'"
                 + (lock ? " FOR NO KEY UPDATE" : "");

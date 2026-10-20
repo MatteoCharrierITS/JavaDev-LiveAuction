@@ -4,7 +4,42 @@ import { webcrypto } from 'node:crypto';
 
 globalThis.document = { querySelector: () => null, createElement: () => ({ textContent: '' }) };
 const { RoomStomp } = await import('../../main/resources/static/js/room-stomp.mjs');
-const { AuctionRoom } = await import('../../main/resources/static/js/auction-room.mjs');
+const { AuctionRoom, resolveWebSocketUrl } = await import('../../main/resources/static/js/auction-room.mjs');
+
+test('automatic WebSocket follows the page host instead of a stale server IP', () => {
+    for (const host of ['localhost', '127.0.0.1', '10.135.188.192', '192.168.137.99', '[::1]']) {
+        const url = resolveWebSocketUrl('auto', { href: `http://${host}:8082/aste/42?filter=old#bid` });
+        assert.equal(url.toString(), `ws://${host}:8081/ws`);
+        assert.equal(url.search, '');
+    }
+});
+
+test('automatic WebSocket uses TLS on HTTPS while explicit endpoint overrides are preserved', () => {
+    assert.equal(resolveWebSocketUrl('auto', { href: 'https://demo.local/aste/42' }).toString(),
+        'wss://demo.local:8081/ws');
+    assert.equal(resolveWebSocketUrl('wss://proxy.example/live/ws').toString(), 'wss://proxy.example/live/ws');
+    assert.throws(() => resolveWebSocketUrl('https://proxy.example/ws'), /Invalid WebSocket protocol/);
+});
+
+test('automatic endpoint still attaches a ticket and keeps bidding disabled until connected', async () => {
+    const root = fakeRoot();
+    root.dataset.websocketUrl = 'auto';
+    const previous = globalThis.location;
+    globalThis.location = { href: 'http://10.135.188.192:8082/aste/42' };
+    const room = new AuctionRoom(root, { clock: () => 0, WebSocketType: FakeSocket,
+        fetch: async () => ({ ok: true, json: async () => ({ ticket: 'short-lived' }) }) });
+    try {
+        room.applySnapshot(snapshot());
+        room.synced = true;
+        await room.connect();
+        assert.equal(FakeSocket.last.url, 'ws://10.135.188.192:8081/ws?ticket=short-lived');
+        assert.equal(root.node('bid-submit').disabled, true);
+    } finally {
+        room.stop();
+        if (previous === undefined) delete globalThis.location;
+        else globalThis.location = previous;
+    }
+});
 
 class FakeSocket {
     static OPEN = 1;

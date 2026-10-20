@@ -415,7 +415,7 @@ class OfferteWebSocketIntegrationTests {
         assertThat(jdbc.queryForObject("SELECT stato FROM aste WHERE id=?", String.class, data.auctionId)).isEqualTo("CHIUSA");
         assertThat(jdbc.queryForObject("SELECT saldo_totale FROM portafogli WHERE utente_id=?", BigDecimal.class, primo.id())).isEqualByComparingTo("990");
         assertThat(jdbc.queryForObject("SELECT saldo_riservato FROM portafogli WHERE utente_id=?", BigDecimal.class, primo.id())).isZero();
-        assertThat(jdbc.queryForObject("SELECT saldo_totale FROM portafogli WHERE utente_id=?", BigDecimal.class, admin.id())).isEqualByComparingTo("10");
+        assertThat(jdbc.queryForObject("SELECT saldo_totale FROM portafogli WHERE utente_id=?", BigDecimal.class, admin.id())).isEqualByComparingTo("10010");
         assertThat(jdbc.queryForObject("SELECT quantita FROM inventario_utenti WHERE utente_id=? AND prodotto_id=?",
                 Integer.class, primo.id(), data.productId)).isEqualTo(1);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM movimenti_portafoglio WHERE asta_id=? AND tipo IN ('PAGAMENTO_ASTA','INCASSO_ASTA')",

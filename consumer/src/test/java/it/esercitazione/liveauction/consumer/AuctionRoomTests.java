@@ -92,6 +92,8 @@ class AuctionRoomTests {
                 .andExpect(status().isOk()).andExpect(view().name("auctions/room"))
                 .andExpect(content().string(containsString("Lamp")))
                 .andExpect(content().string(containsString("data-csrf-header=")))
+                .andExpect(content().string(containsString("data-websocket-url=\"auto\"")))
+                .andExpect(content().string(containsString("auction-room.mjs?v=20261020-ws-host")))
                 .andExpect(content().string(not(containsString("secret-access-token"))))
                 .andExpect(content().string(not(containsString("secret-refresh-token"))));
         mvc.perform(get("/aste/42/snapshot").session(session("USER")))

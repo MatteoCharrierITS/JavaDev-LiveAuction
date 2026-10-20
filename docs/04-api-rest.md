@@ -35,7 +35,6 @@ non ancora committate: inventario e acquisti fissi inclusi.
 | `POST` | `/prodotti/{id}/acquisti` | USER | acquisto fisso idempotente | Implementato |
 | `GET` | `/me/inventario` | USER | prodotti posseduti | Implementato |
 | `GET` | `/me/portafoglio` | USER | saldo e movimenti | Implementato |
-| `PUT` | `/me/portafoglio/impostazioni` | USER | imposta saldo finto | Implementato |
 | `GET` | `/me/vittorie` | USER | storico personale vittorie | Implementato |
 | `GET` | `/aste` | pubblico | lobby filtrabile | Implementato |
 | `GET` | `/aste/{id}` | pubblico | snapshot autorevole | Implementato |
@@ -80,7 +79,12 @@ JWT, `authentication.name` è lo username e `authentication.token.subject` è
 l'ID utente.
 
 `POST /api/v1/auth/register` accetta `username`, `email` e `password`, crea un
-utente con ruolo `USER` e un portafoglio iniziale a zero. Restituisce `201` con
+utente con ruolo `USER`, un portafoglio con credito iniziale configurato
+(default 10.000 CRD) e movimento `CREDITO_INIZIALE` nella stessa transazione.
+Configurazione server `app.portafoglio.saldo-iniziale` in `application.yaml`,
+override `WALLET_INITIAL_BALANCE`; nessun importo è accettato dal client.
+L'accredito avviene una sola volta e non modifica gli account esistenti.
+Restituisce `201` con
 `id`, `username`, `email` e `ruolo`; username o email già in uso restituiscono
 `409`.
 
@@ -267,34 +271,21 @@ stesso snapshot transazionale, anche durante rilanci o settlement concorrenti.
 }
 ```
 
-I tipi di movimento sono quelli delle migrazioni V8 e V14: `IMPOSTAZIONE_SALDO`,
+I tipi di movimento sono quelli delle migrazioni V8, V14 e V15: `CREDITO_INIZIALE`,
+`IMPOSTAZIONE_SALDO` (solo storico, non più creabile dagli utenti),
 `RISERVA_OFFERTA`, `RILASCIO_OFFERTA`, `PAGAMENTO_ASTA`, `INCASSO_ASTA`,
 `ACQUISTO_FISSO`, `INCASSO_FISSO`. `astaId` è null per operazioni non legate a un'asta.
 Gli importi sono positivi; i saldi successivi descrivono l'effetto del movimento.
 Non sono esposti entity, informazioni di altri utenti o credenziali.
 
-### Impostazione del saldo virtuale
+### Wallet di sola lettura (20 ottobre 2026)
 
-```http
-PUT /api/v1/me/portafoglio/impostazioni
-```
-
-```json
-{ "saldoTotale": 10000.00 }
-```
-
-`saldoTotale` è obbligatorio, non negativo, con massimo dieci cifre intere e
-due decimali (`9999999999.99`). È un valore assoluto, non una ricarica da sommare.
-La risposta `200` contiene `saldoTotale`, `saldoRiservato`, `saldoDisponibile`
-e `valuta`, come nell'esempio del GET, senza la pagina dei movimenti.
-
-Il servizio blocca prima l'utente, poi il portafoglio. Non cambia le riserve
-esistenti e verifica il saldo riservato dopo l'attesa dei lock. Un cambiamento
-crea un movimento `IMPOSTAZIONE_SALDO`, con `astaId` null, importo pari al
-valore assoluto della differenza e saldi successivi. Saldo, versione, istante
-UTC di modifica e ledger vengono aggiornati nella stessa transazione.
-Un PUT con saldo uguale a quello corrente non crea movimenti né cambia versione
-o data di modifica. Anche il saldo zero è consentito se non ci sono riserve.
+La precedente impostazione del saldo è rimossa: `PUT /api/v1/me/portafoglio/impostazioni`
+è esplicitamente vietata (403 per utenti autenticati). Non esistono API di ricarica
+USER o ADMIN. Il GET conserva saldi, riserve e ledger paginato. Il Consumer non
+espone più il POST di modifica; richieste forgiate sono rifiutate con 403.
+Il credito iniziale è un movimento positivo, con `astaId` null e riserva zero.
+Con configurazione iniziale zero non si crea un movimento di importo zero.
 
 Errori in `application/problem+json`:
 
@@ -304,7 +295,6 @@ Errori in `application/problem+json`:
 | 401 | Token assente, scaduto o revocato; account disattivato |
 | 403 | Ruolo diverso da USER |
 | 404 | `RISORSA_NON_TROVATA` per lettura di un portafoglio mancante |
-| 409 | `SALDO_INFERIORE_AL_RISERVATO` per impostazione inferiore ai crediti già riservati |
 
 Le operazioni economiche condivise con offerte e settlement sono descritte
 in [Portafoglio e ledger](09-portafoglio.md).
@@ -689,8 +679,15 @@ Handshake: `ws://localhost:8081/ws?ticket={ticketMonouso}`.
 Il Producer accetta per default l'origine esatta `http://localhost:8082`.
 Per prove LAN/VPN configurare `LIVEAUCTION_WS_ALLOWED_ORIGINS` con le origini
 Consumer consentite separate da virgole. Nel Consumer configurare
-`LIVEAUCTION_PRODUCER_WS_URL` con un URL raggiungibile dal browser, per esempio
-`ws://192.168.1.10:8081/ws`; `localhost` sul PC remoto indica il PC remoto stesso.
+`LIVEAUCTION_PRODUCER_WS_URL=auto` (nuovo default): il browser usa l'host della
+pagina Consumer sulla porta `8081`, percorso `/ws`, con `ws` su HTTP e `wss` su
+HTTPS. Per reverse proxy, host o porta diversi impostare invece un URL completo
+raggiungibile dal browser, per esempio `ws://192.168.1.10:8081/ws`.
+`localhost` esplicito sul PC remoto indica il PC remoto stesso. La modalità
+automatica non rende TLS disponibile nel Producer: con HTTPS occorre il relativo
+terminatore TLS o un override `wss` verso il proxy.
+L'elenco delle origini resta esatto: a un cambio di rete aggiornare le origini
+Consumer nel Producer e riavviarlo; non usare wildcard per aggirare il controllo.
 Queste variabili sono inoltrate anche da Docker Compose. Ticket, ruoli e
 validazione delle offerte rimangono obbligatori con qualsiasi origine ammessa.
 
