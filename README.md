@@ -82,14 +82,24 @@ stessa rete c'è `scripts/avvia-locale.sh` (macOS), spiegato nella
 - Un `ADMIN` si ottiene promuovendo un utente già registrato:
   `UPDATE utenti SET ruolo = 'ADMIN' WHERE username = '...';` e rifacendo il login.
 - Gli acquisti a prezzo fisso e l'incasso delle aste vanno all'ADMIN indicato da
-  `SHOP_ADMIN_ID`; con il valore `0` gli acquisti restano disabilitati.
+  `SHOP_ADMIN_ID`; con il valore `0` gli acquisti restano disabilitati e ogni
+  asta incassa sull'ADMIN che l'ha programmata.
+- L'ADMIN può entrare nella stanza di un'asta come osservatore: vede tutto in
+  tempo reale ma non offre e non compare tra i partecipanti.
 
 Le altre variabili sono commentate in [.env.example](.env.example).
 
 ## Test
 
+I test di integrazione vogliono un database dedicato, da creare una volta:
+
 ```sh
-# Producer e Consumer; i test di integrazione vogliono un PostgreSQL dedicato
+docker compose up -d postgres
+docker compose exec postgres createdb -U postgres liveauction_test
+```
+
+```sh
+# Producer e Consumer (macOS/Linux o Git Bash)
 RUN_DB_TESTS=true RUN_WS_TESTS=true ASTE_SCHEDULER_ENABLED=false \
 DB_URL=jdbc:postgresql://localhost:5432/liveauction_test \
 DB_USERNAME=postgres DB_PASSWORD=postgres \
@@ -98,6 +108,9 @@ DB_USERNAME=postgres DB_PASSWORD=postgres \
 # JavaScript della lobby e della stanza
 node --test consumer/src/test/js/*.test.*
 ```
+
+In PowerShell le variabili si impostano prima, una per riga (`$env:RUN_DB_TESTS = "true"`
+e così via), poi `.\producer\mvnw.cmd -f pom.xml verify`.
 
 Senza `DB_URL` e `RUN_DB_TESTS` i test di integrazione vengono saltati e girano
 solo quelli che non toccano il database. Usare sempre un database dedicato ai

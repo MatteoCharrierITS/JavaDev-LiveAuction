@@ -153,6 +153,37 @@ class AuctionHistoryConsumerTests {
         stub.server.verify();
     }
 
+    @Test void lobbyOffersStuckCancellationOnlyAfterClosingGrace() throws Exception {
+        String auction = "{\"content\":[{\"id\":21,\"stato\":\"APERTA\","
+                + "\"prodotto\":{\"id\":3,\"nome\":\"Keyboard\"},"
+                + "\"prezzoIniziale\":10.00,\"offertaCorrente\":12.00,\"numeroOfferte\":2,"
+                + "\"aperturaStanzaAt\":\"2026-10-12T11:57:00Z\","
+                + "\"inizioAt\":\"2026-10-12T12:00:00Z\","
+                + "\"fineAt\":\"2026-10-12T12:07:00Z\"}],"
+                + "\"page\":0,\"size\":12,\"totalElements\":1,\"totalPages\":1,"
+                + "\"serverTime\":\"%s\"}";
+        stub.server.expect(requestTo("http://producer.test/api/v1/aste?page=0&size=12"))
+                .andRespond(withStatus(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON)
+                        .body(auction.formatted("2026-10-12T12:07:59Z")));
+        mvc.perform(get("/aste").param("partial", "true").session(session("ADMIN"))).andExpect(status().isOk())
+                .andExpect(content().string(not(containsString("Cancel stuck auction"))));
+        stub.server.verify();
+        stub.server.reset();
+        stub.server.expect(requestTo("http://producer.test/api/v1/aste?page=0&size=12"))
+                .andRespond(withStatus(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON)
+                        .body(auction.formatted("2026-10-12T12:08:00Z")));
+        mvc.perform(get("/aste").param("partial", "true").session(session("ADMIN"))).andExpect(status().isOk())
+                .andExpect(content().string(containsString("Cancel stuck auction")))
+                .andExpect(content().string(containsString("/admin/aste/21/annullamento")));
+        stub.server.verify();
+        stub.server.reset();
+        expect("/admin/aste/21/annullamento", HttpMethod.POST, HttpStatus.CONFLICT,
+                "{\"code\":\"CHIUSURA_IN_CORSO\"}");
+        mvc.perform(post("/admin/aste/21/annullamento").session(session("ADMIN")).with(csrf()))
+                .andExpect(status().isConflict()).andExpect(content().string(containsString("This auction is closing")));
+        stub.server.verify();
+    }
+
     @Test void adminSeesReadOnlyRoomLinksInLobbyAndHistory() throws Exception {
         stub.server.expect(requestTo("http://producer.test/api/v1/aste?page=0&size=12"))
                 .andExpect(method(HttpMethod.GET))

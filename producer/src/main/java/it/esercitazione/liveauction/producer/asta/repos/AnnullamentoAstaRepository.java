@@ -54,8 +54,10 @@ public class AnnullamentoAstaRepository {
                 UPDATE prodotti SET quantita_bloccata = quantita_bloccata - 1,
                     quantita_disponibile = quantita_disponibile + 1, versione = versione + 1 WHERE id = ?
                 """, asta.prodottoId());
+        // Un'asta annullata non ha più un leader né un prezzo corrente: la riserva è già stata rilasciata.
+        jdbc.update("UPDATE offerte SET leader = FALSE WHERE asta_id = ? AND leader", asta.id());
         jdbc.update("""
-                UPDATE aste SET stato = 'ANNULLATA', annullata_at = ?,
+                UPDATE aste SET stato = 'ANNULLATA', annullata_at = ?, offerta_corrente = NULL,
                     sequence = sequence + 1, versione = versione + 1 WHERE id = ?
                 """, Timestamp.from(now), asta.id());
     }

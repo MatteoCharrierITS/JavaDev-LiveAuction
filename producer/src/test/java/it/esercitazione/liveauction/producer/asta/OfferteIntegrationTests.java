@@ -380,6 +380,9 @@ class OfferteIntegrationTests {
                 .isEqualTo(1);
         assertThat(conta("SELECT quantita_disponibile FROM prodotti WHERE id = ?", prodotto)).isEqualTo(3);
         assertThat(conta("SELECT quantita_bloccata FROM prodotti WHERE id = ?", prodotto)).isZero();
+        // L'asta annullata non mostra più un leader né un prezzo corrente.
+        assertThat(conta("SELECT COUNT(*) FROM offerte WHERE asta_id = ? AND leader", asta)).isZero();
+        assertThat(conta("SELECT COUNT(*) FROM aste WHERE id = ? AND offerta_corrente IS NULL", asta)).isEqualTo(1);
         assertThat(eventi.transizioni(asta)).singleElement()
                 .satisfies(evento -> assertThat(evento.type()).isEqualTo(AstaTransizioneEvent.Tipo.AUCTION_CANCELLED));
         assertThat(chiusura.chiudi(asta).conclusa()).isFalse();

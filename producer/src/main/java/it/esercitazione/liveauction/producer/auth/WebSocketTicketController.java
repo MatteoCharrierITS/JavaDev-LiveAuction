@@ -35,6 +35,7 @@ public class WebSocketTicketController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Ticket emesso.",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = WebSocketTicketResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Ruolo diverso da USER e ADMIN."),
             @ApiResponse(responseCode = "404", description = "`RISORSA_NON_TROVATA`: asta inesistente."),
             @ApiResponse(responseCode = "409", description = "`STANZA_NON_APERTA`: mancano più di tre minuti all'inizio, oppure l'asta è annullata.")
     })

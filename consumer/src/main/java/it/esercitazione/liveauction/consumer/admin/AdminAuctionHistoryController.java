@@ -98,6 +98,7 @@ public class AdminAuctionHistoryController {
             String message = switch (ex.code() == null ? "" : ex.code()) {
                 case "ASTA_CON_OFFERTE" -> "This auction has received an offer and cannot be cancelled.";
                 case "ASTA_NON_ANNULLABILE" -> "This auction is closed or has expired and cannot be cancelled.";
+                case "CHIUSURA_IN_CORSO" -> "This auction is closing. If it is still open one minute after its end, try again.";
                 case "RISORSA_NON_TROVATA" -> "This auction no longer exists.";
                 default -> "The Producer could not cancel this auction. Check its current state.";
             };

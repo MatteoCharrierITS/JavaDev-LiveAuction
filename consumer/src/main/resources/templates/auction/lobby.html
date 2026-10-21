@@ -44,6 +44,11 @@
                         <button type="submit">Cancel auction #<span th:text="${auction.id}">1</span></button>
                         <span class="muted">The Producer checks final eligibility.</span>
                     </form>
+                    <form class="auction-cancel" th:if="${adminVisitor and auction.stuckInClosingAt(auctions.serverTime)}"
+                          th:action="@{/admin/aste/{id}/annullamento(id=${auction.id})}" method="post">
+                        <button type="submit">Cancel stuck auction #<span th:text="${auction.id}">1</span></button>
+                        <span class="muted">Automatic closing failed. Cancelling releases the leader's reserved credits.</span>
+                    </form>
                     </div>
                 </th:block>
             </div>

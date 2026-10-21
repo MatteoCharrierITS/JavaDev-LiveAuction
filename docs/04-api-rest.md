@@ -57,8 +57,10 @@ La documentazione interattiva del Producer è su `http://localhost:8081/swagger-
 `http://localhost:8081/v3/api-docs`. Ogni operazione ha riepilogo, descrizione, tag in italiano, parametri,
 esempi di body e i codici di risposta di questo contratto (errori come `application/problem+json`; 401, 403 e
 500 comuni sono aggiunti da `OpenApiConfig`). Per le rotte protette: `POST /auth/register` (o un utente
-esistente), `POST /auth/login`, copiare `accessToken` e premere **Authorize**. Gli esempi di registrazione,
-login e acquisto funzionano in "Try it out"; la programmazione asta usa una data futura che va aggiornata
+esistente), `POST /auth/login`, copiare `accessToken` e premere **Authorize**. Gli esempi di registrazione e
+login funzionano in "Try it out" (una seconda registrazione con lo stesso nome dà 409). L'acquisto richiede
+`SHOP_ADMIN_ID` configurato (altrimenti 503) e un `clientPurchaseId` nuovo per ogni acquisto: l'UUID
+d'esempio usato per un altro acquisto dà 409. La programmazione asta usa una data futura che va aggiornata
 se è trascorsa. La stanza live (STOMP su `/ws`) non è rappresentabile in OpenAPI: vedi
 [Liveauction](07-liveauction.md) e la sezione WebSocket sotto.
 
