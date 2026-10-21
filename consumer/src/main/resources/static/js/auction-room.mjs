@@ -53,8 +53,11 @@ export class AuctionRoom {
         this.generation = 0;
         this.synchronizing = false;
         this.destroyed = false;
+        // --- Observer mode (ADMIN): read-only room, no wallet and no bid form. ---
+        this.observer = root.dataset.roomMode === 'observer';
+        // --- End observer mode. ---
         this.form = this.el('bid-form');
-        this.form.addEventListener('submit', event => this.bid(event));
+        this.form?.addEventListener('submit', event => this.bid(event));
     }
 
     el(id) { return this.root.querySelector(`#${id}`); }
@@ -84,6 +87,9 @@ export class AuctionRoom {
     alert(text) { const node = this.el('room-alert'); node.textContent = text; node.hidden = !text; }
 
     async refreshWallet() {
+        // --- Observer mode: an administrator has no player wallet in the room. ---
+        if (this.observer) return;
+        // --- End observer mode. ---
         const version = (this.walletVersion || 0) + 1;
         this.walletVersion = version;
         try {
@@ -193,6 +199,9 @@ export class AuctionRoom {
     }
 
     updateBidAccess() {
+        // --- Observer mode: the bid form is not rendered and bids are never enabled. ---
+        if (this.observer) return;
+        // --- End observer mode. ---
         const s = this.state;
         const allowed = Boolean(this.synced && this.online && !this.pending && s?.stato === 'APERTA'
             && s.offerteConsentite !== false && this.serverNow() < Date.parse(s.fineAt));
@@ -236,7 +245,7 @@ export class AuctionRoom {
                 },
                 error: () => { if (generation === this.generation) this.alert('Connection error. Reconnecting…'); },
                 closed: () => { if (generation === this.generation) this.disconnected(); }
-            }, this.WebSocketType);
+            }, this.WebSocketType, { readOnly: this.observer });
             this.stomp.connect();
         } catch (error) {
             if (generation !== this.generation) return;
@@ -373,6 +382,9 @@ export class AuctionRoom {
 
     bid(event) {
         event.preventDefault();
+        // --- Observer mode: never send PLACE_BID; the Producer would reject it anyway. ---
+        if (this.observer) return;
+        // --- End observer mode. ---
         if (!this.synced || !this.online || this.pending || this.el('bid-submit').disabled) return;
         const raw = this.el('bid-amount').value.trim().replace(',', '.');
         if (!/^(?:0|[1-9]\d{0,9})(?:\.\d{1,2})?$/.test(raw) || Number(raw) <= 0) {

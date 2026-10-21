@@ -2,6 +2,8 @@ package it.esercitazione.liveauction.producer.auth;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import it.esercitazione.liveauction.producer.auth.models.Ruolo;
+import it.esercitazione.liveauction.producer.auth.services.WebSocketTicketService;
 import it.esercitazione.liveauction.producer.websocket.TicketHandshakeInterceptor;
 import it.esercitazione.liveauction.producer.websocket.WebSocketIdentity;
 import it.esercitazione.liveauction.producer.websocket.WebSocketTestData;
@@ -43,6 +45,7 @@ class WebSocketTicketIntegrationTests {
     @Autowired ObjectMapper json;
     @Autowired JdbcTemplate jdbc;
     @Autowired TicketHandshakeInterceptor handshake;
+    @Autowired WebSocketTicketService tickets;
     private WebSocketTestData data;
 
     @BeforeEach
@@ -114,9 +117,62 @@ class WebSocketTicketIntegrationTests {
                 TicketHandshakeInterceptor.IDENTITY_ATTRIBUTE);
         assertThat(identity.userId()).isEqualTo(userId);
         assertThat(identity.auctionId()).isEqualTo(auctionId);
+        assertThat(identity.ruolo()).isEqualTo(Ruolo.USER);
 
         assertThat(handshake.beforeHandshake(request, response, handler, new HashMap<>())).isFalse();
         verify(response).setStatusCode(HttpStatus.UNAUTHORIZED);
 
+    }
+
+    @Test
+    void issuesObserverTicketToAdminAndRevokesItWhenTheRoleChanges() throws Exception {
+        String username = "wsa_" + UUID.randomUUID().toString().substring(0, 8);
+        data.usernames.add(username);
+        mvc.perform(post("/api/v1/auth/register")
+                        .contentType("application/json")
+                        .content(json.writeValueAsString(Map.of(
+                                "username", username,
+                                "email", username + "@example.com",
+                                "password", "TestPassword123!"))))
+                .andExpect(status().isCreated());
+        JsonNode login = json.readTree(mvc.perform(post("/api/v1/auth/login")
+                        .contentType("application/json")
+                        .content(json.writeValueAsString(Map.of(
+                                "username", username, "password", "TestPassword123!"))))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString());
+        String bearer = "Bearer " + login.get("accessToken").asText();
+        long adminId = login.get("userId").asLong();
+        // Il ruolo è letto dal database a ogni richiesta: la fixture promuove l'account ad ADMIN.
+        jdbc.update("UPDATE utenti SET ruolo = 'ADMIN' WHERE id = ?", adminId);
+
+        long categoryId = data.categoryId = jdbc.queryForObject(
+                "INSERT INTO categorie (nome, slug) VALUES (?, ?) RETURNING id",
+                Long.class, "WebSocket Admin " + username, "wsa-" + username);
+        long productId = data.productId = jdbc.queryForObject("""
+                INSERT INTO prodotti (categoria_id, sku, nome, astabile, quantita_disponibile)
+                VALUES (?, ?, ?, TRUE, 1) RETURNING id
+                """, Long.class, categoryId, "SKU-" + username.replace('_', '-'), "WebSocket Admin");
+        Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+        long auctionId = data.auctionId = jdbc.queryForObject("""
+                INSERT INTO aste (prodotto_id, admin_id, inizio_at, fine_at, prezzo_iniziale)
+                VALUES (?, ?, ?, ?, 10.00) RETURNING id
+                """, Long.class, productId, adminId,
+                Timestamp.from(now.plus(2, ChronoUnit.MINUTES)),
+                Timestamp.from(now.plus(9, ChronoUnit.MINUTES)));
+
+        JsonNode ticket = json.readTree(mvc.perform(post("/api/v1/aste/" + auctionId + "/ticket")
+                        .header("Authorization", bearer))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.ticket").isString())
+                .andReturn().getResponse().getContentAsString());
+        WebSocketIdentity identity = tickets.consume(ticket.get("ticket").asText()).orElseThrow();
+        assertThat(identity.userId()).isEqualTo(adminId);
+        assertThat(identity.ruolo()).isEqualTo(Ruolo.ADMIN);
+        assertThat(identity.osservatore()).isTrue();
+        assertThat(tickets.isActive(identity)).isTrue();
+
+        jdbc.update("UPDATE utenti SET ruolo = 'USER' WHERE id = ?", adminId);
+        assertThat(tickets.isActive(identity)).isFalse();
     }
 }

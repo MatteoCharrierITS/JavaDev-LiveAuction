@@ -11,7 +11,8 @@
     <h2 id="bid-heading">Current bid</h2>
     <p class="room-price" id="current-price">—</p>
     <p>Leader: <strong id="leader">—</strong> · <span id="bid-count">0</span> bids</p>
-    <form id="bid-form">
+    <p th:if="${observer}" class="muted">Read-only view: administrators cannot place bids.</p>
+    <form id="bid-form" th:unless="${observer}">
         <label for="bid-amount">Your bid (CRD)</label>
         <div class="room-bid-controls"><input id="bid-amount" name="bid" type="text" inputmode="decimal" autocomplete="off" placeholder="0.00" required disabled><button id="bid-submit" type="submit" disabled>Place bid</button></div>
         <p id="bid-status" role="status" aria-live="polite">Bidding is unavailable while the room synchronizes.</p>

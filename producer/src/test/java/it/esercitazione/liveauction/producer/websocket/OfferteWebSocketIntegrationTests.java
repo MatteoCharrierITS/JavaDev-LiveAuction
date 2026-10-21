@@ -236,6 +236,33 @@ class OfferteWebSocketIntegrationTests {
     }
 
     @Test
+    void adminObservesLiveUpdatesButBidViaStompIsRejected() throws Exception {
+        Connection bidder = connect(primo);
+        Connection observer = connect(admin);
+        clearRooms();
+
+        send(bidder, UUID.randomUUID(), "10", 0);
+        receive(bidder.privateMessages(), "BID_CONFIRMED");
+        Map<?, ?> seen = receive(observer.room(), "BID_ACCEPTED");
+        assertThat(seen.get("sequence")).isEqualTo(1);
+        assertThat(seen.get("offerenteDisplay").toString()).contains("***");
+        clearRooms();
+
+        UUID adminBid = UUID.randomUUID();
+        send(observer, adminBid, "50", 1);
+        Map<?, ?> rejected = rejected(observer, "OPERAZIONE_NON_CONSENTITA");
+        assertThat(rejected.get("clientBidId")).isEqualTo(adminBid.toString());
+        // Il rifiuto è privato: l'offerente non riceve né il rifiuto né un nuovo evento.
+        assertThat(bidder.privateMessages().poll(300, TimeUnit.MILLISECONDS)).isNull();
+        assertThat(bidder.room().poll(300, TimeUnit.MILLISECONDS)).isNull();
+        assertThat(observer.session().isConnected()).isTrue();
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM offerte WHERE asta_id = ? AND offerente_id = ?",
+                Integer.class, data.auctionId, admin.id())).isZero();
+        assertThat(jdbc.queryForObject("SELECT sequence FROM aste WHERE id = ?", Long.class, data.auctionId))
+                .isEqualTo(1);
+    }
+
+    @Test
     void lifecycleEventsReachRoomOnlyAfterCommit() throws Exception {
         Instant now = Instant.now();
         jdbc.update("UPDATE aste SET stato = 'PROGRAMMATA', inizio_at = ?, fine_at = ? WHERE id = ?",

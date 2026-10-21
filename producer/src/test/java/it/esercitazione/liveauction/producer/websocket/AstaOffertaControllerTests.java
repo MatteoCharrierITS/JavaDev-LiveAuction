@@ -6,6 +6,7 @@ import it.esercitazione.liveauction.producer.asta.requests.OffertaRequest;
 import it.esercitazione.liveauction.producer.asta.responses.OffertaResponse;
 import it.esercitazione.liveauction.producer.asta.responses.StatoOfferteResponse;
 import it.esercitazione.liveauction.producer.asta.services.OffertaService;
+import it.esercitazione.liveauction.producer.auth.models.Ruolo;
 import it.esercitazione.liveauction.producer.auth.services.WebSocketTicketService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -50,6 +51,20 @@ class AstaOffertaControllerTests {
         assertThat(result.duplicata()).isTrue();
         assertThat(result.snapshotRequired()).isTrue();
         assertThat(SecurityContextHolder.getContext()).isSameAs(original);
+    }
+
+    @Test
+    void adminIdentityKeepsItsRoleSoTheServiceCanRejectTheBid() throws Exception {
+        var admin = new WebSocketIdentity(1, UUID.randomUUID(), 42, Ruolo.ADMIN);
+        when(tickets.isActive(admin)).thenReturn(true);
+        when(service.piazza(eq(1L), eq(42L), any())).thenAnswer(invocation -> {
+            var auth = (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+            assertThat(auth.getAuthorities()).extracting("authority").containsExactly("ROLE_ADMIN");
+            throw new org.springframework.security.access.AccessDeniedException("Solo USER");
+        });
+        var result = controller.offri(42, admin, request());
+        assertThat(result.type()).isEqualTo("BID_REJECTED");
+        assertThat(result.code()).isEqualTo("OPERAZIONE_NON_CONSENTITA");
     }
 
     @Test

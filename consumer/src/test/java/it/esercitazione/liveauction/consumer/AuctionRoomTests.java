@@ -72,16 +72,41 @@ class AuctionRoomTests {
                 + "\"serverTime\":\"2026-10-11T16:58:00Z\",\"offerteConsentite\":false,\"sequence\":1}";
     }
 
-    @Test void onlyUsersCanOpenRoomOrRequestTicket() throws Exception {
+    @Test void onlySignedInUsersOrAdminsCanOpenRoomOrRequestTicket() throws Exception {
         mvc.perform(get("/aste/42")).andExpect(redirectedUrl("/login?expired=0"));
         mvc.perform(get("/aste/42/snapshot")).andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value("SESSION_EXPIRED"));
+        mvc.perform(post("/aste/42/ticket").with(csrf())).andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("SESSION_EXPIRED"));
         mvc.perform(get("/aste/42/wallet")).andExpect(status().isUnauthorized());
-        mvc.perform(get("/aste/42").session(session("ADMIN"))).andExpect(status().isForbidden());
-        mvc.perform(post("/aste/42/ticket").session(session("ADMIN")).with(csrf()))
-                .andExpect(status().isForbidden());
+        // The room wallet belongs to players only: an ADMIN observer never reads it.
+        mvc.perform(get("/aste/42/wallet").session(session("ADMIN"))).andExpect(status().isForbidden());
         mvc.perform(post("/aste/42/ticket").session(session("USER")))
                 .andExpect(status().isForbidden());
+        mvc.perform(post("/aste/42/ticket").session(session("ADMIN")))
+                .andExpect(status().isForbidden());
+        stub.server.verify();
+    }
+
+    @Test void adminOpensRoomReadOnlyWithoutBidFormOrWallet() throws Exception {
+        expect("/aste/42", HttpMethod.GET, HttpStatus.OK, snapshot(), false);
+        expect("/aste/42", HttpMethod.GET, HttpStatus.OK, snapshot(), false);
+        expect("/aste/42/ticket", HttpMethod.POST, HttpStatus.OK,
+                "{\"ticket\":\"observer-ticket\",\"expiresAt\":\"2026-10-11T16:58:30Z\"}", true);
+        mvc.perform(get("/aste/42").session(session("ADMIN")))
+                .andExpect(status().isOk()).andExpect(view().name("auctions/room"))
+                .andExpect(model().attribute("observer", true))
+                .andExpect(content().string(containsString("data-room-mode=\"observer\"")))
+                .andExpect(content().string(containsString("You are watching as an administrator")))
+                .andExpect(content().string(containsString("id=\"current-price\"")))
+                .andExpect(content().string(containsString("id=\"participants\"")))
+                .andExpect(content().string(not(containsString("id=\"bid-form\""))))
+                .andExpect(content().string(not(containsString("id=\"wallet-heading\""))))
+                .andExpect(content().string(not(containsString("secret-access-token"))));
+        mvc.perform(get("/aste/42/snapshot").session(session("ADMIN")))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.sequence").value(1));
+        mvc.perform(post("/aste/42/ticket").session(session("ADMIN")).with(csrf()))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.ticket").value("observer-ticket"));
         stub.server.verify();
     }
 
@@ -93,7 +118,11 @@ class AuctionRoomTests {
                 .andExpect(content().string(containsString("Lamp")))
                 .andExpect(content().string(containsString("data-csrf-header=")))
                 .andExpect(content().string(containsString("data-websocket-url=\"auto\"")))
-                .andExpect(content().string(containsString("auction-room.mjs?v=20261020-ws-host")))
+                .andExpect(content().string(containsString("auction-room.mjs?v=20261021-observer")))
+                .andExpect(content().string(containsString("data-room-mode=\"bidder\"")))
+                .andExpect(content().string(containsString("id=\"bid-form\"")))
+                .andExpect(content().string(containsString("id=\"wallet-heading\"")))
+                .andExpect(content().string(not(containsString("You are watching as an administrator"))))
                 .andExpect(content().string(not(containsString("secret-access-token"))))
                 .andExpect(content().string(not(containsString("secret-refresh-token"))));
         mvc.perform(get("/aste/42/snapshot").session(session("USER")))

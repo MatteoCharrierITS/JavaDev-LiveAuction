@@ -109,7 +109,8 @@ class AuctionHistoryConsumerTests {
         mvc.perform(get("/admin/aste/storico").session(session("ADMIN"))
                         .param("prodottoId", "3").param("stato", "ANNULLATA"))
                 .andExpect(status().isOk()).andExpect(content().string(containsString("Keyboard")))
-                .andExpect(content().string(containsString("No winner")));
+                .andExpect(content().string(containsString("No winner")))
+                .andExpect(content().string(not(containsString("href=\"/aste/18\""))));
         stub.server.verify();
         stub.server.reset();
         expect("/admin/aste/storico?page=0&size=20", HttpMethod.GET, HttpStatus.OK, page("", 0, 0));
@@ -149,6 +150,38 @@ class AuctionHistoryConsumerTests {
         mvc.perform(get("/aste").param("partial", "true").session(session("ADMIN"))).andExpect(status().isOk())
                 .andExpect(content().string(containsString("/admin/aste/18/annullamento")))
                 .andExpect(content().string(containsString("name=\"_csrf\"")));
+        stub.server.verify();
+    }
+
+    @Test void adminSeesReadOnlyRoomLinksInLobbyAndHistory() throws Exception {
+        stub.server.expect(requestTo("http://producer.test/api/v1/aste?page=0&size=12"))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(
+                        "{\"content\":[{\"id\":19,\"stato\":\"APERTA\","
+                        + "\"prodotto\":{\"id\":3,\"nome\":\"Keyboard\"},"
+                        + "\"prezzoIniziale\":10.00,\"offertaCorrente\":12.00,\"numeroOfferte\":2,"
+                        + "\"aperturaStanzaAt\":\"2026-10-12T11:57:00Z\","
+                        + "\"inizioAt\":\"2026-10-12T12:00:00Z\","
+                        + "\"fineAt\":\"2026-10-12T12:07:00Z\"}],"
+                        + "\"page\":0,\"size\":12,\"totalElements\":1,\"totalPages\":1,"
+                        + "\"serverTime\":\"2026-10-12T12:01:00Z\"}"));
+        mvc.perform(get("/aste").param("partial", "true").session(session("ADMIN"))).andExpect(status().isOk())
+                .andExpect(content().string(containsString("href=\"/aste/19\"")))
+                .andExpect(content().string(containsString("Watch auction room (read-only)")))
+                .andExpect(content().string(not(containsString("Enter auction room"))));
+        stub.server.verify();
+        stub.server.reset();
+        expect("/admin/aste/storico?page=0&size=20", HttpMethod.GET, HttpStatus.OK,
+                page("{\"id\":20,\"stato\":\"CHIUSA\","
+                        + "\"prodotto\":{\"id\":3,\"nome\":\"Keyboard\"},"
+                        + "\"vincitoreId\":7,\"prezzoFinale\":12.00,"
+                        + "\"inizioAt\":\"2026-10-12T12:00:00Z\","
+                        + "\"fineAt\":\"2026-10-12T12:07:00Z\","
+                        + "\"conclusaAt\":\"2026-10-12T12:07:00Z\"}", 0, 1));
+        mvc.perform(get("/admin/aste/storico").session(session("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("href=\"/aste/20\"")))
+                .andExpect(content().string(containsString("Open auction room (read-only)")));
         stub.server.verify();
     }
 

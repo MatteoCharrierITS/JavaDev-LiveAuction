@@ -1,7 +1,9 @@
 // Minimal STOMP 1.2 transport for the Producer's native WebSocket endpoint.
 export class RoomStomp {
-    constructor(url, auctionId, handlers, WebSocketType = WebSocket) {
+    constructor(url, auctionId, handlers, WebSocketType = WebSocket, options = {}) {
         this.url = url;
+        // Read-only observers (ADMIN) subscribe and join but never send PLACE_BID.
+        this.readOnly = options.readOnly === true;
         this.auctionId = auctionId;
         this.handlers = handlers;
         this.WebSocketType = WebSocketType;
@@ -28,6 +30,7 @@ export class RoomStomp {
     }
 
     sendBid(payload) {
+        if (this.readOnly) return false;
         return this.ready && this.frame('SEND', {
             destination: `/app/aste/${this.auctionId}/offerte`, 'content-type': 'application/json'
         }, JSON.stringify(payload));

@@ -34,7 +34,8 @@ public class AuctionRoomController {
     }
 
     @GetMapping("/aste/{id}")
-    public String room(@PathVariable long id, Model model, HttpServletResponse response) {
+    public String room(@PathVariable long id, Model model, HttpServletRequest request,
+            HttpServletResponse response) {
         response.setHeader("Cache-Control", "no-store");
         response.setHeader("Referrer-Policy", "no-referrer");
         if (id < 1) return pageError(model, response, HttpStatus.BAD_REQUEST, "Invalid auction", "Choose a valid auction.");
@@ -42,6 +43,8 @@ public class AuctionRoomController {
             AuctionSnapshot snapshot = checkedSnapshot(id);
             model.addAttribute("auction", snapshot);
             model.addAttribute("websocketUrl", websocketUrl);
+            // ADMIN watches the room read-only: no bid form, no wallet, no presence entry.
+            model.addAttribute("observer", request.isUserInRole("ADMIN"));
             return "auctions/room";
         } catch (ProducerException ex) {
             return pageError(model, response, ex.status() == 404 ? HttpStatus.NOT_FOUND : HttpStatus.BAD_GATEWAY,

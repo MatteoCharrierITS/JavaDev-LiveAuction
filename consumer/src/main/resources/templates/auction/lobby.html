@@ -38,6 +38,7 @@
                 <th:block th:each="auction : ${auctions.content}">
                     <div class="auction-grid-item">
                     <div th:replace="~{fragments/auction-card :: card(${auction}, ${auctions.serverTime}, ${userVisitor}, ${signedIn})}"></div>
+                    <p th:if="${adminVisitor and auction.roomAvailableAt(auctions.serverTime)}"><a class="button button-secondary" th:href="@{/aste/{id}(id=${auction.id})}">Watch auction room (read-only) <span aria-hidden="true">↗</span></a></p>
                     <form class="auction-cancel" th:if="${adminVisitor and auction.numeroOfferte == 0 and (auction.stato == 'PROGRAMMATA' or auction.stato == 'STANZA_APERTA' or auction.stato == 'APERTA') and auction.fineAt != null and auctions.serverTime.isBefore(auction.fineAt)}"
                           th:action="@{/admin/aste/{id}/annullamento(id=${auction.id})}" method="post">
                         <button type="submit">Cancel auction #<span th:text="${auction.id}">1</span></button>
