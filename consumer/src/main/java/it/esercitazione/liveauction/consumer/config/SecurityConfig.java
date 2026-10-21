@@ -28,6 +28,9 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.POST, "/prodotti/*/acquisti").hasRole("USER")
 						.requestMatchers("/admin/**").hasRole("ADMIN")
 						.requestMatchers(HttpMethod.POST, "/impostazioni/portafoglio").denyAll()
+						// ADMIN may watch a room read-only; the room wallet stays player-only.
+						.requestMatchers(HttpMethod.GET, "/aste/*", "/aste/*/snapshot").hasAnyRole("USER", "ADMIN")
+						.requestMatchers(HttpMethod.POST, "/aste/*/ticket").hasAnyRole("USER", "ADMIN")
 						.requestMatchers("/aste/**", "/inventario/**", "/me/vittorie/**",
 								"/impostazioni/portafoglio", "/impostazioni/portafoglio/**").hasRole("USER")
 						.requestMatchers("/account", "/account/**").authenticated()

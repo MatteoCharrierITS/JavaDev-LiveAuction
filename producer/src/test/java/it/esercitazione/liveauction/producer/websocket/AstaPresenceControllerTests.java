@@ -1,5 +1,6 @@
 package it.esercitazione.liveauction.producer.websocket;
 
+import it.esercitazione.liveauction.producer.auth.models.Ruolo;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -15,6 +16,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class AstaPresenceControllerTests {
@@ -39,5 +41,25 @@ class AstaPresenceControllerTests {
                 .participantCount()).isEqualTo(1);
         verify(messaging).convertAndSend(eq("/topic/aste/42"),
                 any(PresenceRegistry.PresenceChange.class));
+    }
+
+    @Test
+    void adminJoinReturnsSnapshotWithoutAppearingAmongParticipants() {
+        PresenceRegistry presence = new PresenceRegistry();
+        presence.join(42, 7, "g***i", "session-user");
+        JdbcTemplate jdbc = mock(JdbcTemplate.class);
+        SimpMessagingTemplate messaging = mock(SimpMessagingTemplate.class);
+        AstaPresenceController controller = new AstaPresenceController(presence, jdbc, messaging);
+        SimpMessageHeaderAccessor headers = SimpMessageHeaderAccessor.create();
+        headers.setSessionId("session-admin");
+
+        PresenceRegistry.PresenceSnapshot snapshot = controller.join(42,
+                new WebSocketIdentity(1, UUID.randomUUID(), 42, Ruolo.ADMIN), headers);
+
+        assertThat(snapshot.type()).isEqualTo("PRESENCE_SNAPSHOT");
+        assertThat(snapshot.participants()).containsExactly("g***i");
+        assertThat(snapshot.participantCount()).isEqualTo(1);
+        assertThat(presence.leave("session-admin")).isEmpty();
+        verifyNoInteractions(jdbc, messaging);
     }
 }

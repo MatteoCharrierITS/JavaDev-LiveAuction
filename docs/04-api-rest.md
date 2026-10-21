@@ -38,7 +38,7 @@ non ancora committate: inventario e acquisti fissi inclusi.
 | `GET` | `/me/vittorie` | USER | storico personale vittorie | Implementato |
 | `GET` | `/aste` | pubblico | lobby filtrabile | Implementato |
 | `GET` | `/aste/{id}` | pubblico | snapshot autorevole | Implementato |
-| `POST` | `/aste/{id}/ticket` | USER | ticket WebSocket breve | Implementato |
+| `POST` | `/aste/{id}/ticket` | USER, ADMIN | ticket WebSocket breve; ADMIN come osservatore in sola lettura | Implementato |
 | `POST` | `/admin/aste` | ADMIN | programma asta e blocca stock | Implementato |
 | `POST` | `/admin/aste/{id}/annullamento` | ADMIN | annulla quando consentito | Implementato |
 | `GET` | `/admin/aste/storico` | ADMIN | storico globale e vincitori | Implementato |
@@ -693,7 +693,7 @@ validazione delle offerte rimangono obbligatori con qualsiasi origine ammessa.
 
 Il ticket può essere richiesto solo da tre minuti prima dell'inizio. Prima di
 quel momento il server risponde `409 STANZA_NON_APERTA`.
-`POST /api/v1/aste/{id}/ticket` richiede `ROLE_USER` e restituisce `200` con:
+`POST /api/v1/aste/{id}/ticket` richiede `ROLE_USER` o `ROLE_ADMIN` e restituisce `200` con:
 
 ```json
 {
@@ -712,10 +712,33 @@ la propria coda `/user/queue/aste`. Non può pubblicare direttamente su
 `/topic` o `/queue`. La validità della sessione di login viene ricontrollata
 per ogni comando STOMP.
 
+Il ruolo dell'utente al momento dell'emissione resta nel ticket, solo lato
+server (la risposta non cambia), e passa nell'identità della connessione
+(`WebSocketIdentity`). A ogni comando il Producer verifica che l'utente sia
+ancora attivo con lo **stesso** ruolo: un cambio di ruolo invalida la
+connessione invece di trasformare un osservatore in offerente o viceversa.
+
+**ADMIN osservatore.** Un ADMIN entra nella stanza in sola lettura: può
+sottoscrivere `/topic/aste/{id}` e `/user/queue/aste` e inviare `join`, quindi
+vede prezzo, leader, timer, feed e presenze in tempo reale. Un `SEND` verso
+`/app/aste/{id}/offerte` con identità ADMIN viene fermato
+dall'interceptor STOMP prima del controller: la sola sessione che l'ha inviato
+riceve su `/user/queue/aste` un `BID_REJECTED` con codice
+`OPERAZIONE_NON_CONSENTITA` (e il suo `clientBidId`, se leggibile), la
+connessione resta aperta e la stanza non riceve eventi. Un'eccezione
+nell'interceptor non basterebbe: con l'ordine di ricezione preservato
+(`setPreserveReceiveOrder`) verrebbe solo registrata nel log, senza risposta
+al client. `OffertaService` mantiene comunque `hasRole('USER')` e il
+controller STOMP passa il ruolo reale dell'identità, quindi l'offerta resta
+impossibile anche se il comando arrivasse al servizio. Il `join` dell'ADMIN
+restituisce soltanto il `PRESENCE_SNAPSHOT` corrente: l'ADMIN non viene
+registrato tra i presenti e non genera `USER_JOINED` o `USER_LEFT`, perché
+l'elenco serve a mostrare chi può offrire.
+
 | Direzione | Destinazione | Messaggio |
 | --- | --- | --- |
-| client → server | `/app/aste/{id}/join` | ingresso stanza |
-| client → server | `/app/aste/{id}/offerte` | rilancio, solo in `APERTA` |
+| client → server | `/app/aste/{id}/join` | ingresso stanza (ADMIN: solo snapshot presenza) |
+| client → server | `/app/aste/{id}/offerte` | rilancio, solo USER e solo in `APERTA` |
 | server → stanza | `/topic/aste/{id}` | eventi pubblici ordinati |
 | server → utente | `/user/queue/aste` | conferme/rifiuti privati e presenza iniziale |
 

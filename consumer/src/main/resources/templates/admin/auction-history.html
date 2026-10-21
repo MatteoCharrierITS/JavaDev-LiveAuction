@@ -32,6 +32,7 @@
             <p>Starts: <time th:attr="datetime=${h.inizioAt}" th:text="${display.date(h.inizioAt)}">Time</time></p>
             <p>Ends: <time th:attr="datetime=${h.fineAt}" th:text="${display.date(h.fineAt)}">Time</time></p>
             <p>Concluded: <time th:attr="datetime=${h.conclusaAt}" th:text="${display.date(h.conclusaAt)}">Time</time></p>
+            <p th:if="${h.stato != 'ANNULLATA'}"><a th:href="@{/aste/{id}(id=${h.id})}">Open auction room (read-only)</a></p>
         </article></div>
     </section>
     <nav th:if="${history.totalPages > 1}" class="pagination" aria-label="History pages">

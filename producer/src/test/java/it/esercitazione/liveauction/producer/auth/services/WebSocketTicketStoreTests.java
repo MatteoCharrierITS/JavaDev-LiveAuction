@@ -1,5 +1,6 @@
 package it.esercitazione.liveauction.producer.auth.services;
 
+import it.esercitazione.liveauction.producer.auth.models.Ruolo;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -14,17 +15,18 @@ class WebSocketTicketStoreTests {
     @Test
     void ticketIsBoundToItsDataAndCanOnlyBeConsumedOnce() {
         UUID sessionId = UUID.randomUUID();
-        WebSocketTicketStore.IssuedTicket issued = store.issue(7, sessionId, 42, now);
+        WebSocketTicketStore.IssuedTicket issued = store.issue(7, sessionId, 42, Ruolo.ADMIN, now);
 
         assertThat(issued.expiresAt()).isEqualTo(now.plusSeconds(30));
         assertThat(store.consume(issued.ticket(), now.plusSeconds(1)))
-                .contains(new WebSocketTicketStore.TicketData(7, sessionId, 42, issued.expiresAt()));
+                .contains(new WebSocketTicketStore.TicketData(7, sessionId, 42, Ruolo.ADMIN,
+                        issued.expiresAt()));
         assertThat(store.consume(issued.ticket(), now.plusSeconds(2))).isEmpty();
     }
 
     @Test
     void expiredOrMalformedTicketIsRejected() {
-        WebSocketTicketStore.IssuedTicket issued = store.issue(7, UUID.randomUUID(), 42, now);
+        WebSocketTicketStore.IssuedTicket issued = store.issue(7, UUID.randomUUID(), 42, Ruolo.USER, now);
 
         assertThat(store.consume("invalid", now)).isEmpty();
         assertThat(store.consume(issued.ticket(), now.plusSeconds(30))).isEmpty();

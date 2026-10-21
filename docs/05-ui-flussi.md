@@ -23,10 +23,10 @@ funzioni ancora previste.
 | `GET /prodotti/{id}` | pubblico | dettaglio, stock e astabilità |
 | `GET /aste` | pubblico | lobby filtrabile e paginata |
 | `GET /aste?partial=true` | pubblico | frammento HTML dei risultati e della paginazione per l'aggiornamento automatico |
-| `GET /aste/{id}` | USER | stanza LiveAuction |
-| `GET /aste/{id}/snapshot` | USER | snapshot Producer per la sincronizzazione browser, senza cache |
-| `GET /aste/{id}/wallet` | USER | soli saldi del portafoglio reale tramite token nella sessione Consumer |
-| `POST /aste/{id}/ticket` | USER + CSRF | solo ticket STOMP monouso al browser |
+| `GET /aste/{id}` | USER, ADMIN | stanza LiveAuction; per l'ADMIN in sola lettura |
+| `GET /aste/{id}/snapshot` | USER, ADMIN | snapshot Producer per la sincronizzazione browser, senza cache |
+| `GET /aste/{id}/wallet` | USER | soli saldi del portafoglio reale tramite token nella sessione Consumer; l'ADMIN non lo usa |
+| `POST /aste/{id}/ticket` | USER, ADMIN + CSRF | solo ticket STOMP monouso al browser |
 | `GET /me/vittorie` | USER | storico personale vittorie, paginato |
 | `GET /inventario` | USER | prodotti posseduti e quantità, paginati, compresi quelli non più pubblici |
 | `POST /prodotti/{id}/acquisti` | USER + CSRF | quantità 1–100 e UUID, acquisto a prezzo fisso |
@@ -179,6 +179,17 @@ attesa → evento `AUCTION_STARTED` → rilanci → chiusura e annuncio vincitor
 Chiusura → addebito crediti → assegnazione persistita nell'inventario → voce in
 `My victories` → email riepilogativa post-commit. La consultazione
 dell'inventario non è ancora disponibile nella UI.
+
+### Osservare come ADMIN
+
+Login ADMIN → lobby (`Watch auction room (read-only)` sulle aste con stanza
+aperta) o storico ADMIN (`Open auction room (read-only)` sulle aste non
+annullate) → stanza. La pagina mostra "You are watching as an administrator",
+non contiene il form di offerta né il pannello del portafoglio e non chiama
+`/aste/{id}/wallet`. Ticket, sottoscrizioni, `join`, prezzo, leader, timer,
+feed e presenze funzionano come per un USER; l'ADMIN non compare tra i
+presenti. Il JS (`data-room-mode="observer"`) non invia mai `PLACE_BID` e il
+Producer rifiuterebbe comunque il comando.
 
 ### Riconnettersi
 

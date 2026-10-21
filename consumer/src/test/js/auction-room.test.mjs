@@ -308,3 +308,60 @@ test('uncorrelated server rejection is surfaced and STOMP errors close the conne
     assert.equal(errors, 1);
     assert.equal(closed, 1);
 });
+
+// --- Observer mode (ADMIN) ---
+test('observer room follows live updates but never reads the wallet or sends bids', async () => {
+    const root = fakeRoot();
+    root.dataset.roomMode = 'observer';
+    const calls = [];
+    const room = new AuctionRoom(root, { clock: () => 0, WebSocketType: FakeSocket,
+        fetch: async path => { calls.push(path); return { ok: true, json: async () =>
+            path.endsWith('/snapshot') ? snapshot('APERTA', 3) : { ticket: 'observer' } }; } });
+    try {
+        assert.equal(room.observer, true);
+        room.applySnapshot(snapshot('APERTA', 3));
+        room.synced = true;
+        await room.connect();
+        assert.deepEqual(calls, ['/aste/42/ticket']);
+        assert.equal(room.stomp.readOnly, true);
+        FakeSocket.last.onopen();
+        room.stomp.receive('CONNECTED\nversion:1.2\n\n\0');
+        await new Promise(resolve => setTimeout(resolve, 0));
+        assert.equal(room.synced, true);
+        assert.equal(room.online, true);
+        const sentBeforeBid = FakeSocket.last.sent.length;
+        assert.match(FakeSocket.last.sent.at(-1), /destination:\/app\/aste\/42\/join/);
+        room.updateBidAccess();
+        assert.equal(root.node('bid-submit').disabled, false, 'observer never touches the (absent) form');
+        room.bid({ preventDefault() {} });
+        assert.equal(room.pending, null);
+        assert.equal(room.stomp.sendBid({ type: 'PLACE_BID' }), false);
+        assert.equal(FakeSocket.last.sent.length, sentBeforeBid);
+        room.handlePublic({ auctionId: 42, sequence: 4, type: 'BID_ACCEPTED', importo: 61,
+            offertaCorrente: 61, offerenteDisplay: 'b***o', numeroOfferte: 2, fineAt: '2026-10-11T17:07:20Z',
+            serverTime: '2026-10-11T17:01:00Z' });
+        assert.equal(root.node('leader').textContent, 'b***o');
+        assert.match(root.node('current-price').textContent, /61,00 CRD/);
+        assert.equal(root.node('event-feed').children.length, 1);
+        room.message({ type: 'PRESENCE_SNAPSHOT', auctionId: 42, participantCount: 1,
+            participants: ['b***o'] }, 'private');
+        assert.equal(root.node('participant-count').textContent, '1');
+        await room.refreshWallet();
+        assert.equal(calls.filter(path => path.endsWith('/wallet')).length, 0);
+    } finally {
+        room.stop();
+    }
+});
+
+test('bidder room keeps the wallet and bid form active', async () => {
+    const root = fakeRoot();
+    const calls = [];
+    const room = new AuctionRoom(root, { clock: () => 0,
+        fetch: async path => { calls.push(path); return { ok: true, json: async () => ({
+            saldoDisponibile: 80, saldoRiservato: 20, saldoTotale: 100 }) }; } });
+    assert.equal(room.observer, false);
+    await room.refreshWallet();
+    assert.deepEqual(calls, ['/aste/42/wallet']);
+    room.stop();
+});
+// --- End observer mode ---

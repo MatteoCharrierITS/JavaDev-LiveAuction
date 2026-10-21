@@ -177,6 +177,8 @@ Se il client possiede `sequence=7` e riceve `9`, passa a
 Gli eventi di presenza `USER_JOINED`, `USER_LEFT` e `PRESENCE_SNAPSHOT` non
 hanno `sequence` e non partecipano al recupero dei gap. `BID_ACCEPTED` include
 già il timer esteso: non viene emesso un evento separato `TIMER_EXTENDED`.
+Il `join` di un ADMIN osservatore restituisce solo il `PRESENCE_SNAPSHOT`
+corrente senza registrarlo: nessun `USER_JOINED`/`USER_LEFT` per lui.
 `AUCTION_CANCELLED` usa AstaTransizioneEvent e il relay già presente: viene
 emesso solo dopo commit dell'annullamento, con sequence incrementata una volta.
 Il retry non ripubblica. Stato, orari e formato sono in [Contratto REST/STOMP](04-api-rest.md#annullamento-admin).
@@ -185,7 +187,9 @@ L'annullamento è consentito solo prima della scadenza e senza offerte mai ricev
 ## Sicurezza
 
 - Solo ADMIN sugli endpoint di programmazione e storico globale.
-- Ticket WS monouso, legato a utente e asta, TTL 30 secondi.
+- Ticket WS monouso, legato a utente, sessione, asta e ruolo, TTL 30 secondi.
+- ADMIN nella stanza solo come osservatore: riceve eventi e presenze, non può
+  offrire (interceptor STOMP e `OffertaService`) e non compare tra i presenti.
 - Ticket non emesso prima di `startsAt - 3 minuti`.
 - Autorizzazione verificata su ogni comando, non solo al connect.
 - Offerte accettate soltanto nello stato `APERTA`.
@@ -205,7 +209,8 @@ L'attivazione SMTP esterna non rientra nella consegna.
 1. L'ADMIN abilita un prodotto con tre unità e programma un'asta scegliendo
    prezzo iniziale e data/ora.
 2. Mostra che disponibile diminuisce e bloccata aumenta.
-3. Due utenti entrano nei tre minuti di pre-live senza poter offrire.
+3. Due utenti entrano nei tre minuti di pre-live senza poter offrire;
+   l'ADMIN può seguire la stessa stanza in sola lettura.
 4. All'orario previsto l'asta parte con sette minuti.
 5. I due utenti rilanciano e vedono prezzo, riserve e `+20s` in tempo reale.
 6. Un'offerta oltre il saldo disponibile viene rifiutata.

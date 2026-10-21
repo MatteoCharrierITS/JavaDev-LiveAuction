@@ -38,6 +38,11 @@ public class PresenceRegistry {
         return new JoinResult(snapshot, Optional.ofNullable(change));
     }
 
+    /** Elenco corrente dei partecipanti, senza registrare la sessione che lo chiede. */
+    public synchronized PresenceSnapshot snapshot(long auctionId) {
+        return snapshot(auctionId, rooms.getOrDefault(auctionId, Map.of()));
+    }
+
     public synchronized Optional<PresenceChange> leave(String sessionId) {
         Session session = sessions.remove(sessionId);
         if (session == null) {

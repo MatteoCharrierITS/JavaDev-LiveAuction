@@ -1,5 +1,6 @@
 package it.esercitazione.liveauction.producer.auth.services;
 
+import it.esercitazione.liveauction.producer.auth.models.Ruolo;
 import org.springframework.stereotype.Component;
 import org.springframework.scheduling.annotation.Scheduled;
 
@@ -21,13 +22,13 @@ public class WebSocketTicketStore {
     private static final SecureRandom RANDOM = new SecureRandom();
     private final ConcurrentHashMap<String, TicketData> tickets = new ConcurrentHashMap<>();
 
-    public IssuedTicket issue(long userId, UUID authSessionId, long auctionId, Instant now) {
+    public IssuedTicket issue(long userId, UUID authSessionId, long auctionId, Ruolo ruolo, Instant now) {
         clearExpired(now);
         byte[] bytes = new byte[32];
         RANDOM.nextBytes(bytes);
         String value = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
         Instant expiresAt = now.plus(TTL);
-        tickets.put(hash(value), new TicketData(userId, authSessionId, auctionId, expiresAt));
+        tickets.put(hash(value), new TicketData(userId, authSessionId, auctionId, ruolo, expiresAt));
         return new IssuedTicket(value, expiresAt);
     }
 
@@ -63,5 +64,6 @@ public class WebSocketTicketStore {
 
     public record IssuedTicket(String ticket, Instant expiresAt) {}
 
-    public record TicketData(long userId, UUID authSessionId, long auctionId, Instant expiresAt) {}
+    public record TicketData(long userId, UUID authSessionId, long auctionId, Ruolo ruolo,
+                             Instant expiresAt) {}
 }

@@ -70,7 +70,7 @@
         "method": "POST",
         "header": [],
         "url": "{{baseUrl}}/aste/{{astaId}}/ticket",
-        "description": "Implementato: richiedere con Bearer USER da tre minuti prima dell'inizio. Restituisce ticket monouso ed expiresAt (TTL 30 secondi). L'asta deve esistere e non essere annullata.",
+        "description": "Implementato: richiedere con Bearer USER (offerente) o ADMIN (osservatore in sola lettura, non può offrire) da tre minuti prima dell'inizio. Restituisce ticket monouso ed expiresAt (TTL 30 secondi). L'asta deve esistere e non essere annullata.",
         "auth": {
           "type": "bearer",
           "bearer": [

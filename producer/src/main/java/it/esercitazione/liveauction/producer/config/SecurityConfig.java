@@ -56,7 +56,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/me/portafoglio/impostazioni").denyAll()
                         .requestMatchers("/api/v1/me/**").hasRole("USER")
-                        .requestMatchers(HttpMethod.POST, "/api/v1/aste/*/ticket").hasRole("USER")
+                        // Ticket della stanza: USER offerente, ADMIN osservatore in sola lettura.
+                        .requestMatchers(HttpMethod.POST, "/api/v1/aste/*/ticket").hasAnyRole("USER", "ADMIN")
                         .anyRequest().authenticated())
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)

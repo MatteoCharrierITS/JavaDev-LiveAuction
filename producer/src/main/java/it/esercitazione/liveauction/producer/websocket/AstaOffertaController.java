@@ -50,8 +50,9 @@ public class AstaOffertaController {
             Jwt jwt = Jwt.withTokenValue("ws-ticket-identity").header("alg", "internal")
                     .subject(identity.getName()).claim("sid", identity.authSessionId().toString()).build();
             SecurityContext context = SecurityContextHolder.createEmptyContext();
+            // Ruolo reale dell'identità: per un ADMIN osservatore il servizio rifiuta l'offerta.
             context.setAuthentication(new JwtAuthenticationToken(jwt,
-                    List.of(new SimpleGrantedAuthority("ROLE_USER"))));
+                    List.of(new SimpleGrantedAuthority("ROLE_" + identity.ruolo().name()))));
             SecurityContextHolder.setContext(context);
             OffertaResponse result = offerte.piazza(identity.userId(), id, request);
             return new EsitoOfferta("BID_CONFIRMED", result.clientBidId(), null, null,

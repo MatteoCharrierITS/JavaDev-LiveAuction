@@ -29,6 +29,10 @@ public class AstaPresenceController {
                 || headers.getSessionId() == null) {
             throw new AccessDeniedException("Ingresso stanza non autorizzato");
         }
+        if (identity.osservatore()) {
+            // L'ADMIN riceve l'elenco dei presenti ma non compare tra gli offerenti.
+            return presence.snapshot(id);
+        }
         List<String> usernames = jdbc.query("SELECT username FROM utenti WHERE id = ? AND attivo = TRUE",
                 (rs, row) -> rs.getString("username"), identity.userId());
         if (usernames.isEmpty()) {
