@@ -1,6 +1,17 @@
 # Attività del team
 
+## Fix lobby Auctions — 21 ottobre 2026
+
+Implementato aggiornamento automatico REST ogni 5 secondi: prezzi, offerte,
+stati e paginazione, senza perdere i filtri in compilazione. Segnalazione
+errori e retry, focus conservato, pausa in background. Stanza WebSocket invariata.
+70 test Consumer e 29 JavaScript superati; nessuna modifica ai dati ufficiali.
+[Dettagli](20-aggiornamento-lobby.md).
+
 ## Preparazione consegna — 21 ottobre 2026
+
+Catalogo successivamente ampliato da 6 a 18 prodotti tramite API ADMIN, con
+paginazione 12+6 verificata. Nessuna modifica a dati o operazioni già esistenti.
 
 Pronto `liveauction_ufficiale_20261022`: maikol ADMIN e tre USER con 10.000 CRD,
 credenziali precedenti conservate per i primi tre. Sei articoli, nessuna vecchia

@@ -39,6 +39,18 @@ di chiamare l'API. Non è un import automatico e non viene rieseguito all'avvio.
 
 ## Avvio sulla rete del telefono
 
+Aggiornamento catalogo del 21 ottobre: aggiunti altri 12 articoli, per un totale
+di **18 prodotti** (due pagine da 12 e 6). Cuffie, mouse, notebook, monitor,
+lampada, zaino, speaker, tastiera RGB, seconda tazza, TOP Gold, Duke mini e
+Python antibug. Prezzi da 45 a 1.500 CRD per le aggiunte, stock da 10 a 30;
+articoli astabili e acquisti diretti. Elenco completo in
+`scripts/catalogo-consegna.json`, immagini locali già disponibili.
+Inserimento dalle API ADMIN senza modificare i sei prodotti esistenti,
+account, saldi, aste o operazioni effettuate durante i test.
+Backup aggiornato, comprensivo dello stato delle prove al momento del dump:
+`.local/backups/liveauction_ufficiale_20261022-catalogo18-20261021.dump`.
+Il precedente backup `pulito` resta lo stato iniziale a sei prodotti.
+
 1. Collegare Mac e PC allo stesso hotspot **prima** di avviare i servizi.
 2. Aprire Docker Desktop. Servono Java 21 e le dipendenze Maven già scaricate.
 3. Dalla radice: `bash scripts/avvia-locale.sh`.

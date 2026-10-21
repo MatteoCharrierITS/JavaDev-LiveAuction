@@ -146,7 +146,7 @@ class AuctionHistoryConsumerTests {
                         + "\"fineAt\":\"2026-10-12T12:37:00Z\"}],"
                         + "\"page\":0,\"size\":12,\"totalElements\":1,\"totalPages\":1,"
                         + "\"serverTime\":\"2026-10-12T12:00:00Z\"}"));
-        mvc.perform(get("/aste").session(session("ADMIN"))).andExpect(status().isOk())
+        mvc.perform(get("/aste").param("partial", "true").session(session("ADMIN"))).andExpect(status().isOk())
                 .andExpect(content().string(containsString("/admin/aste/18/annullamento")))
                 .andExpect(content().string(containsString("name=\"_csrf\"")));
         stub.server.verify();

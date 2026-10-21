@@ -22,6 +22,7 @@ funzioni ancora previste.
 | `GET /marketplace` | pubblico | catalogo filtrabile e paginato |
 | `GET /prodotti/{id}` | pubblico | dettaglio, stock e astabilità |
 | `GET /aste` | pubblico | lobby filtrabile e paginata |
+| `GET /aste?partial=true` | pubblico | frammento HTML dei risultati e della paginazione per l'aggiornamento automatico |
 | `GET /aste/{id}` | USER | stanza LiveAuction |
 | `GET /aste/{id}/snapshot` | USER | snapshot Producer per la sincronizzazione browser, senza cache |
 | `GET /aste/{id}/wallet` | USER | soli saldi del portafoglio reale tramite token nella sessione Consumer |
@@ -106,6 +107,21 @@ Dopo la conferma, una unità risulta bloccata e l'asta appare nella lobby.
 
 ## Lobby
 
+Dal 21 ottobre la lista si aggiorna via REST ogni 5 secondi, senza WebSocket
+globale e senza ricaricare la pagina. Il Consumer richiama il GET pubblico del
+Producer e restituisce solo il frammento HTML con `GET /aste?partial=true`,
+stessi filtri e stessa pagina, `Cache-Control: no-store`. Si aggiornano prezzi,
+numero offerte, stati, countdown, link d'ingresso, cancellazione ADMIN e pagine.
+I filtri in compilazione restano intatti: vengono usati quelli già applicati
+nell'URL. Il tempo è riallineato a `serverTime`, non deciso dal browser.
+
+Un indicatore distingue dati aggiornati, pausa e errore di rete. In errore i
+dati restano visibili come potenzialmente obsoleti; retry dopo 10 secondi.
+Nessuna richiesta sovrapposta; timeout 8 secondi; pausa a scheda nascosta,
+ripresa al ritorno. La sostituzione è sospesa quando un comando nei risultati
+ha il focus, per non interrompere link/form ADMIN. Senza JavaScript serve reload.
+La stanza live e i suoi ticket/WebSocket rimangono invariati.
+
 Filtri disponibili nella REST: stato, categoria e testo, con paginazione.
 “In partenza” e “a cui partecipo” sono proposte di UI senza filtri REST dedicati:
 il loro comportamento va concordato prima di mostrarli come disponibili. Ogni card
@@ -132,7 +148,8 @@ e `Synchronizing…`. Dopo la riconnessione il form resta disabilitato finché
 non arriva uno snapshot valido.
 Gli ultimi venti secondi sono evidenziati rispettando `prefers-reduced-motion`.
 
-Il browser usa `LIVEAUCTION_PRODUCER_WS_URL` (default `ws://localhost:8081/ws`)
+Il browser usa `LIVEAUCTION_PRODUCER_WS_URL` (default `auto`: host della pagina,
+porta 8081, percorso `/ws`, oppure un URL esplicito)
 per collegarsi direttamente al Producer; l'URL deve essere raggiungibile dal
 browser, non soltanto dal container Consumer. Il token Bearer resta nella
 sessione server-side della Consumer. Il feed mostra solo gli eventi ricevuti

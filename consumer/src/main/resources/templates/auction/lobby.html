@@ -9,6 +9,8 @@
         <h1>Auctions</h1>
         <p>Browse public auctions. Join the room, follow the countdown, make your move. Times are shown in Rome time.</p>
     </header>
+    <p id="lobby-update-status" class="muted" role="status" aria-live="polite">Automatic updates every 5 seconds.</p>
+    <noscript><p class="muted">JavaScript is disabled. Reload this page to see updated auctions.</p></noscript>
     <div th:replace="~{fragments/alerts :: alerts}"></div>
     <form class="catalog-filters" th:action="@{/aste}" method="get" aria-label="Filter auctions">
         <label for="stato">State</label>
@@ -28,7 +30,7 @@
         <button type="submit">Apply filters</button>
         <a th:href="@{/aste}">Clear filters</a>
     </form>
-    <section aria-label="Auction results">
+    <section id="auction-results" th:fragment="results" th:attr="data-server-time=${auctions.serverTime}" aria-label="Auction results">
         <p th:if="${auctions.content.isEmpty()}" class="empty-state">No auctions match these filters.</p>
         <th:block th:unless="${auctions.content.isEmpty()}">
             <p class="result-count" th:text="${auctions.totalElements} + ' auctions found'">Auctions found</p>
@@ -45,14 +47,14 @@
                 </th:block>
             </div>
         </th:block>
-    </section>
     <nav th:if="${auctions.totalPages > 1}" class="pagination" aria-label="Auction pages">
         <a th:if="${auctions.page > 0}" th:href="@{/aste(stato=${stato},categoria=${categoria},query=${query},page=${auctions.page - 1},size=${auctions.size})}">Previous</a>
         <span th:text="'Page ' + ${auctions.page + 1} + ' of ' + ${auctions.totalPages}">Page</span>
         <a th:if="${auctions.page + 1 < auctions.totalPages}" th:href="@{/aste(stato=${stato},categoria=${categoria},query=${query},page=${auctions.page + 1},size=${auctions.size})}">Next</a>
     </nav>
+    </section>
 </main>
 <footer th:replace="~{fragments/footer :: footer}"></footer>
-<script th:src="@{/js/auction-lobby.js}" defer></script>
+<script th:src="@{/js/auction-lobby.js(v='20261021-polling')}" defer></script>
 </body>
 </html>

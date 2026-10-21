@@ -25,7 +25,9 @@ public class AuctionLobbyController {
                         @RequestParam(required = false) String query,
                         @RequestParam(defaultValue = "0") String page,
                         @RequestParam(defaultValue = "12") String size,
+                        @RequestParam(defaultValue = "false") boolean partial,
                         Model model, HttpServletResponse response) {
+        response.setHeader("Cache-Control", "no-store");
         String state = clean(stato);
         String category = clean(categoria);
         String search = clean(query);
@@ -51,7 +53,7 @@ public class AuctionLobbyController {
             model.addAttribute("stato", state);
             model.addAttribute("categoria", category);
             model.addAttribute("query", search);
-            return "auction/lobby";
+            return partial ? "auction/lobby :: results" : "auction/lobby";
         } catch (ProducerUnavailableException ex) {
             return error(model, response, HttpStatus.SERVICE_UNAVAILABLE, "Auctions unavailable",
                     "The auction service is temporarily unavailable. Please try again.");

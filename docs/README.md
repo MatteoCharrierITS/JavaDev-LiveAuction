@@ -23,6 +23,7 @@ Questa è la specifica corrente di **LiveAuction**.
 17. [Correzione offerte dopo cambio rete — 20 ottobre 2026](17-correzione-ws-lan.md)
 18. [Wallet di sola lettura e credito iniziale configurabile](18-wallet-sola-lettura.md)
 19. [Database ufficiale e avvio su hotspot per il professore](19-prova-professore.md)
+20. [Aggiornamento automatico della lobby Auctions](20-aggiornamento-lobby.md)
 
 **[DA FARE — attività e prossimi passi del team](todo.md)**
 

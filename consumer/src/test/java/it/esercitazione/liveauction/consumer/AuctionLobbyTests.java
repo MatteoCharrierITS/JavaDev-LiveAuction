@@ -71,6 +71,43 @@ class AuctionLobbyTests {
         stub.server.verify();
     }
 
+    @Test void publicRefreshReturnsOnlyResultsAndKeepsFiltersAndPagination() throws Exception {
+        expect("/aste?stato=APERTA&categoria=office&query=desk&page=1&size=2", HttpStatus.OK,
+                page(auction("APERTA"), 1, 3, "2026-10-10T10:01:00Z"));
+        mvc.perform(get("/aste").param("partial", "true").param("stato", "APERTA")
+                        .param("categoria", "office").param("query", "desk").param("page", "1").param("size", "2"))
+                .andExpect(status().isOk()).andExpect(view().name("auction/lobby :: results"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.header().string("Cache-Control", "no-store"))
+                .andExpect(content().string(containsString("id=\"auction-results\"")))
+                .andExpect(content().string(containsString("data-server-time=\"2026-10-10T10:01:00Z\"")))
+                .andExpect(content().string(containsString("stato=APERTA&amp;categoria=office&amp;query=desk&amp;page=2&amp;size=2")))
+                .andExpect(content().string(not(containsString("Main navigation"))))
+                .andExpect(content().string(not(containsString("Filter auctions"))))
+                .andExpect(content().string(not(containsString("/admin/aste/42/annullamento"))));
+        stub.server.verify();
+    }
+
+    @Test void partialRefreshShowsUpdatedStateAndUserLinksWithoutReloadingShell() throws Exception {
+        for (String state : new String[]{"APERTA", "CHIUSA", "ANNULLATA"}) {
+            stub.server.reset();
+            expect("/aste?page=0&size=12", HttpStatus.OK, page(auction(state), 0, 1, "2026-10-10T10:01:00Z"));
+            var html = mvc.perform(get("/aste").param("partial", "true")
+                            .with(SecurityMockMvcRequestPostProcessors.user("buyer").roles("USER")))
+                    .andExpect(status().isOk()).andExpect(content().string(containsString(state)))
+                    .andReturn().getResponse().getContentAsString();
+            org.junit.jupiter.api.Assertions.assertEquals(state.equals("APERTA"), html.contains("href=\"/aste/42\""));
+            stub.server.verify();
+        }
+        stub.server.verify();
+    }
+
+    @Test void partialRefreshKeepsValidationAndDoesNotHideUpstreamErrors() throws Exception {
+        mvc.perform(get("/aste").param("partial", "true").param("page", "-1")).andExpect(status().isBadRequest());
+        expect("/aste?page=0&size=12", HttpStatus.SERVICE_UNAVAILABLE, "{}");
+        mvc.perform(get("/aste").param("partial", "true")).andExpect(status().isServiceUnavailable());
+        stub.server.verify();
+    }
+
     @Test void everyStateUsesItsOwnCountdownAndOnlyOpenRoomsHaveLinks() throws Exception {
         for (String state : new String[] {"PROGRAMMATA", "STANZA_APERTA", "APERTA", "CHIUSA", "ANNULLATA"}) {
             stub.server.reset();

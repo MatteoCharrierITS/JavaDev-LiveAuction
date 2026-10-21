@@ -1,7 +1,7 @@
 # LiveAuction — Spring Boot Producer/Consumer
 
 **Prova del 22 ottobre:** database ufficiale pulito, quattro account con 10.000
-CRD e sei articoli pronti. Collegare tutti i PC all'hotspot, poi dalla radice
+CRD e 18 articoli pronti. Collegare tutti i PC all'hotspot, poi dalla radice
 eseguire `bash scripts/avvia-locale.sh` e usare l'URL stampato.
 Arresto con Ctrl+C o `bash scripts/ferma-locale.sh`, senza cancellare dati.
 [Guida alla prova e backup](docs/19-prova-professore.md).
