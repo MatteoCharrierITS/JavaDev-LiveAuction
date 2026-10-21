@@ -112,7 +112,7 @@ public class OpenApiConfig {
             responses.putIfAbsent("401", new ApiResponse().description(
                     "Token assente, scaduto o non valido, sessione revocata o account disattivato."));
             boolean admin = path.startsWith("/api/v1/admin/");
-            boolean user = path.startsWith("/api/v1/me/") || path.endsWith("/ticket") || path.endsWith("/acquisti");
+            boolean user = path.startsWith("/api/v1/me/") || path.endsWith("/acquisti");
             if (admin || user) {
                 responses.putIfAbsent("403", new ApiResponse().description(
                         admin ? "Ruolo diverso da ADMIN." : "Ruolo diverso da USER."));

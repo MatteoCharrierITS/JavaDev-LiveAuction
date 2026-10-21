@@ -30,7 +30,8 @@ public class WebSocketTicketController {
     @Operation(summary = "Richiede il ticket per la stanza live",
             description = "Emette un ticket monouso, valido 30 secondi e legato a utente, sessione e asta. Va passato "
                     + "all'handshake `ws://<host>:8081/ws?ticket=<ticket>`. Si può richiedere solo da tre minuti prima "
-                    + "dell'inizio. Il protocollo STOMP non è descritto da OpenAPI: vedi `docs/07-liveauction.md`.")
+                    + "dell'inizio. Lo ricevono USER e ADMIN: l'ADMIN entra come osservatore in sola lettura, senza offrire "
+                    + "e senza comparire tra i partecipanti. Il protocollo STOMP non è descritto da OpenAPI: vedi `docs/07-liveauction.md`.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Ticket emesso.",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = WebSocketTicketResponse.class))),
