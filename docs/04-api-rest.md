@@ -51,6 +51,17 @@ la prima verifica la liveness, la seconda anche database e readiness
 applicativa. Restituiscono `200` quando disponibili e `503` altrimenti.
 Sono distinti dalle probe Actuator sotto `/actuator/health/**`.
 
+## Swagger / OpenAPI
+
+La documentazione interattiva del Producer è su `http://localhost:8081/swagger-ui.html`; il JSON OpenAPI è su
+`http://localhost:8081/v3/api-docs`. Ogni operazione ha riepilogo, descrizione, tag in italiano, parametri,
+esempi di body e i codici di risposta di questo contratto (errori come `application/problem+json`; 401, 403 e
+500 comuni sono aggiunti da `OpenApiConfig`). Per le rotte protette: `POST /auth/register` (o un utente
+esistente), `POST /auth/login`, copiare `accessToken` e premere **Authorize**. Gli esempi di registrazione,
+login e acquisto funzionano in "Try it out"; la programmazione asta usa una data futura che va aggiornata
+se è trascorsa. La stanza live (STOMP su `/ws`) non è rappresentabile in OpenAPI: vedi
+[Liveauction](07-liveauction.md) e la sezione WebSocket sotto.
+
 ## Autenticazione
 
 ### Regole di accesso nel Producer
