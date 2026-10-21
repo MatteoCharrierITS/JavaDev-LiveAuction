@@ -1,5 +1,6 @@
 package it.esercitazione.liveauction.producer.asta.services;
 
+import it.esercitazione.liveauction.producer.asta.config.OfferteConfig;
 import it.esercitazione.liveauction.producer.asta.exceptions.AstaException;
 import it.esercitazione.liveauction.producer.asta.models.Stato;
 import it.esercitazione.liveauction.producer.asta.repos.AstaLetturaRepository;
@@ -25,7 +26,7 @@ public class AstaLetturaService {
 
     @Autowired
     public AstaLetturaService(AstaLetturaRepository repository) {
-        this(repository, Clock.systemUTC());
+        this(repository, OfferteConfig.orologioAste());
     }
 
     AstaLetturaService(AstaLetturaRepository repository, Clock clock) {

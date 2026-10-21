@@ -7,8 +7,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -31,8 +33,15 @@ public class AnnullamentoAstaRepository {
                 "SELECT EXISTS (SELECT 1 FROM offerte WHERE asta_id = ?)", Boolean.class, id));
     }
 
+    /** Offerta che tiene ancora fondi riservati; serve solo all'annullamento di un'asta scaduta. */
+    public Optional<LeaderDaRilasciare> leader(long astaId) {
+        return jdbc.query("SELECT offerente_id, importo FROM offerte WHERE asta_id = ? AND leader",
+                (rs, row) -> new LeaderDaRilasciare(rs.getLong("offerente_id"), rs.getBigDecimal("importo")),
+                astaId).stream().findFirst();
+    }
+
     public void bloccaProdotto(AstaDaAnnullare asta) {
-        // Stesso ordine di settlement: asta, poi prodotto; mai bloccare utenti/portafogli qui.
+        // Stesso ordine del settlement: asta, portafogli (solo per un'asta scaduta), poi prodotto.
         Integer bloccata = jdbc.query("SELECT quantita_bloccata FROM prodotti WHERE id = ? FOR UPDATE",
                 (rs, row) -> rs.getInt(1), asta.prodottoId()).stream().findFirst().orElse(null);
         if (bloccata == null || bloccata < 1) {
@@ -57,4 +66,6 @@ public class AnnullamentoAstaRepository {
             return new AnnullamentoAstaResponse(id, stato, annullataAt, sequence);
         }
     }
+
+    public record LeaderDaRilasciare(long utenteId, BigDecimal importo) {}
 }

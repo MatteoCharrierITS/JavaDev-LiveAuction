@@ -26,10 +26,19 @@ i controlli delle risposte e il retry dell'annullamento. Nell'ambiente Postman
 Il requisito esistente permette il rilascio dello stock prima di ricevere
 un'offerta. Si applica quindi la regola conservativa: PROGRAMMATA,
 STANZA_APERTA o APERTA, prima di fineAt, senza alcuna offerta storica,
-comprese quelle ritirate. Annullare con offerte è un conflitto, senza effetti
-su portafogli, riserve o ledger. CHIUSA e aste scadute non sono annullabili.
+comprese quelle ritirate. Annullare con offerte prima della scadenza è un
+conflitto, senza effetti su portafogli, riserve o ledger. CHIUSA e aste scadute
+non sono annullabili, con un'eccezione aggiunta il 21 ottobre 2026: un'asta
+APERTA con offerte, ancora aperta 60 secondi dopo la scadenza perché la
+chiusura automatica non riesce a concluderla (caso dell'asta 6 in
+[wallet in sola lettura](18-wallet-sola-lettura.md)), si può annullare. Nei 60
+secondi di grazia la risposta è `409 CHIUSURA_IN_CORSO`: un codice distinto da
+`ASTA_CON_OFFERTE` perché basta riprovare più tardi. La riserva del leader viene rilasciata con `RILASCIO_OFFERTA` e
+l'unità torna disponibile; nessun pagamento né incasso.
 
-Il lock segue asta → prodotto, compatibile con offerte e settlement.
+Il lock segue asta → prodotto, compatibile con offerte e settlement; nel caso
+dell'asta scaduta con offerte asta → portafoglio del leader → prodotto, lo
+stesso ordine della chiusura.
 Lo stock è restituito una volta; versioni e sequence cambiano nella stessa
 transazione. La migrazione V12 aggiunge annullata_at e l'indice dello storico,
 senza modificare le migrazioni precedenti.

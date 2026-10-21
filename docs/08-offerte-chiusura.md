@@ -53,11 +53,20 @@ Non va esposta come endpoint pubblico. Prima della scadenza e negli stati
 diversi da APERTA non trasferisce nulla. Su CHIUSA restituisce il risultato
 già persistito. La verifica dello stato avviene sotto lock dell'asta.
 
-Il vincitore paga consumando la riserva; l'incasso va al portafoglio di
-`aste.admin_id`, già obbligatorio nello schema. Una unità passa dallo stock
+Il vincitore paga consumando la riserva; l'incasso va alla cassa unica del
+negozio, l'ADMIN attivo indicato da `SHOP_ADMIN_ID` (la stessa degli acquisti
+a prezzo fisso). Se `SHOP_ADMIN_ID` è 0 o non indica un ADMIN attivo, l'incasso
+va a `aste.admin_id`, già obbligatorio nello schema. I due portafogli vengono
+bloccati in ordine di ID, come per rilanci, ritiri e acquisti. Una unità passa dallo stock
 bloccato all'inventario; senza leader torna disponibile. `vincitore_id`,
 `offerta_corrente` (prezzo finale) e `chiusa_at` permettono di costruire gli storici.
 Un errore di stock, saldo o inventario annulla l'intera transazione.
+Se la chiusura fallisce sempre (per esempio `LIMITE_SALDO_SUPERATO` sul conto
+che incassa), l'asta resta APERTA con la riserva del leader e lo scheduler la
+ritenta a ogni ciclo. Trascorsi 60 secondi dalla scadenza l'ADMIN può
+annullarla: la riserva viene rilasciata
+con `RILASCIO_OFFERTA` e l'unità torna disponibile (vedi
+[Annullamento ADMIN](04-api-rest.md#annullamento-admin)).
 Lo scheduler seleziona le aste APERTA con `fineAt <= serverTime`, dopo la fase
 di apertura; ricontrollo sotto lock e idempotenza restano nel servizio.
 Gli errori sono isolati per asta e ritentati al ciclo successivo.

@@ -180,7 +180,13 @@ già il timer esteso: non viene emesso un evento separato `TIMER_EXTENDED`.
 `AUCTION_CANCELLED` usa AstaTransizioneEvent e il relay già presente: viene
 emesso solo dopo commit dell'annullamento, con sequence incrementata una volta.
 Il retry non ripubblica. Stato, orari e formato sono in [Contratto REST/STOMP](04-api-rest.md#annullamento-admin).
-L'annullamento è consentito solo prima della scadenza e senza offerte mai ricevute.
+L'annullamento è consentito prima della scadenza e senza offerte mai ricevute.
+Fa eccezione un'asta APERTA con offerte che la chiusura automatica non riesce
+a concludere: 60 secondi dopo la scadenza (prima: `CHIUSURA_IN_CORSO`) l'ADMIN
+può annullarla, la riserva del leader viene
+rilasciata con `RILASCIO_OFFERTA` e l'unità torna disponibile. Lo scheduler
+ritenta la chiusura a ogni ciclo finché l'asta resta APERTA (il log è limitato
+a uno ogni 60 secondi); dopo l'annullamento l'asta esce dalla coda.
 
 ## Sicurezza
 
