@@ -50,14 +50,14 @@ public class AdminAsteController {
     @PostMapping("/{id}/annullamento")
     @Operation(summary = "Annulla un'asta",
             description = "Ammesso per aste `PROGRAMMATA`, `STANZA_APERTA` o `APERTA` prima di `fineAt` e solo se non è arrivata alcuna offerta "
-                    + "(nemmeno ritirata). Restituisce l'unità di stock allo stato disponibile. Ripetere il comando su un'asta già annullata "
+                    + "(nemmeno ritirata). Eccezione: un'asta `APERTA` con offerte che risulta ancora aperta 60 secondi dopo `fineAt` (chiusura automatica bloccata) si può annullare, e la riserva del leader torna disponibile. Restituisce l'unità di stock allo stato disponibile. Ripetere il comando su un'asta già annullata "
                     + "restituisce lo stesso risultato senza altri effetti. Nessun body richiesto.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Asta annullata (o già annullata).",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = AnnullamentoAstaResponse.class))),
             @ApiResponse(responseCode = "400", description = "ID non positivo o non numerico."),
             @ApiResponse(responseCode = "404", description = "`RISORSA_NON_TROVATA`: asta inesistente."),
-            @ApiResponse(responseCode = "409", description = "`ASTA_NON_ANNULLABILE` (asta chiusa o tempo oltre `fineAt`) oppure `ASTA_CON_OFFERTE`.")
+            @ApiResponse(responseCode = "409", description = "`ASTA_NON_ANNULLABILE` (asta chiusa o tempo oltre `fineAt`) oppure `ASTA_CON_OFFERTE`; `CHIUSURA_IN_CORSO` se l'asta con offerte è scaduta da meno di 60 secondi.")
     })
     public ResponseEntity<AnnullamentoAstaResponse> annulla(@Parameter(description = "ID dell'asta.", example = "42") @PathVariable @Positive long id) {
         return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(annullamento.annulla(id));
