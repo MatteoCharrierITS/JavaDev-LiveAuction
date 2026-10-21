@@ -106,6 +106,21 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 			<plugin>
+				<!-- Spring tiene in cache un contesto per ogni configurazione di test e ognuno ha il suo pool:
+				     con i 10 collegamenti fissi di Hikari la suite intera supera i 100 di PostgreSQL.
+				     Al massimo 8 contesti in cache (gli altri vengono chiusi) e, a riposo, un solo collegamento
+				     ciascuno; sotto carico un contesto arriva comunque a 10. -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<systemPropertyVariables>
+						<spring.test.context.cache.maxSize>8</spring.test.context.cache.maxSize>
+						<spring.datasource.hikari.minimum-idle>1</spring.datasource.hikari.minimum-idle>
+						<spring.datasource.hikari.idle-timeout>10000</spring.datasource.hikari.idle-timeout>
+					</systemPropertyVariables>
+				</configuration>
+			</plugin>
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<executions>
