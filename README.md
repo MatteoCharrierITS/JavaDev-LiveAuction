@@ -143,7 +143,8 @@ descritto dai documenti qui sopra.
 
 | Persona | Area |
 | --- | --- |
-| **Matteo** | Autenticazione e utenti (registrazione, login, token, ruoli); dal 9 ottobre anche portafoglio e movimenti |
+| **Matteo** | Autenticazione e utenti: registrazione, login, token, ruoli; supporto al portafoglio |
+| **Mondir** | Portafoglio e movimenti: saldo totale, riservato e disponibile, ledger dei movimenti, operazioni sui crediti condivise con le aste |
 | **Andrea** | Consumer: client REST verso il Producer, sessione web, pagine Thymeleaf e stanza live |
 | **Maikol** | WebSocket e notifiche: STOMP, ticket, presenza, eventi della stanza, email al vincitore |
 | **Cristian** | Prodotti e catalogo: categorie, CRUD ADMIN, ricerca, paginazione, stock |
