@@ -2,7 +2,7 @@
   "info": {
     "name": "LiveAuction • Aste",
     "_postman_id": "833135da-ce7e-4249-8eb7-4ed4cea808d1",
-    "description": "Programmazione ADMIN, lobby, snapshot, ticket, annullamento senza offerte, vittorie USER e storico ADMIN implementati. Contratti e filtri in docs/04-api-rest.md. Gli eventi, incluso AUCTION_CANCELLED, sono post-commit. STOMP richiede un client WebSocket; la chiusura automatica è interna al Producer.",
+    "description": "Programmazione ADMIN, lobby, snapshot, ticket, annullamento senza offerte (o di un'asta scaduta bloccata in chiusura), vittorie USER e storico ADMIN implementati. Contratti e filtri in docs/04-api-rest.md. Gli eventi, incluso AUCTION_CANCELLED, sono post-commit. STOMP richiede un client WebSocket; la chiusura automatica è interna al Producer.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -154,7 +154,7 @@
         "method": "POST",
         "header": [],
         "url": "{{baseUrl}}/admin/aste/{{astaId}}/annullamento",
-        "description": "ADMIN, nessun body. Consentito in PROGRAMMATA/STANZA_APERTA/APERTA prima di fineAt e senza offerte mai ricevute. Restituisce 200 e rilascia una unità; retry identico senza nuovi effetti. Errori: 409 ASTA_CON_OFFERTE o ASTA_NON_ANNULLABILE; 404 ID inesistente.",
+        "description": "ADMIN, nessun body. Consentito in PROGRAMMATA/STANZA_APERTA/APERTA prima di fineAt e senza offerte mai ricevute; inoltre su un'asta APERTA con offerte ancora aperta 60 secondi dopo fineAt perché la chiusura automatica non riesce a concluderla (rilascia la riserva del leader con RILASCIO_OFFERTA). Restituisce 200 e rilascia una unità; retry identico senza nuovi effetti. Errori: 409 ASTA_CON_OFFERTE (offerte prima di fineAt), CHIUSURA_IN_CORSO (offerte, entro 60 secondi da fineAt) o ASTA_NON_ANNULLABILE (CHIUSA, o scaduta senza offerte); 404 ID inesistente.",
         "auth": {
           "type": "bearer",
           "bearer": [

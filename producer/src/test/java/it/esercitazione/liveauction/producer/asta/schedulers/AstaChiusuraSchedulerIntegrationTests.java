@@ -3,6 +3,8 @@ package it.esercitazione.liveauction.producer.asta.schedulers;
 import it.esercitazione.liveauction.producer.asta.events.EventoOfferte;
 import it.esercitazione.liveauction.producer.asta.repos.AstaRepository;
 import it.esercitazione.liveauction.producer.asta.requests.OffertaRequest;
+import it.esercitazione.liveauction.producer.asta.models.Stato;
+import it.esercitazione.liveauction.producer.asta.services.AnnullamentoAstaService;
 import it.esercitazione.liveauction.producer.asta.services.AstaLifecycleService;
 import it.esercitazione.liveauction.producer.asta.services.ChiusuraAstaService;
 import it.esercitazione.liveauction.producer.asta.services.OffertaService;
@@ -51,6 +53,7 @@ class AstaChiusuraSchedulerIntegrationTests {
     @Autowired AstaLifecycleService lifecycle;
     @Autowired ChiusuraAstaService chiusura;
     @Autowired OffertaService offerte;
+    @Autowired AnnullamentoAstaService annullamento;
     @Autowired Eventi eventi;
     @MockitoBean(name = "clockOfferte") Clock clock;
 
@@ -165,6 +168,49 @@ class AstaChiusuraSchedulerIntegrationTests {
         jdbc.update("UPDATE prodotti SET quantita_bloccata=1 WHERE id=?", p);
         scheduler().aggiornaAste();
         verificaVittoria(fallita, p);
+    }
+
+    @Test
+    void chiusuraBloccataDalContoCheIncassaSiSbloccaConAnnullamentoAdmin() {
+        long p = prodotto(1);
+        long a = asta(p, "APERTA", now.minusSeconds(60));
+        offri(a);
+        // Caso reale "asta 6": l'incasso supererebbe il saldo massimo del conto ADMIN.
+        jdbc.update("UPDATE portafogli SET saldo_totale = 9999999999.99 WHERE utente_id = ?", admin);
+        when(clock.instant()).thenReturn(now.plusSeconds(380));
+        scheduler().aggiornaAste();
+        scheduler().aggiornaAste();
+        assertThat(stato(a)).isEqualTo("APERTA");
+        assertThat(jdbc.queryForObject("SELECT saldo_riservato FROM portafogli WHERE utente_id=?", BigDecimal.class, user))
+                .isEqualByComparingTo("100");
+
+        // Ancora APERTA un minuto dopo la scadenza (now+380): la chiusura è davvero bloccata.
+        when(clock.instant()).thenReturn(now.plusSeconds(440));
+        scheduler().aggiornaAste();
+        assertThat(stato(a)).isEqualTo("APERTA");
+        var jwt = Jwt.withTokenValue("test-not-a-real-token").header("alg", "HS256")
+                .subject(Long.toString(admin)).issuedAt(now).expiresAt(now.plusSeconds(3600)).build();
+        SecurityContextHolder.getContext().setAuthentication(new JwtAuthenticationToken(jwt,
+                List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))));
+        try {
+            annullamento.annulla(a);
+        } finally {
+            SecurityContextHolder.clearContext();
+        }
+        assertThat(stato(a)).isEqualTo("ANNULLATA");
+        assertThat(jdbc.queryForObject("SELECT saldo_totale FROM portafogli WHERE utente_id=?", BigDecimal.class, user))
+                .isEqualByComparingTo("1000");
+        assertThat(jdbc.queryForObject("SELECT saldo_riservato FROM portafogli WHERE utente_id=?", BigDecimal.class, user))
+                .isEqualByComparingTo("0");
+        assertThat(jdbc.queryForObject("SELECT quantita_disponibile FROM prodotti WHERE id=?", Integer.class, p))
+                .isEqualTo(3);
+        // L'asta annullata esce dalla coda delle chiusure: il ciclo successivo non la ritenta.
+        assertThat(repository.trovaIdDaChiudere(Stato.APERTA, now.plusSeconds(441))).doesNotContain(a);
+        scheduler().aggiornaAste();
+        assertThat(stato(a)).isEqualTo("ANNULLATA");
+        assertThat(eventi.chiusure(a)).isZero();
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM movimenti_portafoglio WHERE asta_id=? AND tipo='PAGAMENTO_ASTA'",
+                Integer.class, a)).isZero();
     }
 
     @Test

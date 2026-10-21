@@ -1,5 +1,6 @@
 package it.esercitazione.liveauction.producer.asta.schedulers;
 
+import it.esercitazione.liveauction.producer.asta.config.OfferteConfig;
 import it.esercitazione.liveauction.producer.asta.models.Stato;
 import it.esercitazione.liveauction.producer.asta.repos.AstaRepository;
 import it.esercitazione.liveauction.producer.asta.services.AstaLifecycleService;
@@ -33,7 +34,7 @@ public class AstaScheduler {
     @Autowired
     public AstaScheduler(AstaRepository astaRepository, AstaLifecycleService lifecycleService,
                          ChiusuraAstaService chiusuraAstaService) {
-        this(astaRepository, lifecycleService, chiusuraAstaService, Clock.systemUTC());
+        this(astaRepository, lifecycleService, chiusuraAstaService, OfferteConfig.orologioAste());
     }
 
     AstaScheduler(AstaRepository astaRepository, AstaLifecycleService lifecycleService,

@@ -55,3 +55,7 @@ l'asta 6 bloccata in chiusura dall'offerta 9999999999.99 CRD: il relativo incass
 supera il limite del conto ADMIN. Saldi, riserva, offerta e retry sono conservati.
 Un recupero della vecchia demo o una nuova regola di capienza dell'incasso
 richiedono una decisione separata: non si alterano ledger o offerte storiche.
+Dal 21 ottobre 2026 l'ADMIN può comunque annullare un'asta APERTA con offerte
+che 60 secondi dopo la scadenza non è ancora riuscita a chiudersi: la riserva del leader viene rilasciata con
+`RILASCIO_OFFERTA` e l'unità torna disponibile (vedi
+[Annullamento ADMIN](04-api-rest.md#annullamento-admin)).

@@ -116,11 +116,21 @@ momento del rilancio.
 
 Solo ADMIN può annullare un'asta in PROGRAMMATA, STANZA_APERTA o APERTA,
 prima della scadenza e prima che abbia ricevuto qualsiasi offerta, anche
-successivamente ritirata. La presenza di offerte impedisce il comando;
-nessun fondo viene quindi rilasciato dall'annullamento. Stock e stato cambiano
-nella stessa transazione, con lock asta → prodotto e incremento di sequence.
-Ripetere l'annullamento non duplica effetti o eventi. Un'asta CHIUSA o scaduta
+successivamente ritirata. Prima della scadenza la presenza di offerte impedisce
+il comando. Stock e stato cambiano nella stessa transazione, con incremento di
+sequence. Ripetere l'annullamento non duplica effetti o eventi. Un'asta CHIUSA
 non è annullabile. AUCTION_CANCELLED raggiunge la stanza soltanto dopo commit.
+
+Unica eccezione alla scadenza: un'asta ancora APERTA con offerte almeno 60
+secondi dopo `fineAt` (periodo di grazia `GRAZIA_CHIUSURA`; lo scheduler ritenta
+la chiusura ogni secondo) è un'asta che la chiusura automatica non riesce a
+concludere (per esempio `LIMITE_SALDO_SUPERATO` sul conto che incassa). Durante
+la grazia il comando è rifiutato con `CHIUSURA_IN_CORSO`. Dopo, l'ADMIN può
+annullarla come via d'uscita: la riserva del leader viene rilasciata con un
+movimento `RILASCIO_OFFERTA`, l'unità bloccata torna disponibile e nessun
+pagamento viene eseguito. Lock nell'ordine della chiusura: asta → portafoglio
+del leader → prodotto. Un'asta scaduta senza offerte resta non annullabile: la
+chiusura restituisce già l'unità allo stock.
 
 ## Regole di offerta
 
@@ -158,7 +168,11 @@ Con almeno una offerta:
 Senza offerte, l'unità viene sbloccata. La chiusura è idempotente: eseguirla più
 volte non duplica trasferimenti, addebiti o assegnazioni.
 
-Il conto amministrativo destinatario dell'incasso è quello di `aste.admin_id`.
+Il conto amministrativo destinatario dell'incasso è la stessa cassa degli
+acquisti a prezzo fisso: l'ADMIN indicato da `SHOP_ADMIN_ID`, se è un ADMIN
+attivo. Se `SHOP_ADMIN_ID` vale 0 o non indica un ADMIN attivo, l'incasso va
+all'ADMIN che ha programmato l'asta (`aste.admin_id`), così la chiusura non
+fallisce per una configurazione mancante.
 
 ## Eliminazione dell'account durante un'asta
 

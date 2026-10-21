@@ -490,14 +490,26 @@ auth; annullamento e storici sono implementati come descritto sotto.
 servizio; qualsiasi ADMIN può annullare un'asta. ID strettamente positivo,
 nessun body richiesto. Sono ammessi `PROGRAMMATA`, `STANZA_APERTA` e `APERTA`
 solo prima di `fineAt` secondo il tempo server e solo se non esiste alcuna
-offerta ricevuta, incluse quelle ritirate. Non si introduce l'annullamento di
-aste con offerte: le riserve e il ledger rimangono invariati.
+offerta ricevuta, incluse quelle ritirate. In questi casi riserve e ledger
+rimangono invariati.
 
-Il comando blocca prima l'asta, poi il prodotto, usando lo stesso ordine della
-chiusura. Nella stessa transazione restituisce una unità allo stock disponibile,
+Eccezione: un'asta `APERTA` con offerte e `serverTime >= fineAt + 60 s`
+(periodo di grazia `GRAZIA_CHIUSURA`) è rimasta aperta perché la chiusura
+automatica, ritentata ogni secondo, fallisce (per esempio
+`LIMITE_SALDO_SUPERATO` sul conto che incassa). Tra `fineAt` e la fine della
+grazia la chiusura può ancora riuscire e il comando risponde `409
+CHIUSURA_IN_CORSO` senza effetti. Dopo la grazia l'ADMIN può annullarla: nella
+stessa transazione la riserva del leader viene rilasciata con un movimento
+`RILASCIO_OFFERTA` (saldo totale invariato, riserva ridotta dell'importo), poi
+l'unità torna disponibile come negli altri casi. Nessun pagamento, incasso o
+inventario. Un'asta scaduta senza offerte resta non annullabile.
+
+Il comando blocca prima l'asta, poi (solo nell'eccezione) il portafoglio del
+leader, poi il prodotto, usando lo stesso ordine della chiusura. Nella stessa transazione restituisce una unità allo stock disponibile,
 decrementa quella bloccata, incrementa le versioni di prodotto/asta e la
 `sequence`, salva `annullata_at` (V12) e lo stato `ANNULLATA`. Non trasferisce
-crediti o inventario e non accoda email. L'orario viene letto dopo entrambi i
+crediti o inventario e non accoda email; `annullataAt` ha la precisione al
+microsecondo del valore salvato. L'orario viene letto dopo entrambi i
 lock. Lo scheduler non riapre né chiude un'asta annullata.
 
 Risposta `200`, `Cache-Control: no-store`:
@@ -522,8 +534,9 @@ Un rollback non pubblica eventi e ripristina anche stock e versioni.
 | 401 | Problem Details di sicurezza | token mancante, scaduto o sessione revocata |
 | 403 | Problem Details di sicurezza | ruolo diverso da ADMIN |
 | 404 | `RISORSA_NON_TROVATA` | asta inesistente |
-| 409 | `ASTA_NON_ANNULLABILE` | asta CHIUSA o tempo server >= fineAt |
-| 409 | `ASTA_CON_OFFERTE` | almeno un'offerta ricevuta, anche ritirata |
+| 409 | `ASTA_NON_ANNULLABILE` | asta CHIUSA, oppure tempo server >= fineAt senza offerte |
+| 409 | `ASTA_CON_OFFERTE` | prima di fineAt, almeno un'offerta ricevuta, anche ritirata |
+| 409 | `CHIUSURA_IN_CORSO` | APERTA con offerte, fineAt <= tempo server < fineAt + 60 s |
 
 L'evento `AUCTION_CANCELLED` viene pubblicato solo dopo commit, tramite
 `AstaTransizioneEvent` e il relay esistente verso `/topic/aste/{id}`. Il retry

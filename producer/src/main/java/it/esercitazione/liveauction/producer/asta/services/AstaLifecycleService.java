@@ -1,5 +1,6 @@
 package it.esercitazione.liveauction.producer.asta.services;
 
+import it.esercitazione.liveauction.producer.asta.config.OfferteConfig;
 import it.esercitazione.liveauction.producer.asta.events.AstaTransizioneEvent;
 import it.esercitazione.liveauction.producer.asta.events.AstaTransizioneEvent.Tipo;
 import it.esercitazione.liveauction.producer.asta.models.Asta;
@@ -24,7 +25,7 @@ public class AstaLifecycleService {
 
     @Autowired
     public AstaLifecycleService(AstaRepository astaRepository, ApplicationEventPublisher publisher) {
-        this(astaRepository, publisher, Clock.systemUTC());
+        this(astaRepository, publisher, OfferteConfig.orologioAste());
     }
 
     AstaLifecycleService(AstaRepository astaRepository, ApplicationEventPublisher publisher, Clock clock) {

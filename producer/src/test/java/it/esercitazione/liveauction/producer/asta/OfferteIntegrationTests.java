@@ -1,6 +1,11 @@
 package it.esercitazione.liveauction.producer.asta;
 
+import it.esercitazione.liveauction.producer.acquisto.AcquistiProperties;
+import it.esercitazione.liveauction.producer.asta.events.AstaTransizioneEvent;
 import it.esercitazione.liveauction.producer.asta.events.EventoOfferte;
+import it.esercitazione.liveauction.producer.asta.exceptions.AstaException;
+import it.esercitazione.liveauction.producer.asta.models.Stato;
+import it.esercitazione.liveauction.producer.asta.services.AnnullamentoAstaService;
 import it.esercitazione.liveauction.producer.asta.exceptions.OffertaException;
 import it.esercitazione.liveauction.producer.asta.requests.OffertaRequest;
 import it.esercitazione.liveauction.producer.asta.responses.OffertaResponse;
@@ -32,6 +37,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.*;
@@ -56,6 +62,8 @@ class OfferteIntegrationTests {
     @Autowired it.esercitazione.liveauction.producer.inventario.services.InventarioService inventario;
     @Autowired EliminazioneUtenteService eliminazione;
     @Autowired EventiRegistrati eventi;
+    @Autowired AnnullamentoAstaService annullamento;
+    @Autowired AcquistiProperties cassaConfigurata;
     @MockitoBean(name = "clockOfferte") Clock clock;
 
     private long admin;
@@ -348,6 +356,93 @@ class OfferteIntegrationTests {
     }
 
     @Test
+    void stuckSettlementCanBeCancelledByAdminReleasingLeaderReserveOnce() {
+        offri(primo, asta, "100");
+        offri(secondo, asta, "110");
+        jdbc.update("UPDATE portafogli SET saldo_totale = 9999999999.99 WHERE utente_id = ?", admin);
+        when(clock.instant()).thenReturn(FINE.plusSeconds(40));
+        rifiutata(() -> chiusura.chiudi(asta), "LIMITE_SALDO_SUPERATO");
+        // Entro la grazia la chiusura automatica può ancora riuscire: nessun effetto.
+        when(clock.instant()).thenReturn(FINE.plusSeconds(99).plus(999_999, ChronoUnit.MICROS));
+        annullamentoRifiutato("CHIUSURA_IN_CORSO");
+        saldo(secondo, "1000", "110");
+        when(clock.instant()).thenReturn(FINE.plusSeconds(100));
+        var esito = come(admin, "ADMIN", () -> annullamento.annulla(asta));
+        assertThat(esito.stato()).isEqualTo(Stato.ANNULLATA);
+        assertThat(esito.annullataAt()).isEqualTo(FINE.plusSeconds(100));
+        saldo(primo, "1000", "0");
+        saldo(secondo, "1000", "0");
+        saldo(admin, "9999999999.99", "0");
+        // Uno al rilancio di secondo, uno all'annullamento per la riserva di secondo.
+        assertThat(movimenti("RILASCIO_OFFERTA")).isEqualTo(2);
+        assertThat(conta("SELECT COUNT(*) FROM movimenti_portafoglio WHERE asta_id = ? AND tipo = 'RILASCIO_OFFERTA' "
+                + "AND portafoglio_id = (SELECT id FROM portafogli WHERE utente_id = ?) AND importo = 110", asta, secondo))
+                .isEqualTo(1);
+        assertThat(conta("SELECT quantita_disponibile FROM prodotti WHERE id = ?", prodotto)).isEqualTo(3);
+        assertThat(conta("SELECT quantita_bloccata FROM prodotti WHERE id = ?", prodotto)).isZero();
+        assertThat(eventi.transizioni(asta)).singleElement()
+                .satisfies(evento -> assertThat(evento.type()).isEqualTo(AstaTransizioneEvent.Tipo.AUCTION_CANCELLED));
+        assertThat(chiusura.chiudi(asta).conclusa()).isFalse();
+        assertThat(come(admin, "ADMIN", () -> annullamento.annulla(asta))).isEqualTo(esito);
+        assertThat(movimenti("RILASCIO_OFFERTA")).isEqualTo(2);
+        assertThat(eventi.transizioni(asta)).hasSize(1);
+        saldo(secondo, "1000", "0");
+    }
+
+    @Test
+    void auctionWithBidsIsNotCancellableBeforeDeadlineNorAfterClosing() {
+        offri(primo, asta, "100");
+        when(clock.instant()).thenReturn(FINE.plusSeconds(20).minus(1, ChronoUnit.MICROS));
+        annullamentoRifiutato("ASTA_CON_OFFERTE");
+        when(clock.instant()).thenReturn(FINE.plusSeconds(20));
+        assertThat(chiusura.chiudi(asta).conclusa()).isTrue();
+        annullamentoRifiutato("ASTA_NON_ANNULLABILE");
+        saldo(primo, "900", "0");
+        assertThat(eventi.transizioni(asta)).isEmpty();
+    }
+
+    @Test
+    void auctionIncomeGoesToShopAdminWhenConfigured() {
+        long cassa = utente("ADMIN", "0");
+        cassaConfigurata.setAdminId(cassa);
+        try {
+            offri(primo, asta, "100");
+            when(clock.instant()).thenReturn(FINE.plusSeconds(20));
+            assertThat(chiusura.chiudi(asta).vincitoreId()).isEqualTo(primo);
+        } finally {
+            cassaConfigurata.setAdminId(0);
+        }
+        saldo(primo, "900", "0");
+        saldo(cassa, "100", "0");
+        saldo(admin, "0", "0");
+        assertThat(conta("SELECT COUNT(*) FROM movimenti_portafoglio WHERE asta_id = ? AND tipo = 'INCASSO_ASTA' "
+                + "AND portafoglio_id = (SELECT id FROM portafogli WHERE utente_id = ?)", asta, cassa)).isEqualTo(1);
+    }
+
+    @Test
+    void invalidShopAdminFallsBackToSchedulingAdmin() {
+        long disattivato = utente("ADMIN", "0");
+        jdbc.update("UPDATE utenti SET attivo = FALSE WHERE id = ?", disattivato);
+        long altra = nuovaAsta(prodotto);
+        jdbc.update("UPDATE prodotti SET quantita_bloccata = 2 WHERE id = ?", prodotto);
+        offri(primo, asta, "100");
+        offri(primo, altra, "100");
+        when(clock.instant()).thenReturn(FINE.plusSeconds(20));
+        try {
+            cassaConfigurata.setAdminId(disattivato);
+            chiusura.chiudi(asta);
+            cassaConfigurata.setAdminId(secondo);
+            chiusura.chiudi(altra);
+        } finally {
+            cassaConfigurata.setAdminId(0);
+        }
+        saldo(primo, "800", "0");
+        saldo(admin, "200", "0");
+        saldo(disattivato, "0", "0");
+        saldo(secondo, "1000", "0");
+    }
+
+    @Test
     void deletingLeaderRestoresBestFundedPreviousOfferWithoutExtendingTimer() {
         offri(primo, asta, "100");
         offri(secondo, asta, "110");
@@ -538,6 +633,12 @@ class OfferteIntegrationTests {
         }
     }
 
+    private void annullamentoRifiutato(String code) {
+        assertThatThrownBy(() -> come(admin, "ADMIN", () -> annullamento.annulla(asta)))
+                .isInstanceOfSatisfying(AstaException.class,
+                        exception -> assertThat(exception.getBody().getProperties()).containsEntry("code", code));
+    }
+
     private static void rifiutata(Supplier<?> azione, String code) {
         assertThatThrownBy(azione::get).isInstanceOfSatisfying(OffertaException.class,
                 exception -> assertThat(exception.getBody().getProperties()).containsEntry("code", code));
@@ -573,6 +674,7 @@ class OfferteIntegrationTests {
     static class EventiRegistrati {
         private final DataSource datasource;
         private final List<Osservato> ricevuti = new CopyOnWriteArrayList<>();
+        private final List<AstaTransizioneEvent> transizioni = new CopyOnWriteArrayList<>();
 
         EventiRegistrati(DataSource datasource) {
             this.datasource = datasource;
@@ -589,6 +691,15 @@ class OfferteIntegrationTests {
                     ricevuti.add(new Osservato(evento, rs.getLong(1)));
                 }
             }
+        }
+
+        @EventListener
+        public void transizione(AstaTransizioneEvent evento) {
+            transizioni.add(evento);
+        }
+
+        List<AstaTransizioneEvent> transizioni(long id) {
+            return transizioni.stream().filter(evento -> evento.auctionId() == id).toList();
         }
 
         List<Osservato> perAsta(long id) {

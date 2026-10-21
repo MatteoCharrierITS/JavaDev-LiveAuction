@@ -34,6 +34,11 @@ public class OfferteRepository {
                         rs.getString("ruolo"), rs.getBoolean("attivo")), id).stream().findFirst();
     }
 
+    public boolean adminAttivo(long id) {
+        return Boolean.TRUE.equals(jdbc.queryForObject(
+                "SELECT EXISTS (SELECT 1 FROM utenti WHERE id = ? AND ruolo = 'ADMIN' AND attivo)", Boolean.class, id));
+    }
+
     public AstaBloccata bloccaAsta(long id) {
         return jdbc.query("SELECT * FROM aste WHERE id = ? FOR UPDATE",
                         (rs, row) -> asta(rs), id).stream().findFirst()
