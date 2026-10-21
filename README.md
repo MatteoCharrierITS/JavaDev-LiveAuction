@@ -1,395 +1,160 @@
-# LiveAuction — Spring Boot Producer/Consumer
+# LiveAuction
 
-**Prova del 22 ottobre:** database ufficiale pulito, quattro account con 10.000
-CRD e 18 articoli pronti. Collegare tutti i PC all'hotspot, poi dalla radice
-eseguire `bash scripts/avvia-locale.sh` e usare l'URL stampato.
-Arresto con Ctrl+C o `bash scripts/ferma-locale.sh`, senza cancellare dati.
-[Guida alla prova e backup](docs/19-prova-professore.md).
-I precedenti database dimostrativi e di review sono stati eliminati dopo backup;
-i report del 20 ottobre restano documentazione storica, non lo stato attuale.
+Marketplace didattico con **aste live**. Un amministratore gestisce il catalogo
+e programma le aste; gli utenti entrano nella stanza, rilanciano in tempo reale
+con crediti virtuali e il vincitore riceve il prodotto nel proprio inventario.
+Si possono anche comprare i prodotti a prezzo fisso.
 
-> **[DA FARE — attività e prossimi passi per ogni persona](docs/todo.md)**
->
-> Il riferimento del team per cosa manca, priorità e dipendenze. Aggiornalo quando completi o integri un'attività.
+Progetto di gruppo del corso di Software Development dell'ITS ICT Torino.
+Il testo dell'esercitazione è in [Consegna.md](Consegna.md).
 
-## Assegnazioni
+## In breve
 
-| Persona | Area e funzionalità |
+| | |
 | --- | --- |
-| **Matteo** | Autenticazione e utenti: registrazione, login, token, ruoli e sicurezza. |
-| **Andrea** | Consumer/frontend: client REST verso il Producer, sessione web, pagine Thymeleaf e stanza live. |
-| **Maikol** | WebSocket e notifiche: STOMP, ticket, presenza, eventi delle stanze ed email al vincitore. |
-| **Cristian** | Prodotti e catalogo: categorie, CRUD ADMIN, ricerca, paginazione e stock. |
-| **Matteo (subentro dal 9 ottobre 2026)** | Portafoglio e movimenti: riallineamento del lavoro di Mondir, API del saldo/ledger e integrazione delle operazioni sui crediti con Tommi. |
-| **Marco** | Programmazione aste: creazione ADMIN, orari, blocco stock, scheduler, annullamento e storici. |
-| **Tommi** | Offerte e chiusura: rilanci, estensioni, concorrenza, vincitore e trasferimento di crediti e prodotto. |
-| **Da assegnare** | Referenti di manutenzione inventario e acquisti fissi, ora implementati; nessuna nuova assegnazione personale implicita. |
-
-### Regole di collaborazione
-
-Ogni responsabile cura anche DTO, validazioni, errori, migrazioni Flyway e test
-della propria area. La logica economica rimane nel Producer: il WebSocket
-trasporta gli eventi senza decidere la validità delle offerte, mentre la
-Consumer non accede mai direttamente al database.
-
-Marketplace didattico nel quale un amministratore programma aste live di
-prodotti disponibili a catalogo e gli utenti partecipano usando crediti
-virtuali. Il vincitore riceve una unità del prodotto nel proprio inventario.
-
-Il sistema è composto da due applicazioni indipendenti:
-
-- **producer** (`:8081`): API REST, autenticazione, motore d'asta WebSocket,
-  portafogli e persistenza PostgreSQL;
-- **consumer** (`:8082`): interfaccia Thymeleaf che usa esclusivamente i
-  contratti esposti dal Producer.
-
-> **Stato della copia di lavoro al 14 ottobre 2026 (base `ede0201`, modifiche non committate):**
-> Producer e Consumer includono il flusso delle aste: autenticazione e sessione
-> web, catalogo, portafoglio, programmazione ADMIN, lobby, stanza STOMP,
-> rilanci, riserve, chiusura automatica e recupero dopo riavvio. Sono integrati
-> annullamento ADMIN senza offerte, evento AUCTION_CANCELLED, vittorie personali,
-> storico ADMIN e relative pagine. Email con coda persistente e retry disponibili;
-> SMTP esterno fuori scope. API e pagina inventario personale sono implementate,
-> con quantità, paginazione e prodotti non più pubblici. Il feed ignora gli eventi
-> già coperti dallo snapshot prima di inserirli nella cronologia.
-> Sono implementati anche gli acquisti fissi: quantità 1–100, UUID idempotente,
-> incasso su un ADMIN attivo configurato con `SHOP_ADMIN_ID`. Prima di usare
-> l'acquisto in locale occorre impostare quel parametro. Il collaudo integrato
-> rimane distinto dalla sola presenza del codice.
-
-La revisione delle modifiche `3dfeec2..c864b2f` ha verificato contratti,
-autorizzazioni, isolamento delle vittorie, transazioni, stock, eventi post-commit,
-sessione Consumer e trasporto STOMP. Corretto un problema della stanza: dopo
-il rilancio di un altro utente il portafoglio viene riletto, così il precedente
-leader vede la riserva liberata. Aggiunto un test JavaScript di regressione.
-
-**Verifica del 13 ottobre:** `verify` Producer e Consumer riusciti, entrambi i
-JAR prodotti; **268 test Producer, 45 test Java Consumer e 11 test JavaScript**
-superati, zero fallimenti, errori o test saltati. PostgreSQL 16 in un container
-temporaneo senza volumi del progetto, WebSocket reali e SMTP locale di test;
-nessuna email reale inviata. Esecuzione host con Temurin 25.0.4, compilazione
-`release 21` e Mockito caricato come agente esplicito per evitare il limite di
-self-attach dell'ambiente. Questa è una verifica storica, superata dalla seguente.
-
-**Verifica del 14 ottobre:** `clean verify` con Temurin **21.0.11** e PostgreSQL 16
-dedicato: **293 test Producer, 52 Consumer e 12 JavaScript** superati, zero errori,
-fallimenti o test saltati. JAR prodotti. Incluse integrazioni database, WebSocket,
-SMTP simulato, inventario e acquisti concorrenti/idempotenti.
-
-I test Consumer simulano le risposte REST del Producer; i test JavaScript
-simulano il browser/trasporto. Il 14 ottobre sono stati provati anche acquisto
-reale dalla UI, aste con un browser e un secondo client STOMP, e avvio completo
-Docker `prod` (tre servizi healthy, login/acquisto/inventario/portafoglio dalla UI).
-Non è una certificazione della matrice manuale completa con due browser:
-le verifiche residue sono nel [TODO dettagliato per persona](docs/todo.md).
-Inventario e acquisto sono ora
-implementati anche nella UI. Per configurazione, prove correnti e limiti del
-collaudo vedere [inventario e acquisti](docs/13-inventario-acquisti.md).
-
-Per ripetere la suite usare un database PostgreSQL **dedicato ai test**:
-
-```sh
-RUN_DB_TESTS=true RUN_WS_TESTS=true ASTE_SCHEDULER_ENABLED=false \
-DB_URL=jdbc:postgresql://localhost:55432/liveauction_test \
-DB_USERNAME=postgres DB_PASSWORD='<password-del-db-di-prova>' \
-./producer/mvnw -f pom.xml verify
-
-node --test consumer/src/test/js/auction-lobby.test.cjs consumer/src/test/js/auction-room.test.mjs
-```
-
-Le suite configurano o richiamano lo scheduler secondo lo scenario da verificare.
-Se l'ambiente impedisce il self-attach di Mockito, aggiungere all'invocazione
-Maven `-DargLine=-javaagent:/percorso/alla/cache/mockito-core-5.17.0.jar`.
-
-Le verifiche precedenti sono conservate nei report storici:
-[allineamento documentazione del 12 ottobre](docs/11-verifica-documentazione.md),
-[consegna annullamento e storici](docs/12-annullamento-storici.md) e
-[integrazione offerte/chiusura](docs/08-offerte-chiusura.md#test).
-Non sostituiscono il collaudo del Consumer attuale.
-
-## La feature distintiva: LiveAuction
-
-Integrati in `main` (commit `c9e2a11`): email al vincitore,
-coda persistente e retry; invio disabilitato per default, nessun invio reale
-durante i test. Configurazione e limiti in [Notifiche email](docs/10-notifiche-email.md).
-
-In `main` (commit `4b82f1e`) sono disponibili anche il template SMTP in
-`.env.example`, STARTTLS obbligatorio/TLS implicito e test del flusso completo
-WebSocket → chiusura via scheduler → email su SMTP locale via TCP. L'attivazione
-del provider esterno è fuori scope e non verrà inclusa nella consegna.
-La configurazione presente resta disponibile come riferimento tecnico in
-[Notifiche email](docs/10-notifiche-email.md#attivazione-nellambiente-concordato).
-
-L'ADMIN decide se un prodotto è astabile e, per ogni asta, imposta prodotto,
-data e ora di inizio e prezzo iniziale. Il sistema riserva subito una unità:
-non è possibile programmare un'asta se lo stock disponibile è terminato.
-
-Ogni asta segue queste regole:
-
-- la stanza diventa accessibile **3 minuti prima** dell'inizio;
-- durante il pre-live gli utenti entrano e vedono i partecipanti, ma non
-  possono offrire;
-- la durata iniziale è di **7 minuti**;
-- ogni offerta valida aggiunge **20 secondi** alla scadenza corrente;
-- il timer è sincronizzato sul tempo del server;
-- prezzo, miglior offerente e feed si aggiornano via WebSocket;
-- alla chiusura crediti e prodotto vengono trasferiti atomicamente;
-- il vincitore viene mostrato nella stanza e registrato negli storici.
-
-L'ADMIN inserisce l'orario italiano (`Europe/Rome`); il Producer lo converte e
-lo salva come istante UTC, evitando ambiguità legate all'ora legale.
-
-## Prodotti e disponibilità
-
-La tabella `prodotti` espone direttamente:
-
-- `astabile`: indica in modo esplicito se l'ADMIN può usarlo in un'asta;
-- `quantita_disponibile`: unità ancora acquistabili o programmabili;
-- `quantita_bloccata`: unità già riservate da aste programmate o aperte.
-
-Più aste dello stesso prodotto sono consentite soltanto se esiste una unità
-disponibile per ciascuna asta. Programmare un'asta sposta una unità da
-`quantita_disponibile` a `quantita_bloccata` nella stessa transazione.
-
-## Portafoglio virtuale
-
-Ogni utente possiede crediti finti. Il saldo è diviso in totale, riservato e
-disponibile (`totale - riservato`). Se il saldo disponibile non copre una
-puntata, l'offerta viene rifiutata. Quando cambia il leader, la nuova somma viene
-riservata e quella del precedente leader viene liberata atomicamente.
-
-## Architettura
+| **Producer** (`:8081`) | API REST, WebSocket/STOMP della stanza, sicurezza JWT, logica di dominio, PostgreSQL + Flyway |
+| **Consumer** (`:8082`) | Interfaccia web Thymeleaf; parla solo con le API del Producer, mai con il database |
+| **Stack** | Java 21, Spring Boot 3.5, Spring Security, Spring WebSocket, JPA/JDBC, PostgreSQL 16, Docker Compose |
+| **API** | Swagger UI su `http://localhost:8081/swagger-ui.html`, OpenAPI su `/v3/api-docs` |
+| **Test** | JUnit 5 e Mockito (Producer e Consumer), `node --test` per il JavaScript della stanza |
 
 ```text
-Browser ──HTML/REST──► Consumer :8082 ──REST/JWT──► Producer :8081
-   │                                                │
-   └──────── WebSocket + ticket breve ──────────────┤
-                                                    ▼
-                                               PostgreSQL
+Browser ──HTML──► Consumer :8082 ──REST + JWT──► Producer :8081 ──► PostgreSQL
+   │                                                  ▲
+   └────────── WebSocket/STOMP con ticket monouso ─────┘
 ```
 
-Il browser riceve le pagine dalla Consumer. Le operazioni normali passano dal
-client REST della Consumer; la stanza d'asta apre un WebSocket diretto verso il
-Producer usando un ticket monouso e a breve scadenza.
+Il browser riceve le pagine dal Consumer, che conserva il token nella propria
+sessione server-side: il JWT non arriva mai al browser. Solo la stanza live apre
+un WebSocket diretto verso il Producer, con un ticket monouso e di breve durata
+chiesto dal Consumer.
 
-## Tecnologie previste
+## Come funziona un'asta
 
-- Java 21 e Spring Boot 3.5
-- Spring MVC, Spring Data JPA e Validation
-- Spring Security
-- Spring WebSocket con STOMP
-- PostgreSQL e Flyway
-- Thymeleaf e JavaScript nativo
-- Docker Compose
-- JUnit 5, Mockito e Testcontainers PostgreSQL
+1. L'ADMIN sceglie un prodotto **astabile**, data e ora (fuso `Europe/Rome`,
+   salvate in UTC) e il prezzo iniziale. Una unità del prodotto viene bloccata
+   subito: senza stock disponibile l'asta non si programma.
+2. La stanza apre **3 minuti prima** dell'inizio: si entra e si vedono i
+   partecipanti, ma non si offre ancora.
+3. L'asta dura **7 minuti**; ogni offerta valida aggiunge **20 secondi** alla
+   scadenza. Il tempo lo decide sempre il server, il browser lo interpola.
+4. Chi è in testa ha i crediti **riservati**; quando viene superato gli tornano
+   disponibili nella stessa transazione.
+5. Alla scadenza lo scheduler chiude l'asta: crediti all'incasso e prodotto
+   all'inventario del vincitore, in modo atomico. Senza offerte l'unità torna in
+   stock.
 
-## Funzionalità previste
+Ogni movimento di crediti passa da un registro (ledger); offerte, chiusura e
+acquisti bloccano le righe coinvolte per evitare doppie vittorie o stock
+negativo. Le regole complete sono in [Requisiti e regole](docs/01-requisiti.md)
+e nel [motore LiveAuction](docs/07-liveauction.md).
 
-- registrazione, login, rinnovo dei token e logout;
-- catalogo con disponibilità e indicatore `astabile`;
-- acquisto a prezzo fisso;
-- portafoglio virtuale e registro movimenti;
-- programmazione delle aste riservata all'ADMIN;
-- lobby e stanza pre-live;
-- offerte live con controllo della concorrenza;
-- assegnazione del prodotto al vincitore;
-- storico personale delle vittorie per l'utente;
-- storico globale di aste e vincitori per l'ADMIN;
-- modulo email riepilogativa dopo la chiusura, già presente; invio SMTP esterno fuori scope;
-- chiusura automatica e recupero dopo un riavvio.
+## Avvio
 
-## Contratti principali
+Servono **Java 21** e **Docker**. Si parte dalla radice del repository.
 
-Swagger UI del Producer: [http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html).
-Il JSON OpenAPI è disponibile su `/v3/api-docs` e documenta gli endpoint implementati.
-Usare **Authorize** con un access token per le API protette.
-
-Probe pubbliche nel package `monitoring`: `GET /api/v1/health` verifica la liveness;
-`GET /api/v1/ready` verifica anche la disponibilità del database e la readiness
-applicativa. Rispondono `200` se disponibili, `503` altrimenti.
-
-Base REST: `http://localhost:8081/api/v1`
-
-La tabella seguente riassume i contratti; lo stato di ogni rotta è
-indicato nella [tabella REST](docs/04-api-rest.md#rest).
-
-| Metodo | Endpoint | Scopo |
-| --- | --- | --- |
-| `POST` | `/auth/register` | registra un utente |
-| `POST` | `/auth/login` | apre una sessione applicativa |
-| `POST` | `/auth/refresh` | rinnova i token della sessione |
-| `POST` | `/auth/logout` | revoca la sessione corrente |
-| `DELETE` | `/me` | disattiva e anonimizza il proprio account |
-| `GET` | `/prodotti` | catalogo filtrabile |
-| `POST` | `/prodotti/{id}/acquisti` | acquisto a prezzo fisso |
-| `GET` | `/me/inventario` | prodotti vinti o acquistati |
-| `GET` | `/me/portafoglio` | saldo e movimenti paginati |
-| `POST` | `/admin/aste` | programma un'asta e riserva lo stock |
-| `GET` | `/aste` | lobby delle aste |
-| `GET` | `/aste/{id}` | snapshot autorevole |
-| `POST` | `/aste/{id}/ticket` | ticket WebSocket monouso |
-| `GET` | `/me/vittorie` | storico personale delle vittorie |
-| `GET` | `/admin/aste/storico` | storico globale per l'ADMIN |
-
-WebSocket Producer: `ws://localhost:8081/ws`
-
-- comandi: `/app/aste/{id}/join`, `/app/aste/{id}/offerte`;
-- eventi stanza: `/topic/aste/{id}`;
-- errori privati: `/user/queue/aste`.
-
-Il contratto completo è in [docs/04-api-rest.md](docs/04-api-rest.md).
-
-## Database
-
-Le due tabelle centrali del motore live sono:
-
-| Tabella | Responsabilità |
-| --- | --- |
-| `aste` | programmazione, prezzo iniziale, timer, stato, vincitore e prezzo finale |
-| `offerte` | storico immutabile dei rilanci accettati |
-
-Sono affiancate da `utenti`, `auth_sessions`, `portafogli`, `movimenti_portafoglio`, `prodotti`,
-`categorie` e `inventario_utenti`. Schema e DDL sono descritti in
-[docs/03-database.md](docs/03-database.md).
-
-Le migrazioni Flyway del Producer creano una tabella per file, senza inserire
-dati iniziali. Per provare il modulo auth, registra un utente tramite
-`POST /auth/register`. Per ottenere un account ADMIN in locale, promuovi un
-utente già registrato nel database con
-`UPDATE utenti SET ruolo = 'ADMIN' WHERE username = 'nome_utente';`.
-Non usare questa procedura come funzione di gestione degli utenti in produzione.
-Se il database locale ha già applicato le vecchie migrazioni V1/V2, usa un
-database nuovo prima di riavviare il Producer: la cronologia Flyway precedente
-non corrisponde più ai file attuali. Conserva una copia degli eventuali dati
-che vuoi mantenere.
-
-La registrazione crea anche un portafoglio con **10.000 CRD iniziali** e un
-movimento `CREDITO_INIZIALE`, nella stessa transazione. L'importo è configurabile
-in [application.yaml](producer/src/main/resources/application.yaml) tramite
-`app.portafoglio.saldo-iniziale` o `WALLET_INITIAL_BALANCE`. Cambia soltanto i nuovi
-iscritti, non i saldi esistenti. Il wallet è di sola lettura: gli utenti non
-possono più impostare o ricaricare il saldo, nemmeno tramite API.
-Il login restituisce un
-access token Bearer valido 30 minuti e un refresh token valido 7 giorni.
-Il logout revoca subito entrambi. Con il profilo `prod`, impostare
-`AUTH_JWT_SECRET` in `.env` con una stringa casuale di almeno 32 byte: senza
-questa chiave il Producer non si avvia.
-
-## Struttura repository
-
-```text
-.
-├── producer/
-├── consumer/
-├── docs/
-├── compose.yaml
-├── .env.example
-├── Consegna.md
-└── pom.xml
-```
-
-## Build
-
-Dalla radice del repository, per verificare Producer e Consumer.
-
-Windows:
-
-```powershell
-.\producer\mvnw.cmd -f pom.xml test
-```
-
-macOS/Linux:
+### Sviluppo (IDE)
 
 ```sh
-./producer/mvnw -f pom.xml test
-```
-
-## Avvio Docker
-
-Solo PostgreSQL per lo sviluppo:
-
-```powershell
 docker compose up -d postgres
 ```
 
-Poi avviare `LiveAuctionProducerApplication` da IntelliJ con il normale pulsante
-Run, selezionando un JDK 21 per il progetto e la run configuration. Il Producer
-usa `localhost:5432`, applica le migrazioni Flyway e ascolta su
-`localhost:8081`. L'avvio automatico di Docker Compose da Spring Boot è
-disabilitato, così funziona anche se IntelliJ usa la radice del repository come
-directory di lavoro. In Postman selezionare l'ambiente **LiveAuction • Locale**
-prima di inviare le richieste.
+Poi si avviano da IntelliJ `LiveAuctionProducerApplication` (porta 8081, applica
+le migrazioni Flyway) e `LiveAuctionConsumerApplication` (porta 8082). La UI è su
+<http://localhost:8082>.
 
-Avviare poi `LiveAuctionConsumerApplication` con JDK 21: la UI è su
-`http://localhost:8082` e chiama per default
-`http://localhost:8081/api/v1`. Per URL diversi impostare
-`LIVEAUCTION_PRODUCER_URL` e `LIVEAUCTION_PRODUCER_WS_URL`; il secondo URL deve
-essere raggiungibile dal browser e l'origine WebSocket va ammessa dal Producer.
-Il default `LIVEAUCTION_PRODUCER_WS_URL=auto` usa l'host della pagina sulla porta
-8081; non serve inserire l'IP nel Consumer per la normale demo sulla stessa macchina.
-Registrare un USER dalla UI; per provare le pagine ADMIN in locale, promuovere
-un account come indicato nella sezione Database e ripetere il login.
-Per gli acquisti fissi, impostare `SHOP_ADMIN_ID` con l'ID dell'ADMIN destinatario
-nell'ambiente del Producer e riavviarlo; il default `0` lascia disabilitati
-soltanto gli acquisti. Quantità 1–100 e retry con lo stesso UUID sono descritti in
-[inventario e acquisti](docs/13-inventario-acquisti.md).
-Per rotte e funzionalità mancanti vedere [Interfaccia e flussi](docs/05-ui-flussi.md).
+### Stack completo in Docker
 
-Intero stack con profilo `prod`:
-
-Configurare prima `AUTH_JWT_SECRET` in `.env` come indicato sopra. Il profilo
-`prod` usa cookie di sessione `Secure`: su HTTP non-localhost serve HTTPS;
-per lo sviluppo locale HTTP usare i profili predefiniti con i JAR/IDE.
-
-Per una prova Docker su LAN/VPN tramite HTTP, impostare esplicitamente
-`CONSUMER_SESSION_COOKIE_SECURE=false` nel `.env` locale e ricreare il Consumer:
-`docker compose --profile prod up -d --no-deps consumer`. Questo consente al
-browser di inviare il cookie di sessione anche usando l'IP del server; con HTTPS
-mantenere il valore predefinito `true`. Per le aste live occorre configurare
-anche un URL WebSocket raggiungibile dal browser e ammettere la relativa origine
-nel Producer. Esempio `.env` per un server con IP `192.168.1.10`:
-
-```dotenv
-CONSUMER_SESSION_COOKIE_SECURE=false
-LIVEAUCTION_PRODUCER_WS_URL=auto
-LIVEAUCTION_WS_ALLOWED_ORIGINS=http://localhost:8082,http://192.168.1.10:8082
-```
-
-Ricreare Producer e Consumer dopo queste modifiche (ricompilare il Producer se
-si sta aggiornando da una versione con origine localhost fissa). Consentire TCP
-8081 e 8082 nel firewall dai PC di prova. I browser locali e remoti useranno il
-proprio host di accesso alla UI per il WebSocket in modalità `auto`.
-Se cambia la rete, aggiornare comunque le origini esatte nel Producer e
-riavviarlo. Per porte diverse da 8081 o reverse proxy usare un URL completo.
-
-```powershell
+```sh
+cp .env.example .env    # impostare almeno AUTH_JWT_SECRET (32+ caratteri casuali)
 docker compose --profile prod up --build -d
-docker compose --profile prod ps
 ```
 
-Se `5432` è occupata, copiare `.env.example` in `.env` e impostare
-`POSTGRES_PORT=5433`; in quel caso impostare anche
-`DB_URL=jdbc:postgresql://localhost:5433/liveauction` nella run configuration
-di IntelliJ. Arresto senza cancellare i dati:
+Il profilo `prod` usa cookie `Secure`: su HTTP con un IP diverso da localhost
+impostare `CONSUMER_SESSION_COOKIE_SECURE=false`. Per la demo su più PC della
+stessa rete c'è `scripts/avvia-locale.sh` (macOS), spiegato nella
+[guida alla prova](docs/19-prova-professore.md).
 
-```powershell
-docker compose --profile prod down
+### Primo accesso
+
+- Ogni utente registrato è `USER` e riceve **10.000 CRD** una volta sola
+  (`WALLET_INITIAL_BALANCE`).
+- Un `ADMIN` si ottiene promuovendo un utente già registrato:
+  `UPDATE utenti SET ruolo = 'ADMIN' WHERE username = '...';` e rifacendo il login.
+- Gli acquisti a prezzo fisso e l'incasso delle aste vanno all'ADMIN indicato da
+  `SHOP_ADMIN_ID`; con il valore `0` gli acquisti restano disabilitati.
+
+Le altre variabili sono commentate in [.env.example](.env.example).
+
+## Test
+
+```sh
+# Producer e Consumer; i test di integrazione vogliono un PostgreSQL dedicato
+RUN_DB_TESTS=true RUN_WS_TESTS=true ASTE_SCHEDULER_ENABLED=false \
+DB_URL=jdbc:postgresql://localhost:5432/liveauction_test \
+DB_USERNAME=postgres DB_PASSWORD=postgres \
+./producer/mvnw -f pom.xml verify
+
+# JavaScript della lobby e della stanza
+node --test consumer/src/test/js/*.test.*
 ```
+
+Senza `DB_URL` e `RUN_DB_TESTS` i test di integrazione vengono saltati e girano
+solo quelli che non toccano il database. Usare sempre un database dedicato ai
+test, mai quello della demo.
 
 ## Documentazione
 
-- [Avvio demo e correzioni HTTP su LAN/VPN del 19 ottobre](docs/14-avvio-demo-vpn.md)
+Tutto sta in [`docs/`](docs/README.md). Da dove partire:
 
-- [Consegna aggiornata](Consegna.md)
-- [Indice progettazione](docs/README.md)
-- [Requisiti e regole](docs/01-requisiti.md)
-- [Architettura](docs/02-architettura.md)
-- [Database PostgreSQL](docs/03-database.md)
-- [REST e WebSocket](docs/04-api-rest.md)
-- [Collection Postman](docs/postman/README.md)
-- [Interfaccia e flussi](docs/05-ui-flussi.md)
-- [Roadmap e test](docs/06-piano-lavoro.md)
-- [Motore LiveAuction](docs/07-liveauction.md)
-- [Offerte e chiusura: integrazione](docs/08-offerte-chiusura.md)
-- [Portafoglio e ledger](docs/09-portafoglio.md)
-- [Notifiche email](docs/10-notifiche-email.md)
+| Voglio… | Documento |
+| --- | --- |
+| capire cosa fa il sistema e con quali regole | [01 · Requisiti e regole di dominio](docs/01-requisiti.md) |
+| vedere come sono divisi Producer e Consumer | [02 · Architettura e comunicazione](docs/02-architettura.md) |
+| leggere lo schema del database | [03 · Modello dati PostgreSQL](docs/03-database.md) |
+| usare le API (REST e STOMP) | [04 · Contratti REST e WebSocket](docs/04-api-rest.md), Swagger, [collection Postman](docs/postman/README.md) |
+| vedere pagine e flussi dell'utente | [05 · Interfaccia e flussi](docs/05-ui-flussi.md) |
+| capire il motore delle aste live | [07 · Motore LiveAuction](docs/07-liveauction.md), [08 · Offerte e chiusura](docs/08-offerte-chiusura.md) |
+| capire crediti, riserve e ledger | [09 · Portafoglio e ledger](docs/09-portafoglio.md), [18 · Wallet di sola lettura](docs/18-wallet-sola-lettura.md) |
+| annullamento e storici | [12 · Annullamento e storici](docs/12-annullamento-storici.md) |
+| inventario e acquisti a prezzo fisso | [13 · Inventario e acquisti](docs/13-inventario-acquisti.md) |
+| email al vincitore (pronta, SMTP fuori consegna) | [10 · Notifiche email](docs/10-notifiche-email.md) |
+| avviare la demo su più PC | [19 · Prova su hotspot](docs/19-prova-professore.md), [14 · LAN/VPN](docs/14-avvio-demo-vpn.md), [15 · Multi-PC](docs/15-demo-multipc.md) |
+
+Gli altri documenti numerati (06, 11, 16, 17, 20) e [todo.md](docs/todo.md) sono
+il **diario del lavoro**: piano, verifiche, correzioni e decisioni nell'ordine in
+cui sono avvenute. Raccontano come ci siamo arrivati; lo stato attuale è quello
+descritto dai documenti qui sopra.
+
+## Team
+
+| Persona | Area |
+| --- | --- |
+| **Matteo** | Autenticazione e utenti (registrazione, login, token, ruoli); dal 9 ottobre anche portafoglio e movimenti |
+| **Andrea** | Consumer: client REST verso il Producer, sessione web, pagine Thymeleaf e stanza live |
+| **Maikol** | WebSocket e notifiche: STOMP, ticket, presenza, eventi della stanza, email al vincitore |
+| **Cristian** | Prodotti e catalogo: categorie, CRUD ADMIN, ricerca, paginazione, stock |
+| **Marco** | Programmazione aste: creazione ADMIN, orari, blocco stock, scheduler, annullamento e storici |
+| **Tommi** | Offerte e chiusura: rilanci, estensioni, concorrenza, vincitore, trasferimento di crediti e prodotto |
+
+Ognuno ha curato anche DTO, validazioni, errori, migrazioni e test della propria
+area.
+
+## Uso dell'intelligenza artificiale
+
+Il professore ci ha chiesto di indicare in percentuale quanta IA abbiamo usato.
+Una percentuale non avrebbe senso, perché l'IA e noi abbiamo fatto lavori
+diversi, non lo stesso lavoro in quote diverse. Diciamo invece chiaramente chi
+ha fatto cosa:
+
+- **Noi** abbiamo fatto la progettazione: l'idea del prodotto, le regole
+  dell'asta, la divisione tra Producer e Consumer, i contratti REST e
+  WebSocket, il modello dati, i flussi d'uso, la divisione del lavoro e le
+  decisioni prese strada facendo.
+- **L'IA** ha scritto la quasi totalità del codice, ci ha aiutato a fare debug
+  e ha scritto gran parte della documentazione, a partire dalle nostre
+  specifiche. Di codice scritto a mano, tra tutti, ce n'è poco, e non lo
+  nascondiamo.
+
+Il lavoro dell'IA lo abbiamo guidato, rivisto, provato e corretto noi; le
+istruzioni che le davamo stanno in [AGENTS.md](AGENTS.md).
