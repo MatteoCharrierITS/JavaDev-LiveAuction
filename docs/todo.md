@@ -117,9 +117,9 @@ L'attivazione SMTP esterna è fuori scope per la consegna.
 | Matteo | **Autenticazione:** registrazione USER e creazione del portafoglio iniziale nella stessa transazione. | ✓ |
 | Matteo | **Autenticazione:** login, refresh, logout, token, ruoli e revoca delle sessioni. | ✓ |
 | Matteo | **Account:** eliminazione e anonimizzazione, con ritiro delle offerte e conservazione degli storici. | ✓ |
-| Matteo | **Portafoglio:** API del saldo e dei movimenti personali paginati. | ✓ |
-| Matteo | **Portafoglio:** impostazione del saldo virtuale, validazioni e registrazione del movimento. | ✓ |
-| Matteo | **Operazioni economiche:** repository condiviso per saldo, riserve e ledger, integrato con offerte e chiusura. | ✓ |
+| Mondir | **Portafoglio:** API del saldo e dei movimenti personali paginati, con il supporto di Matteo. | ✓ |
+| Mondir | **Portafoglio:** impostazione del saldo virtuale, validazioni e registrazione del movimento. | ✓ |
+| Mondir | **Operazioni economiche:** repository condiviso per saldo, riserve e ledger, integrato con offerte e chiusura, con il supporto di Matteo. | ✓ |
 | Cristian | **Catalogo pubblico:** categorie e prodotti, ricerca, filtri, ordinamento e paginazione. | ✓ |
 | Cristian | **Gestione ADMIN:** creazione, modifica e lettura di categorie e prodotti, compresi quelli inattivi. | ✓ |
 | Cristian | **Visibilità:** prodotti e categorie attivi, disattivazione e riattivazione senza alterare lo stock. | ✓ |
@@ -176,7 +176,7 @@ L'attivazione SMTP esterna è fuori scope per la consegna.
 Le righe senza spunta indicano verifiche ancora da completare; le nuove API
 e pagine sono implementate nella copia di lavoro del 14 ottobre.
 
-### Matteo — sicurezza, account e portafoglio
+### Matteo — sicurezza e account
 
 | Chi | Che cosa | Fatto |
 | :--- | :--- | :---: |
@@ -186,6 +186,12 @@ e pagine sono implementate nella copia di lavoro del 14 ottobre.
 | Matteo | **Account:** provare eliminazione dal browser, revoca delle sessioni, ritiro offerte, aggiornamento del leader e conservazione degli storici con Tommi. | &nbsp; |
 | Matteo | **Portafoglio:** verificare saldi e ledger dal browser, impostazione del totale con fondi riservati e messaggio di conflitto. | &nbsp; |
 | Matteo | **Nuove API:** supportare i referenti di inventario/acquisti per identità del token, ruoli e operazioni condivise su saldo/ledger; nessuna nuova assegnazione implicita. | &nbsp; |
+
+### Mondir — portafoglio
+
+| Chi | Che cosa | Fatto |
+| :--- | :--- | :---: |
+| Mondir | **Portafoglio:** verificare saldi e ledger dal browser, impostazione del totale con fondi riservati e messaggio di conflitto. | &nbsp; |
 
 ### Cristian — catalogo e stock
 

@@ -1,6 +1,6 @@
 # Portafoglio e ledger
 
-Modulo integrato in main il 9 ottobre 2026; Matteo è subentrato sul modulo di Mondir.
+Modulo di Mondir, integrato in main il 9 ottobre 2026 con il supporto di Matteo.
 Decisione aggiornata del 20 ottobre 2026: wallet di sola lettura e credito iniziale
 configurabile. Il contratto corrente è in [REST](04-api-rest.md#portafoglio).
 
